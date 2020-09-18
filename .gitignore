@@ -1,0 +1,13 @@
+# vscode
+.vscode/
+
+# Outputs
+*.ucdb
+/build
+tr_db.log
+transcript
+certe_dump.xml
+*.wlf
+work/
+*.vstf
+*.ini
