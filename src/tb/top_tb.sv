@@ -1,4 +1,12 @@
+`include "uvm_macros.svh"
+
 import segre_pkg::*;
+import uvm_pkg::*;
+
+// We should free the pointer but could't find a way to do it with the free_ptr funciton
+// because SV seems to lose the ptr since pointers are not a thing in SV
+import "DPI-C" function string decode_instruction(unsigned bits);
+import "DPI-C" function void free_ptr(chandle ptr);
 
 module top_tb;
 
