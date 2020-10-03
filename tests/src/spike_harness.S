@@ -1,4 +1,3 @@
-.include "user_define.h"
 .globl _start
 .section .text
 .option norvc;

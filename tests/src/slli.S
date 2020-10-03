@@ -29,34 +29,34 @@ segre_test:
     li x29, 0xbeefbeef
     li x30, 0xbeefbeef
     li x31, 0xbeefbeef
-    sll x0, x1, 0xf1
+    sll x0, x1, 0x1f
     sll x2, x2, 0x10
-    sll x3, x3, 0xf1
+    sll x3, x3, 0x19
     sll x4, x4, 0x10
-    sll x5, x5, 0xf1
+    sll x5, x5, 0x19
     sll x6, x6, 0x10
-    sll x7, x7, 0xf1
+    sll x7, x7, 0x19
     sll x8, x8, 0x10
-    sll x9, x9, 0xf1
+    sll x9, x9, 0x19
     sll x10, x10, 0x10
-    sll x11, x11, 0xf1
+    sll x11, x11, 0x19
     sll x12, x12, 0x10
-    sll x13, x13, 0xf1
+    sll x13, x13, 0x19
     sll x14, x14, 0x10
-    sll x15, x15, 0xf1
+    sll x15, x15, 0x19
     sll x16, x16, 0x10
-    sll x17, x17, 0xf1
+    sll x17, x17, 0x19
     sll x18, x18, 0x10
-    sll x19, x19, 0xf1
+    sll x19, x19, 0x19
     sll x20, x20, 0x10
-    sll x21, x21, 0xf1
+    sll x21, x21, 0x19
     sll x22, x22, 0x10
-    sll x23, x23, 0xf1
+    sll x23, x23, 0x19
     sll x24, x24, 0x10
-    sll x25, x25, 0xf1
+    sll x25, x25, 0x19
     sll x26, x26, 0x10
-    sll x27, x27, 0xf1
+    sll x27, x27, 0x19
     sll x28, x28, 0x10
-    sll x29, x29, 0xf1
+    sll x29, x29, 0x19
     sll x30, x30, 0x10
-    sll x31, x31, 0xf1
+    sll x31, x31, 0x19
