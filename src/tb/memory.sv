@@ -25,13 +25,25 @@ logic [WORD_SIZE-1:0] rd_data;
 int num_of_instructions = 0;
 
 int hex_file_fd;
+string test_name;
 
 initial begin
-    static int ret, addr = 0, fd;
+    int addr = 0;
     static string line, hex_file_name;
 
     // Read the hex file path and open the file in read mode
     num_of_instructions = 0;
+
+    // Check for test files and setup fds for the test bench and memory
+    if (!$value$plusargs("TEST_NAME=%s", test_name))
+        `uvm_fatal("top_tb", "Couldn't find the TEST_NAME argument, please provide it with +TEST_NAME=<testname>")
+    else
+        `uvm_info("top_tb", $sformatf("Starting test: %s", test_name), UVM_LOW)
+
+    hex_file_fd = $fopen($sformatf("./tests/hex_segre/%s.hex", test_name), "r");
+    if (!hex_file_fd)
+        `uvm_fatal("top_tb", $sformatf("Couldn't find the hex file for %s", test_name))
+
 
     while (!$feof(hex_file_fd)) begin
         if ($fgets(line, hex_file_fd)) begin

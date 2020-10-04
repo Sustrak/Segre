@@ -53,14 +53,8 @@ module top_tb;
         // Check for test files and setup fds for the test bench and memory
         if (!$value$plusargs("TEST_NAME=%s", test_name))
             `uvm_fatal("top_tb", "Couldn't find the TEST_NAME argument, please provide it with +TEST_NAME=<testname>")
-        else
-            `uvm_info("top_tb", $sformatf("Starting test: %s", test_name), UVM_LOW)
 
-        tb_mem.hex_file_fd = $fopen($sformatf("../../tests/hex_segre/%s.hex", test_name), "r");
-        if (!tb_mem.hex_file_fd)
-            `uvm_fatal("top_tb", $sformatf("Couldn't find the hex file for %s", test_name))
-
-        result_file_fd = $fopen($sformatf("../../tests/result_segre/%s.result", test_name), "r");
+        result_file_fd = $fopen($sformatf("./tests/result_segre/%s.result", test_name), "r");
         if (!result_file_fd)
             `uvm_warning("top_tb", $sformatf("Couldn't find the result file for %s", test_name))
 

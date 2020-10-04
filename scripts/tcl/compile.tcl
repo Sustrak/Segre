@@ -28,7 +28,7 @@ vlog -sv -work $work_dir -define HEX_FILE="$test_dir/jal.hex" -define DEBUG $tb_
 vlog -sv -work $work_dir $tb_dir/top_tb.sv
 
 # Start simulation
-vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript -voptargs=+acc $work_dir.top_tb -sv_lib riscv_decoder/libdecoder
+vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=jal -voptargs=+acc $work_dir.top_tb -sv_lib riscv_decoder/libdecoder
 
 # Add the wave to the simulation
 do scripts/wave.do
