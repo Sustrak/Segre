@@ -35,8 +35,8 @@ initial begin
 
     while (!$feof(hex_file_fd)) begin
         if ($fgets(line, hex_file_fd)) begin
-            assert (addr < DATA_REGION) else `uvm_fatal(get_type_name(), ".text was about to get written in .data section")
-            `uvm_info(get_type_name(), $sformatf("Writting in %h the data %d", addr, line), UVM_LOW);
+            assert (addr < DATA_REGION) else `uvm_fatal("memory", ".text was about to get written in .data section")
+            `uvm_info("memory", $sformatf("Writting in %h the data %d", addr, line), UVM_LOW);
             mem[addr]   = line.substr(6, 7).atohex();
             mem[addr+1] = line.substr(4, 5).atohex();
             mem[addr+2] = line.substr(2, 3).atohex();
@@ -76,9 +76,9 @@ always @(posedge clk_i) data_o <= rd_data;
 
 task memory_verbose;
     if (rd_i)
-        `uvm_info(get_type_name(), $sformatf("Reading data: %h from %h", rd_data, addr_i), UVM_INFO)
+        `uvm_info("memory", $sformatf("Reading data: %h from %h", rd_data, addr_i), UVM_INFO)
     if (wr_i)
-        `uvm_info(get_type_name(), $sformatf("Writing %s: %h at %h", data_type_i, data_i, addr_i), UVM_INFO)
+        `uvm_info("memory", $sformatf("Writing %s: %h at %h", data_type_i, data_i, addr_i), UVM_INFO)
 endtask
 
 endmodule
