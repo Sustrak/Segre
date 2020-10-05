@@ -98,6 +98,7 @@ module top_tb;
         static int counter = 0; // FIXME Static bc it is not modified. vlog reported errors
         logic [WORD_SIZE-1:0][NUM_REGS-1:0] segre_rf;
         string line;
+        bit error = 0;
 
         assign segre_rf = dut.segre_rf.rf_reg;
 
@@ -107,6 +108,22 @@ module top_tb;
                 golden_results[counter] = line.atohex();
             end
         end
+
+        // Compare results
+        foreach(golden_results[i]) begin
+            if (golden_results[i] != segre_rf[i]) begin
+                error = 1;
+                `uvm_info("top_tb", $sformatf("Register file missmatch: In x%0d spike reported %0h and segre %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
+        end
+        
+        // Print both register files
+        `uvm_info("top_tb", "Register  Spike  -----  Segre", UVM_LOW)
+        foreach(golden_results[i]) begin
+            `uvm_info("top_tb", $sformatf("x%0d      %0h  -----  %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
+        end
+
+        if (error)
+            `uvm_error("top_tb", "REGISTER FILE MISSMATCH")
     endfunction
 
     task monitor_tb();
