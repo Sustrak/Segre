@@ -43,6 +43,7 @@ hex_segre/%.hex: build_segre/%.o
 
 result_segre/%.result: build_spike/%.o
 	$(SPIKE) $^ 2> tmp.result
+	echo 0 >> $@
 	cat tmp.result | grep "x 1" | tail -n 1 | sed -e 's/x 1/x1/g' | awk '{print $$7}' | cut -b 11-18 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x 2" | tail -n 1 | sed -e 's/x 2/x1/g' | awk '{print $$7}' | cut -b 11-18 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x 3" | tail -n 1 | sed -e 's/x 3/x1/g' | awk '{print $$7}' | cut -b 11-18 | xargs -I {} echo {} >> $@

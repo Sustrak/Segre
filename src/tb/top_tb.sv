@@ -52,18 +52,12 @@ module top_tb;
     initial begin
         // Check for test files and setup fds for the test bench and memory
         if (!$value$plusargs("TEST_NAME=%s", test_name))
-            `uvm_fatal(get_type_name(), "Couldn't find the TEST_NAME argument, please provide it with +TEST_NAME=<testname>")
-        else
-            `uvm_info(get_type_name(), $sformatf("Starting test: %s", test_name), UVM_LOW)
+            `uvm_fatal("top_tb", "Couldn't find the TEST_NAME argument, please provide it with +TEST_NAME=<testname>")
 
-        tb_mem.hex_file_fd = $fopen($sformatf("../../tests/hex_segre/%s.hex", test_name), "r");
-        if (!tb_mem.hex_file_fd)
-            `uvm_fatal(get_type_name(), $sformatf("Couldn't find the hex file for %s", test_name))
-
-        result_file_fd = $fopen($sformatf("../../tests/result_segre/%s.result", test_name), "r");
+        result_file_fd = $fopen($sformatf("./tests/result_segre/%s.result", test_name), "r");
         if (!result_file_fd)
-            `uvm_warning(get_type_name(), $sformatf("Couldn't find the result file for %s", test_name))
-        
+            `uvm_warning("top_tb", $sformatf("Couldn't find the result file for %s", test_name))
+
     end
 
     initial begin
@@ -79,67 +73,89 @@ module top_tb;
         repeat(2) @(posedge clk);
         rsn <= 1;
         fork
-            run_tb;
-            monitor_tb;
+            begin
+                `uvm_info("top_tb", "Starting test", UVM_LOW)
+                run_tb;
+            end
+            begin
+                monitor_tb;
+            end
         join_any
+        `uvm_info("top_tb", $sformatf("Results for test: %0s", test_name), UVM_LOW)
         check_results;
-        `uvm_info(get_type_name(), "End Of Test", UVM_LOW)
+        `uvm_info("top_tb", "End Of Test", UVM_LOW)
         $finish;
     end
 
-    task run_tb begin
-        while(keep_running_tb) @(posedge clk);
+    task run_tb();
+        while(keep_running_tb()) @(posedge clk);
     endtask
 
-    function bit keep_running_tb;
-        if (segre_core_if.addr < tb_mem.DATA_REGION && segre_core_if.mem_rd_data == 32'hfff01073)
+    function bit keep_running_tb();
+        if (segre_core_if.addr < tb_mem.DATA_REGION && segre_core_if.mem_rd_data == 32'hfff01073) begin
             return 0;
+        end
+
         return 1;
     endfunction
 
-    function void check_results;
-        logic [WORD_SIZE-1:0][NUM_REGS-1:0] golden_results;
-        int counter = 0;
+    function void check_results();
+        int golden_results [32];
+        static int counter = 0; // FIXME Static bc it is not modified. vlog reported errors
         logic [WORD_SIZE-1:0][NUM_REGS-1:0] segre_rf;
         string line;
-        bit error = 0;
+        static bit error = 0;
 
-        assign segre_rf = dut.segre_register_file.rf_reg;
+        assign segre_rf = dut.segre_rf.rf_reg;
 
-        // Read results from file
-        while (!$feof(result_file_fd)) begin
-            if ($fgets(line, result_file_fd)) begin
-                golden_results[counter] = line.atohex();
+        if (result_file_fd) begin
+            // Read results from file
+            while (!$feof(result_file_fd)) begin
+                if ($fgets(line, result_file_fd)) begin
+                    golden_results[counter] = line.atohex();
+                    counter++;
+                end
             end
-        end 
 
-        // Compare results
-        foreach(golden_results[i]) begin
-            if (golden_results[i] != segre_rf[i]) begin
-                error = 1;
-                `uvm_info("top_tb", $sformatf("Register file missmatch: In x%0d spike reported %0h and segre %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
-        end
-        
-        // Print both register files
-        `uvm_info("top_tb", "Register  Spike  -----  Segre", UVM_LOW)
-        foreach(golden_results[i]) begin
-            `uvm_info("top_tb", $sformatf("x%0d      %0h  -----  %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
-        end
+            // Compare results
+            foreach(golden_results[i]) begin
+                if (golden_results[i] != segre_rf[i]) begin
+                    error = 1;
+                    `uvm_info("top_tb", $sformatf("Register file missmatch: In x%0d spike reported %0h and segre %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
+                end
+            end
+            
+            // Print both register files
+            `uvm_info("top_tb", "Register\tSpike\t\t \t\tSegre", UVM_LOW)
+            foreach(golden_results[i]) begin
+                `uvm_info("top_tb", $sformatf("x%0d\t%0h\t\t \t\t%0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
+            end
 
-        if (error)
-            `uvm_error("top_tb", "REGISTER FILE MISSMATCH")
+            if (error)
+                `uvm_error("top_tb", "REGISTER FILE MISSMATCH")
+        end
+        else begin
+            `uvm_info("top_tb", "Register  Segre", UVM_LOW)
+            foreach(golden_results[i]) begin
+                `uvm_info("top_tb", $sformatf("x%0d      %0h", i, segre_rf[i]), UVM_LOW)
+            end
+        end
     endfunction
 
-    task monitor_tb begin
-        `uvm_info(get_type_name(), "Starting tb monitor", UVM_LOW)
+    task monitor_tb();
+        `uvm_info("top_tb", "Starting tb monitor", UVM_LOW)
         forever begin
-            @(segre_core_if.mem_rd);
-            if (segre_core_if.addr < tb_mem.DATA_REGION) begin
-                string instr_decoded = decode_instruction(segre_core_if.mem_rd_data);
-                `uvm_info(get_type_name(), $sformatf("PC: 0x%0h: %s (0x%0h) "), segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data)
+            static string instr_decoded;
+            @(posedge clk);
+            if (segre_core_if.mem_rd) begin
+                if (segre_core_if.addr < tb_mem.DATA_REGION) begin
+                    $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data); 
+                    instr_decoded = decode_instruction(unsigned'(segre_core_if.mem_rd_data)); // FIXME Same as counter in check_results()
+                    `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data), UVM_LOW)
+                end
             end
         end
-        `uvm_fatal(get_type_name(), "Shouldn't have reach this part of the monitor_tb")
+        `uvm_fatal("top_tb", "Shouldn't have reach this part of the monitor_tb")
     endtask
 
 endmodule

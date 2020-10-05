@@ -14,6 +14,7 @@ segre_test:
     li x13, 0xbeefbeef
     li x14, 0xbeefbeef
     li x15, 0xbeefbeef
+    li x16, 0xbeefbeef
     li x17, 0xbeefbeef
     li x18, 0xbeefbeef
     li x19, 0xbeefbeef

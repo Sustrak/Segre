@@ -15,6 +15,7 @@ segre_test:
     lui x13, 0x34ab
     lui x14, 0x345a
     lui x15, 0x3456
+    lui x16, 0x3456
     lui x17, 0x3456
     lui x18, 0x4567
     lui x19, 0x5678

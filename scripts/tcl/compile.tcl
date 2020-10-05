@@ -24,11 +24,11 @@ vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv
-vlog -sv -work $work_dir -define HEX_FILE="$test_dir/jal.hex" -define DEBUG $tb_dir/memory.sv
+vlog -sv -work $work_dir $tb_dir/memory.sv
 vlog -sv -work $work_dir $tb_dir/top_tb.sv
 
 # Start simulation
-vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript -voptargs=+acc $work_dir.top_tb -sv_lib riscv_decoder/libdecoder
+vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=addi -voptargs=+acc -sv_lib lib/libdecoder $work_dir.top_tb
 
 # Add the wave to the simulation
 do scripts/wave.do
