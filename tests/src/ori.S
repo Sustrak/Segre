@@ -15,6 +15,7 @@ segre_test:
     li x13, 0x0
     li x14, 0x0
     li x15, 0xffffffff
+    li x16, 0x0
     li x17, 0x0
     li x18, 0x0
     li x19, 0x0

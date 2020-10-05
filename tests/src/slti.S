@@ -14,6 +14,7 @@ segre_test:
     li x13, -13
     li x14, -14
     li x15, -15
+    li x16, -15
     li x17, -16
     li x18, -17
     li x19, -18

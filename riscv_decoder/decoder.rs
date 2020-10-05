@@ -5,6 +5,7 @@ use std::os::raw::c_char;
 #[no_mangle]
 pub extern "C" fn decode_instruction(bits: u32) -> *mut c_char {
     let instr = RiscvInstr::new(&bits);
+    println!("libdecoder: bits: {}", bits);
     match instr {
         Some(v) =>
             match v.riscv_type {

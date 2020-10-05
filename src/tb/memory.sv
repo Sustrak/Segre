@@ -45,10 +45,11 @@ initial begin
         `uvm_fatal("top_tb", $sformatf("Couldn't find the hex file for %s", test_name))
 
 
+    `uvm_info("memory", "Start of writting test to memory", UVM_LOW)
     while (!$feof(hex_file_fd)) begin
         if ($fgets(line, hex_file_fd)) begin
             assert (addr < DATA_REGION) else `uvm_fatal("memory", ".text was about to get written in .data section")
-            `uvm_info("memory", $sformatf("Writting in %h the data %d", addr, line), UVM_LOW);
+            `uvm_info("memory", $sformatf("Writting in %0h the data %0d", addr, line.substr(0, 7)), UVM_LOW);
             mem[addr]   = line.substr(6, 7).atohex();
             mem[addr+1] = line.substr(4, 5).atohex();
             mem[addr+2] = line.substr(2, 3).atohex();
@@ -57,6 +58,7 @@ initial begin
             num_of_instructions++;
         end
     end
+    `uvm_info("memory", $sformatf("Test written into memory, %0d instructions written", num_of_instructions), UVM_LOW)
 end
 
 always @(posedge clk_i) begin
@@ -88,9 +90,9 @@ always @(posedge clk_i) data_o <= rd_data;
 
 task memory_verbose;
     if (rd_i)
-        `uvm_info("memory", $sformatf("Reading data: %h from %h", rd_data, addr_i), UVM_INFO)
+        `uvm_info("memory", $sformatf("Reading data: %h from %h", rd_data, addr_i), UVM_MEDIUM)
     if (wr_i)
-        `uvm_info("memory", $sformatf("Writing %s: %h at %h", data_type_i, data_i, addr_i), UVM_INFO)
+        `uvm_info("memory", $sformatf("Writing %s: %h at %h", data_type_i, data_i, addr_i), UVM_MEDIUM)
 endtask
 
 endmodule

@@ -14,6 +14,7 @@ segre_test:
     li x13, 0xcafecafe
     li x14, 0xcafecafe
     li x15, 0xcafecafe
+    li x16, 0xcafecafe
     li x17, 0xcafecafe
     li x18, 0xcafecafe
     li x19, 0xcafecafe
