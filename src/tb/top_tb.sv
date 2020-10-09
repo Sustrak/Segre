@@ -5,7 +5,7 @@ import uvm_pkg::*;
 
 // We should free the pointer but could't find a way to do it with the free_ptr funciton
 // because SV seems to lose the ptr since pointers are not a thing in SV
-import "DPI-C" function string decode_instruction(unsigned bits);
+import "DPI-C" function string decode_instruction(input int bits);
 import "DPI-C" function void free_ptr(chandle ptr);
 
 localparam NUM_REGS = 2**REG_SIZE;
@@ -150,7 +150,7 @@ module top_tb;
             if (segre_core_if.mem_rd) begin
                 if (segre_core_if.addr < tb_mem.DATA_REGION) begin
                     $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data); 
-                    instr_decoded = decode_instruction(unsigned'(segre_core_if.mem_rd_data)); // FIXME Same as counter in check_results()
+                    instr_decoded = decode_instruction(int'(segre_core_if.mem_rd_data));
                     `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data), UVM_LOW)
                 end
             end

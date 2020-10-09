@@ -1,5 +1,5 @@
 CC = rustc 
-CFLAGS = --crate-type dylib
+CFLAGS = --crate-type cdylib
 
 .PHONY: clean
 
