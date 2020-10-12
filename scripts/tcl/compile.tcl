@@ -1,3 +1,8 @@
+# USAGE #
+# compile.tcl <testname>
+
+# ARGS #
+set test_name $1
 set rtl_dir src/rtl
 set tb_dir src/tb
 set work_dir build/work
@@ -28,7 +33,7 @@ vlog -sv -work $work_dir $tb_dir/memory.sv
 vlog -sv -work $work_dir $tb_dir/top_tb.sv
 
 # Start simulation
-vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=addi -voptargs=+acc -sv_lib lib/libdecoder $work_dir.top_tb
+vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=$test_name -voptargs=+acc -sv_lib lib/libdecoder $work_dir.top_tb
 
 # Add the wave to the simulation
 do scripts/wave.do
