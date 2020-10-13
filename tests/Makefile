@@ -42,6 +42,7 @@ hex_segre/%.hex: build_segre/%.o
 	$(OBJD) -d $^ | grep -E "[a-f0-9]+:" | awk '{print $$2}' > $@;
 
 result_segre/%.result: build_spike/%.o
+	rm -rf $@
 	$(SPIKE) $^ 2> tmp.result
 	echo 0 >> $@
 	cat tmp.result | grep "x 1" | tail -n 1 | sed -e 's/x 1/x1/g' | awk '{print $$7}' | cut -c 11-18 | xargs -I {} echo {} >> $@
