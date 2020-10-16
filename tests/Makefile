@@ -4,7 +4,7 @@ TARGET = riscv64-unknown-elf
 
 AS = $(TARGET)-as
 GCC = $(TARGET)-gcc
-SPIKE = ../../riscv-isa-sim/build/spike --log-commits
+SPIKE = ../../riscv-isa-sim/build/spike --log-commits --isa rv32im
 CFLAGS = -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Tlink.ld -Isrc/
 ASFLAGS = -march=rv32i -mabi=ilp32
 OBJD = $(TARGET)-objdump
@@ -47,7 +47,7 @@ result_segre/%.result: build_spike/%.o
 	echo 0 >> $@
 	cat tmp.result | grep "x 1" | tail -n 1 | sed -e 's/x 1/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x 2" | tail -n 1 | sed -e 's/x 2/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 3" | tail -n 1 | sed -e 's/x 3/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep "x 3" | tail -n 2 | head -n 1 | sed -e 's/x 3/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x 4" | tail -n 1 | sed -e 's/x 4/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x 5" | tail -n 1 | sed -e 's/x 5/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x 6" | tail -n 1 | sed -e 's/x 6/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
@@ -74,7 +74,7 @@ result_segre/%.result: build_spike/%.o
 	cat tmp.result | grep "x27" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x28" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x29" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x30" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep "x30" | tail -n 2 | head -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep "x31" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	rm tmp.result
 

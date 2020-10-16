@@ -1,5 +1,5 @@
 segre_test:
-    li x1,  0x20
+    li x1,  0x1f
     li x2,  0x10
     li x3,  0xcafecafe
     li x4,  0xcafecafe
