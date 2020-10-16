@@ -14,21 +14,22 @@ segre_test:
     li x13, -13
     li x14, -14
     li x15, -15
-    li x17, -16
-    li x18, -17
-    li x19, -18
-    li x20, -19
-    li x21, -20
-    li x22, -21
-    li x23, -22
-    li x24, -23
-    li x25, -24
-    li x26, -25
-    li x27, -26
-    li x28, -27
-    li x29, -28
-    li x30, -29
-    li x31, -30
+    li x16, -16
+    li x17, -17
+    li x18, -18
+    li x19, -19
+    li x20, -20
+    li x21, -21
+    li x22, -22
+    li x23, -23
+    li x24, -24
+    li x25, -25
+    li x26, -26
+    li x27, -27
+    li x28, -28
+    li x29, -29
+    li x30, -30
+    li x31, -31
     slt x0, x1, -2
     slt x1, x3, -2
     slt x2, x3, -4

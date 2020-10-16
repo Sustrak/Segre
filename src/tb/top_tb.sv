@@ -121,10 +121,10 @@ module top_tb;
             foreach(golden_results[i]) begin
                 if (golden_results[i] != segre_rf[i]) begin
                     error = 1;
-                    `uvm_info("top_tb", $sformatf("Register file missmatch: In x%0d spike reported %0h and segre %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
+                    `uvm_info("top_tb", $sformatf("Register file mismatch: In x%0d spike reported %0h and segre %0h", i, golden_results[i], segre_rf[i]), UVM_LOW)
                 end
             end
-            
+
             // Print both register files
             `uvm_info("top_tb", "Register\tSpike\t\t \t\tSegre", UVM_LOW)
             foreach(golden_results[i]) begin
@@ -149,7 +149,7 @@ module top_tb;
             @(posedge clk);
             if (segre_core_if.mem_rd) begin
                 if (segre_core_if.addr < tb_mem.DATA_REGION) begin
-                    $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data); 
+                    $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data);
                     instr_decoded = decode_instruction(int'(segre_core_if.mem_rd_data));
                     `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data), UVM_LOW)
                 end
