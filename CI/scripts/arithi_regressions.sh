@@ -1,6 +1,6 @@
 ##########################################################
 ### Will launch the tests for the operations:          ###
-###   ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND ###
+###   ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI   ###
 ##########################################################
 
 tests=("addi" "slti" "sltiu" "xori" "ori" "andi" "slli" "srli" "srai")

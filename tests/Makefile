@@ -76,7 +76,7 @@ result_segre/%.result: build_spike/%.o
 	cat tmp.result | grep -w "x29" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep -w "x30" | tail -n 2 | head -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep -w "x31" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	##rm tmp.result
+	rm tmp.result
 
 clean:
 	rm -rf hex_segre build_spike build_segre result_segre
