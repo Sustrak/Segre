@@ -1,3 +1,5 @@
+lb.S
+lbu.S
 lui.S
 jal.S
 jalr.S
