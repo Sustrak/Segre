@@ -45,38 +45,38 @@ result_segre/%.result: build_spike/%.o
 	rm -rf $@
 	$(SPIKE) $^ 2> tmp.result
 	echo 0 >> $@
-	cat tmp.result | grep "x 1" | tail -n 1 | sed -e 's/x 1/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 2" | tail -n 1 | sed -e 's/x 2/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 3" | tail -n 2 | head -n 1 | sed -e 's/x 3/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 4" | tail -n 1 | sed -e 's/x 4/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 5" | tail -n 1 | sed -e 's/x 5/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 6" | tail -n 1 | sed -e 's/x 6/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 7" | tail -n 1 | sed -e 's/x 7/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 8" | tail -n 1 | sed -e 's/x 8/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x 9" | tail -n 1 | sed -e 's/x 9/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x10" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x11" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x12" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x13" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x14" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x15" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x16" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x17" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x18" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x19" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x20" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x21" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x22" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x23" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x24" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x25" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x26" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x27" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x28" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x29" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x30" | tail -n 2 | head -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	cat tmp.result | grep "x31" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
-	rm tmp.result
+	cat tmp.result | grep -w "x 1" | tail -n 1 | sed -e 's/x 1/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 2" | tail -n 1 | sed -e 's/x 2/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 3" | tail -n 2 | head -n 1 | sed -e 's/x 3/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 4" | tail -n 1 | sed -e 's/x 4/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 5" | tail -n 1 | sed -e 's/x 5/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 6" | tail -n 1 | sed -e 's/x 6/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 7" | tail -n 1 | sed -e 's/x 7/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 8" | tail -n 1 | sed -e 's/x 8/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x 9" | tail -n 1 | sed -e 's/x 9/x1/g' | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x10" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x11" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x12" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x13" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x14" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x15" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x16" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x17" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x18" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x19" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x20" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x21" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x22" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x23" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x24" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x25" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x26" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x27" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x28" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x29" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x30" | tail -n 2 | head -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	cat tmp.result | grep -w "x31" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
+	##rm tmp.result
 
 clean:
 	rm -rf hex_segre build_spike build_segre result_segre
