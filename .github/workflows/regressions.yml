@@ -10,9 +10,10 @@ jobs:
   regressions:
     name: Test Arithmetic Operations
     runs-on: ubuntu-latest
-    container: docker:/batholemew/modelsim:2019.1
+    container: docker:batholemew/modelsim:2019.1
     steps:
       - name: Segre regressions
         run: |
           echo "Running arithmetic tests"
-          ./CI/scripts/arith_regressions.sh
+          vsim -c -do "do scripts/tcl/compile.tcl add"
+          #./CI/scripts/arith_regressions.sh
