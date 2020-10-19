@@ -1,0 +1,18 @@
+name: Segre Regressions
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  regressions:
+    name: Test Arithmetic Operations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Segre regressions
+      - uses: docker:/batholemew/modelsim:2019.1
+      - run: |
+          echo "Running arithmetic tests"
+          ./CI/scripts/arith_regressions.sh
