@@ -10,7 +10,7 @@ jobs:
   regressions:
     name: Test Arithmetic Operations
     runs-on: ubuntu-latest
-    container: batholemew/modelsim:2019.1
+    container: lukasgrau/modelsim_centos:latest
     steps:
       - name: Segre regressions
         run: |
