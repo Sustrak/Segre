@@ -9,6 +9,9 @@ set work_dir build/work
 set pkg_dir src/pkg
 set test_dir tests/hex
 
+# Create build dir
+file mkdir build
+
 # Create work library
 vlib $work_dir
 
