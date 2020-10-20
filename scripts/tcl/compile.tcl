@@ -37,8 +37,8 @@ set GITHUB_CI [string range $GITHUB_CI 4 10]
 puts $GITHUB_CI
 puts [string equal $GITHUB_CI "/Segre/"]
 if {[string equal $GITHUB_CI "/Segre/"]} {
-    vlog -sv -work $work_dir -define GITHUB_CI=1 $tb_dir/memory.sv
-    vlog -sv -work $work_dir -define GITHUB_CI=1 $tb_dir/top_tb.sv
+    vlog -sv -work $work_dir +define+GITHUB_CI=1 $tb_dir/memory.sv
+    vlog -sv -work $work_dir +define+GITHUB_CI=1 $tb_dir/top_tb.sv
 } else {
     vlog -sv -work $work_dir $tb_dir/memory.sv
     vlog -sv -work $work_dir $tb_dir/top_tb.sv
