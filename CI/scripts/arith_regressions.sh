@@ -4,5 +4,5 @@
 ##########################################################
 
 tests=("add" "sub" "sll" "slt" "sltu" "xor" "srl" "sra" "or" "and")
-segre_dir=$(git rev-parse --show-toplevel)
-$segre_dir/CI/scripts/run_list.sh $tests
+#segre_dir=$(git rev-parse --show-toplevel)
+./CI/scripts/run_list.sh $tests
