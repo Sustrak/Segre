@@ -33,6 +33,7 @@ vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv
+puts $GITHUB_CI
 if {$GITHUB_CI == "/_w/Segre/Segre" } {
     vlog -sv -work $work_dir -define GITHUB_CI $tb_dir/memory.sv
     vlog -sv -work $work_dir -define GITHUB_CI $tb_dir/top_tb.sv
