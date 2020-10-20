@@ -1,12 +1,21 @@
-`include "uvm_macros.svh"
+`ifdef GITHUB_CI
+    `define uvm_info(_a, _b, _c) $info("%0s: %0s", _a, _b);
+    `define uvm_fatal(_a, _b) $fatal("%0s: %0s", _a, _b);
+    `define uvm_error(_a, _b) $error("%0s: %0s", _a, _b);
+    `define uvm_warning(_a, _b) $warning("%0s: %0s", _a, _b);
+`else
+    `include "uvm_macros.svh"
+    import uvm_pkg::*;
+`endif
 
 import segre_pkg::*;
-import uvm_pkg::*;
 
 // We should free the pointer but could't find a way to do it with the free_ptr funciton
 // because SV seems to lose the ptr since pointers are not a thing in SV
+`ifndef GITHUB_CI
 import "DPI-C" function string decode_instruction(input int bits);
 import "DPI-C" function void free_ptr(chandle ptr);
+`endif
 
 localparam NUM_REGS = 2**REG_SIZE;
 
@@ -150,7 +159,9 @@ module top_tb;
             if (segre_core_if.mem_rd) begin
                 if (segre_core_if.addr < tb_mem.DATA_REGION) begin
                     $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data);
+`ifndef GITHUB_CI
                     instr_decoded = decode_instruction(int'(segre_core_if.mem_rd_data));
+`endif
                     `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data), UVM_LOW)
                 end
             end
