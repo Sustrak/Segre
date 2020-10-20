@@ -19,5 +19,5 @@ jobs:
           echo "Running arithmetic tests"
           pwd
           ls -la
-          vsim -c -do "do scripts/tcl/compile.tcl add"
-          #./CI/scripts/arith_regressions.sh
+          #vsim -c -do "do scripts/tcl/compile.tcl add"
+          ./CI/scripts/arith_regressions.sh
