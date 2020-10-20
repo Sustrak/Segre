@@ -4,7 +4,6 @@ use std::os::raw::c_char;
 
 #[no_mangle]
 pub extern "C" fn decode_instruction(bits: u32) -> *mut c_char {
-    println!("libdecoder: bits: {}", bits);
     let instr = RiscvInstr::new(&bits);
     match instr {
         Some(v) =>

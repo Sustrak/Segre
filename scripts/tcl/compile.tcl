@@ -3,6 +3,7 @@
 
 # ARGS #
 set test_name $1
+set GITHUB_CI [pwd]
 set rtl_dir src/rtl
 set tb_dir src/tb
 set work_dir build/work
@@ -29,8 +30,13 @@ vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv
-vlog -sv -work $work_dir $tb_dir/memory.sv
-vlog -sv -work $work_dir $tb_dir/top_tb.sv
+if {$GITHUB_CI == "/_w/Segre/Segre" } {
+    vlog -sv -work $work_dir -define GITHUB_CI $tb_dir/memory.sv
+    vlog -sv -work $work_dir -define GITHUB_CI $tb_dir/top_tb.sv
+} else {
+    vlog -sv -work $work_dir $tb_dir/memory.sv
+    vlog -sv -work $work_dir $tb_dir/top_tb.sv
+}
 
 # Start simulation
 vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=$test_name -voptargs=+acc -sv_lib lib/libdecoder $work_dir.top_tb
