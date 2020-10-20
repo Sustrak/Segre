@@ -35,8 +35,8 @@ vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 vlog -sv -work $work_dir $tb_dir/interface.sv
 set GITHUB_CI [string range $GITHUB_CI 4 10]
 puts $GITHUB_CI
-puts [string equal $GITHUB_CI "Segre/"]
-if {[string equal $GITHUB_CI "Segre/"]} {
+puts [string equal $GITHUB_CI "/Segre/"]
+if {[string equal $GITHUB_CI "/Segre/"]} {
     vlog -sv -work $work_dir -define GITHUB_CI $tb_dir/memory.sv
     vlog -sv -work $work_dir -define GITHUB_CI $tb_dir/top_tb.sv
 } else {
