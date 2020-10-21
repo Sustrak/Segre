@@ -21,3 +21,4 @@ jobs:
           echo "Running arithmetic tests"
           ./CI/scripts/arith_regressions.sh
           ./CI/scripts/arithi_regressions.sh
+          ./CI/scripts/branch_regressions.sh

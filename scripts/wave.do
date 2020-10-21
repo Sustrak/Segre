@@ -58,7 +58,7 @@ add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/fsm_state_i
 add wave -noupdate -group {IF Stage} -divider PC
 add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/tkbr_i
 add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/new_pc_i
-add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/aux_pc
+add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/nxt_pc
 add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/pc_o
 add wave -noupdate -group {IF Stage} /top_tb/dut/if_stage/mem_rd_o
 add wave -noupdate -group {IF Stage} -divider INSTRUCTION
