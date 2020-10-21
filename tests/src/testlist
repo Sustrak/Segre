@@ -1,6 +1,12 @@
 lui.S
 jal.S
 jalr.S
+beq.S
+bne.S
+blt.S
+bge.S
+bltu.S
+bgeu.S
 addi.S
 slti.S
 sltiu.S
