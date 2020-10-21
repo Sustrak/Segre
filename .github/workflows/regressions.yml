@@ -19,7 +19,5 @@ jobs:
       - name: Segre regressions
         run: |
           echo "Running arithmetic tests"
-          pwd
-          ls -la
-          #vsim -c -do "do scripts/tcl/compile.tcl add"
           ./CI/scripts/arith_regressions.sh
+          ./CI/scripts/arithi_regressions.sh
