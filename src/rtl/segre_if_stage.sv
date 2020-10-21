@@ -21,23 +21,29 @@ module segre_if_stage (
     input logic [WORD_SIZE-1:0] new_pc_i
 );
 
-logic [ADDR_SIZE-1:0] aux_pc;
+logic [ADDR_SIZE-1:0] nxt_pc;
 
-always_ff @(posedge clk_i) begin
+always_comb begin
     if (!rsn_i) begin
-        aux_pc <= 0;
-    end else if (tkbr_i) begin
-        aux_pc <= new_pc_i;
+        nxt_pc <= 0;
+    end else if (tkbr_i && fsm_state_i == WB_STATE) begin
+        // PC in the pipeline is the PC of the next instruction so when calculating the @ to jmp
+        // we get the next instruction to where we intended to jmp, that why we go back one instruction
+        nxt_pc <= new_pc_i - 4;
     end else if (fsm_state_i == IF_STATE) begin
-        aux_pc <= aux_pc + 4;
+        nxt_pc <= nxt_pc + 4;
+    end else begin
+        nxt_pc <= nxt_pc;
     end
 end
 
-assign pc_o     = aux_pc;
+//assign pc_o     = nxt_pc;
 assign mem_rd_o = fsm_state_i == IF_STATE ? 1'b1 : 1'b0;
 
 always_ff @(posedge clk_i) begin
     instr_o = instr_i;
+    pc_o    = nxt_pc;
+    //mem_rd_o = fsm_state_i == IF_STATE ? 1'b1 : 1'b0;
 end
 
 

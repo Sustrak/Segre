@@ -216,7 +216,7 @@ always_comb begin
         OPCODE_BRANCH: begin
             src_a_mux_sel_o = ALU_A_PC;
             src_b_mux_sel_o = ALU_B_IMM;
-            b_imm_mux_sel_o = IMM_B_I;
+            b_imm_mux_sel_o = IMM_B_B;
             br_a_mux_sel_o  = BR_A_REG;
             br_b_mux_sel_o  = BR_B_REG;
             unique case (instr_i[`FUNC_3])
