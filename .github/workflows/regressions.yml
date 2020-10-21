@@ -10,10 +10,14 @@ jobs:
   regressions:
     name: Test Arithmetic Operations
     runs-on: ubuntu-latest
-    container: batholemew/modelsim:2019.1
+    container: 
+      image: lukasgrau/modelsim_centos:latest
+      options: --security-opt seccomp=unconfined
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
       - name: Segre regressions
         run: |
           echo "Running arithmetic tests"
-          vsim -c -do "do scripts/tcl/compile.tcl add"
-          #./CI/scripts/arith_regressions.sh
+          ./CI/scripts/arith_regressions.sh
+          ./CI/scripts/arithi_regressions.sh

@@ -1,7 +1,12 @@
-`include "uvm_macros.svh"
+`ifdef GITHUB_CI
+    `define uvm_info(_a, _b, _c) $info("%0s: %0s", _a, _b);
+    `define uvm_fatal(_a, _b) $fatal("%0s: %0s", _a, _b);
+`else
+    `include "uvm_macros.svh"
+    import uvm_pkg::*;
+`endif
 
 import segre_pkg::*;
-import uvm_pkg::*;
 
 module memory (
     input logic clk_i,

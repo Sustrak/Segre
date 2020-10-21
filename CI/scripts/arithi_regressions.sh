@@ -1,7 +1,7 @@
 ##########################################################
 ### Will launch the tests for the operations:          ###
-###   ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND ###
+###   ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI   ###
 ##########################################################
 
-tests=(add sub sll slt sltu xor srl sra or and)
+tests=(addi slti sltiu xori ori andi slli srli srai)
 ./CI/scripts/run_list.sh $(echo ${tests[@]})
