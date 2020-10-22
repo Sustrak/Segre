@@ -1,7 +1,7 @@
 .globl _start
 .section .text
 .option norvc;
-_start:           
+_start:
                   csrr x5, 0xf14
                   li x6, 0
                   beq x5, x6, 0f
@@ -10,23 +10,23 @@ _start:
 h0_start:
                   li x26, 0x40000100
                   csrw 0x301, x26
-kernel_sp:        
+kernel_sp:
                   la x28, kernel_stack_end
 
-trap_vec_init:    
+trap_vec_init:
                   la x26, mtvec_handler
                   ori x26, x26, 0
                   csrw 0x305, x26 # MTVEC
 
-mepc_setup:       
+mepc_setup:
                   la x26, init
                   csrw 0x341, x26
                   j init_machine_mode
 
-custom_csr_setup: 
+custom_csr_setup:
                   nop
 
-init:             
+init:
                   li x0, 0xf55bfdaf
                   li x1, 0x80000000
                   li x2, 0xd0e67836
@@ -61,12 +61,12 @@ init:
 main:
                   .include "segre_test.S"
                   j test_done
-test_done:        
+test_done:
                   li gp, 1
-write_tohost:     
+write_tohost:
                   sw gp, tohost, t5
 
-_exit:            
+_exit:
                   csrrw t0, 0xc00, t0
                   j write_tohost
 
@@ -76,7 +76,7 @@ init_machine_mode:
                   li x26, 0x0
                   csrw 0x304, x26 # MIE
                   mret
-instr_end:        
+instr_end:
                   nop
 
 .section .data
@@ -85,7 +85,27 @@ instr_end:
 .section .user_stack,"aw",@progbits;
 .align 2
 user_stack_start:
-.rept 4999
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0xfafafafa
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.word 0x5a5a5a5a
+.rept 4979
 .4byte 0x0
 .endr
 user_stack_end:
@@ -94,7 +114,7 @@ user_stack_end:
 kernel_instr_start:
 .text
 .align           2
-mtvec_handler:    
+mtvec_handler:
                   csrrw x12, 0x340, x12
                   add x12, x28, zero
                   1: addi x12, x12, -124
@@ -160,9 +180,9 @@ mmode_exception_handler:
                   li x31, 0x2 # ILLEGAL_INSTRUCTION
                   beq x26, x31, illegal_instr_handler
                   csrr x31, 0x343 # MTVAL
-                  1: jal x1, test_done 
+                  1: jal x1, test_done
 
-ecall_handler:    
+ecall_handler:
                   la x26, _start
                   sw x0, 0(x26)
                   sw x1, 4(x26)
@@ -605,7 +625,7 @@ store_fault_handler:
                   csrrw x12, 0x340, x12
                   mret
 
-ebreak_handler:   
+ebreak_handler:
                   csrr  x26, 0x341
                   addi  x26, x26, 4
                   csrw  0x341, x26
@@ -685,7 +705,7 @@ illegal_instr_handler:
                   csrrw x12, 0x340, x12
                   mret
 
-pt_fault_handler: 
+pt_fault_handler:
                   nop
 
 .align 2
