@@ -30,7 +30,7 @@ always_comb begin
         // PC in the pipeline is the PC of the next instruction so when calculating the @ to jmp
         // we get the next instruction to where we intended to jmp, that why we go back one instruction
         nxt_pc <= new_pc_i - 4;
-    end else if (fsm_state_i == IF_STATE) begin
+    end else if (fsm_state_i == WB_STATE) begin
         nxt_pc <= nxt_pc + 4;
     end else begin
         nxt_pc <= nxt_pc;
