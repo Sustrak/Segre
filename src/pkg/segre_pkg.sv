@@ -1,7 +1,5 @@
 package segre_pkg;
 
-localparam DATA_SECTION_ADDR = 32'hA000;
-
 /*****************
 *    OPCODES     *
 *****************/

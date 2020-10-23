@@ -61,3 +61,5 @@ segre_test:
     lb x27, 27(x30)
     lb x28, 28(x30)
     lb x29, 29(x30)
+    li x30, 0xffffffff
+    li x31, 0xffffffff

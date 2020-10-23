@@ -21,7 +21,8 @@ module memory (
 
 parameter NUM_WORDS = 1024 * 64; // 64Kb
 parameter TEXT_REGION = 0;
-parameter DATA_REGION = 1024*32;
+//parameter DATA_REGION = 1024*32;
+parameter DATA_REGION = 32'hA000;
 
 logic [7:0] mem [NUM_WORDS-1:0];
 
@@ -74,7 +75,7 @@ initial begin
     end
     `uvm_info("memory", $sformatf("Test written into memory, %0d instructions written", num_of_instructions), UVM_LOW)
 
-    addr = DATA_SECTION_ADDR;
+    addr = DATA_REGION;
     `uvm_info("memory", "Start writing data to memory", UVM_LOW)
     `wr_word_mem(mem, 32'hfafafafa, addr)
     `wr_word_mem(mem, 32'hfafafafa, addr+4)
@@ -96,6 +97,9 @@ initial begin
     `wr_word_mem(mem, 32'h5a5a5a5a, addr+68)
     `wr_word_mem(mem, 32'h5a5a5a5a, addr+72)
     `wr_word_mem(mem, 32'h5a5a5a5a, addr+76)
+    for (int i = addr+80; i < NUM_WORDS; i = i + 4) begin
+        `wr_word_mem(mem, 32'h00000000, i)
+    end
 end
 
 always @(posedge clk_i) begin
