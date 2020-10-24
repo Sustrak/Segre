@@ -5,7 +5,8 @@ TARGET = riscv64-unknown-elf
 AS = $(TARGET)-as
 GCC = $(TARGET)-gcc
 SPIKE = ../../riscv-isa-sim/build/spike --log-commits --isa rv32im
-CFLAGS = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Tlink.ld -Isrc/
+CFLAGS_SPIKE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Tlink.ld -Isrc/
+CFLAGS_SEGRE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Tsegre_link.ld -Isrc/
 ASFLAGS = -march=rv32i -mabi=ilp32
 OBJD = $(TARGET)-objdump
 
@@ -30,12 +31,12 @@ gen_results: build_dirs $(TEST_RES_SPIKE)
 
 build_segre/%.o: src/%.S
 	cp $^ segre_test.S
-	$(AS) $(ASFLAGS) src/segre_harness.S -o $@
+	$(GCC) $(CFLAGS_SEGRE) src/segre_harness.S -o $@
 	rm segre_test.S
 
 build_spike/%.o: src/%.S
 	cp $^ segre_test.S
-	$(GCC) $(CFLAGS) src/spike_harness.S -o $@
+	$(GCC) $(CFLAGS_SPIKE) src/spike_harness.S -o $@
 	rm segre_test.S
 
 hex_segre/%.hex: build_segre/%.o

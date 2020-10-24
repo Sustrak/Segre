@@ -21,7 +21,8 @@ module memory (
 
 parameter NUM_WORDS = 1024 * 64; // 64Kb
 parameter TEXT_REGION = 0;
-parameter DATA_REGION = 1024*32;
+//parameter DATA_REGION = 1024*32;
+parameter DATA_REGION = 32'hA000;
 
 logic [7:0] mem [NUM_WORDS-1:0];
 
@@ -31,6 +32,16 @@ int num_of_instructions = 0;
 
 int hex_file_fd;
 string test_name;
+
+`define rd_word_mem(mem, addr) \
+    `uvm_info("memory", $sformatf("Reading %0h from %0h", {mem[addr], mem[addr+1], mem[addr+2], mem[addr+3]}, addr), UVM_LOW);
+
+`define wr_word_mem(mem, word, addr) \
+    `uvm_info("memory", $sformatf("Writting at %0h the data %0h", addr, word), UVM_LOW); \
+    mem[addr] = word >> 24; \
+    mem[addr+1] = word >> 16; \
+    mem[addr+2] = word >> 8; \
+    mem[addr+3] = word; \
 
 initial begin
     int addr = 0;
@@ -49,8 +60,7 @@ initial begin
     if (!hex_file_fd)
         `uvm_fatal("top_tb", $sformatf("Couldn't find the hex file for %s", test_name))
 
-
-    `uvm_info("memory", "Start of writting test to memory", UVM_LOW)
+    `uvm_info("memory", "Start writing test to memory", UVM_LOW)
     while (!$feof(hex_file_fd)) begin
         if ($fgets(line, hex_file_fd)) begin
             assert (addr < DATA_REGION) else `uvm_fatal("memory", ".text was about to get written in .data section")
@@ -64,6 +74,32 @@ initial begin
         end
     end
     `uvm_info("memory", $sformatf("Test written into memory, %0d instructions written", num_of_instructions), UVM_LOW)
+
+    addr = DATA_REGION;
+    `uvm_info("memory", "Start writing data to memory", UVM_LOW)
+    `wr_word_mem(mem, 32'hfafafafa, addr)
+    `wr_word_mem(mem, 32'hfafafafa, addr+4)
+    `wr_word_mem(mem, 32'hfafafafa, addr+8)
+    `wr_word_mem(mem, 32'hfafafafa, addr+12)
+    `wr_word_mem(mem, 32'hfafafafa, addr+16)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+20)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+24)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+28)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+32)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+36)
+    `wr_word_mem(mem, 32'hfafafafa, addr+40)
+    `wr_word_mem(mem, 32'hfafafafa, addr+44)
+    `wr_word_mem(mem, 32'hfafafafa, addr+48)
+    `wr_word_mem(mem, 32'hfafafafa, addr+52)
+    `wr_word_mem(mem, 32'hfafafafa, addr+56)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+60)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+64)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+68)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+72)
+    `wr_word_mem(mem, 32'h5a5a5a5a, addr+76)
+    for (int i = addr+80; i < NUM_WORDS; i = i + 4) begin
+        `wr_word_mem(mem, 32'h00000000, i)
+    end
 end
 
 always @(posedge clk_i) begin

@@ -1,3 +1,8 @@
+lb.S
+lbu.S
+lh.S
+lhu.S
+lw.S
 lui.S
 jal.S
 jalr.S

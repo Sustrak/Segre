@@ -63,7 +63,7 @@ typedef enum logic {
     BR_B_REG
 } br_src_b_e;
 
-typedef enum logic[2:0] { 
+typedef enum logic[2:0] {
     IMM_B_I,
     IMM_B_U,
     IMM_B_J,
