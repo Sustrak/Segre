@@ -109,17 +109,19 @@ always @(posedge clk_i) begin
     if (wr_i) begin
         case(data_type_i)
             BYTE: begin
-                mem[addr_i] = data_i[1:0];
+                mem[addr_i] = data_i[7:0];
             end
+
             HALF: begin
-                mem[addr_i] = data_i[1:0];
-                mem[addr_i+1] = data_i[3:2];
+                mem[addr_i] = data_i[7:0];
+                mem[addr_i+1] = data_i[15:8];
             end
+
             WORD: begin
-                mem[addr_i] = data_i[1:0];
-                mem[addr_i+1] = data_i[3:2];
-                mem[addr_i+2] = data_i[5:4];
-                mem[addr_i+3] = data_i[7:6];
+                mem[addr_i] = data_i[7:0];
+                mem[addr_i+1] = data_i[15:8];
+                mem[addr_i+2] = data_i[23:16];
+                mem[addr_i+3] = data_i[31:24];
             end
             default: ;
         endcase
@@ -130,10 +132,13 @@ end
 always @(posedge clk_i) data_o <= rd_data;
 
 task memory_verbose;
-    if (rd_i)
+    if (rd_i) begin
         `uvm_info("memory", $sformatf("Reading data: %h from %h", rd_data, addr_i), UVM_MEDIUM)
-    if (wr_i)
-        `uvm_info("memory", $sformatf("Writing %s: %h at %h", data_type_i, data_i, addr_i), UVM_MEDIUM)
+    end
+
+    if (wr_i) begin
+        `uvm_info("memory", $sformatf("Writing %s: %h at %h", data_type_i.name(), data_i, addr_i), UVM_MEDIUM)
+    end
 endtask
 
 endmodule

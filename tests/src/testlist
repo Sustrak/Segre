@@ -1,3 +1,6 @@
+sw.S
+sh.S
+sb.S
 lb.S
 lbu.S
 lh.S

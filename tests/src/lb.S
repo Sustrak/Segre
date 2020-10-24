@@ -17,6 +17,7 @@ segre_test:
     li x13, 0xffffffff
     li x14, 0xffffffff
     li x15, 0xffffffff
+    li x16, 0xffffffff
     li x17, 0xffffffff
     li x18, 0xffffffff
     li x19, 0xffffffff
