@@ -112,7 +112,7 @@ always_comb begin : alu_imm_b_mux
         IMM_B_I: imm_b = imm_i_type;
         IMM_B_S: imm_b = imm_s_type;
         IMM_B_J: imm_b = imm_j_type;
-        IMM_B_B: imm_b = imm_b_type; 
+        IMM_B_B: imm_b = imm_b_type;
         default: ;
     endcase
 end
@@ -137,7 +137,7 @@ end
 always_comb begin : br_src_a_mux
     unique case (br_a_mux_sel)
         BR_A_REG: br_src_a = rf_data_a_i;
-        BR_A_PC : br_src_a = pc_i;
+        BR_A_PC : br_src_a = pc_i + 4; // Next PC
         default : ;
     endcase
 end
