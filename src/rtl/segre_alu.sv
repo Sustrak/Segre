@@ -16,7 +16,7 @@ logic [WORD_SIZE-1:0] alu_res;
 
 always_comb begin
     unique case (alu_opcode_i)
-        ALU_ADD, ALU_JAL, ALU_BEQ,
+        ALU_ADD, ALU_JAL, ALU_JALR, ALU_BEQ,
         ALU_BNE, ALU_BLT, ALU_BGE,
         ALU_BLTU, ALU_BGEU: alu_res = $signed(alu_src_a_i) + $signed(alu_src_b_i);
         ALU_SUB : alu_res = $signed(alu_src_a_i) - $signed(alu_src_b_i);

@@ -63,7 +63,7 @@ segre_tkbr trbr (
 );
 
 always_ff @(posedge clk_i) begin
-    alu_res_o        = (alu_opcode_i == ALU_JAL) ? br_src_a_i : alu_res;
+    alu_res_o        = (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
     rf_we_o          = rf_we_i;
     rf_waddr_o       = rf_waddr_i;
     rf_st_data_o     = rf_st_data_i;
