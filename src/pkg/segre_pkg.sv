@@ -18,7 +18,6 @@ typedef enum logic [6:0] {
 } opcode_e;
 
 typedef enum logic [5:0] {
-    // Arithmetic
     ALU_ADD,
     ALU_SUB,
     ALU_SLL,
@@ -37,7 +36,15 @@ typedef enum logic [5:0] {
     ALU_BGE,
     ALU_BLTU,
     ALU_BGEU,
-    ALU_AUIPC
+    ALU_AUIPC,
+    ALU_MUL,
+    ALU_MULH,
+    ALU_MULHU,
+    ALU_MULHSU,
+    ALU_DIV,
+    ALU_DIVU,
+    ALU_REM,
+    ALU_REMU
 } alu_opcode_e;
 
 /*****************
