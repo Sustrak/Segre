@@ -35,3 +35,11 @@ srl.S
 sra.S
 or.S
 and.S
+mul.S
+mulh.S
+mulhu.S
+mulhsu.S
+div.S
+divu.S
+rem.S
+remu.S
