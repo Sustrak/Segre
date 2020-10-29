@@ -5,8 +5,8 @@ TARGET = riscv64-unknown-elf
 AS = $(TARGET)-as
 GCC = $(TARGET)-gcc
 SPIKE = ../../riscv-isa-sim/build/spike --log-commits --isa rv32im
-CFLAGS_SPIKE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Tlink.ld -Isrc/
-CFLAGS_SEGRE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Tsegre_link.ld -Isrc/
+CFLAGS_SPIKE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32im -mabi=ilp32 -Tlink.ld -Isrc/
+CFLAGS_SEGRE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32im -mabi=ilp32 -Tsegre_link.ld -Isrc/
 ASFLAGS = -march=rv32i -mabi=ilp32
 OBJD = $(TARGET)-objdump
 

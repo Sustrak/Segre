@@ -174,16 +174,24 @@ always_comb begin
             src_a_mux_sel_o = ALU_A_REG;
             src_b_mux_sel_o = ALU_B_REG;
             unique case ({instr_i[`FUNC_7], instr_i[`FUNC_3]})
-                {7'b000_0000, 3'b000}: alu_opcode_o = ALU_ADD;  // ADD
-                {7'b010_0000, 3'b000}: alu_opcode_o = ALU_SUB;  // SUB
-                {7'b000_0000, 3'b001}: alu_opcode_o = ALU_SLL;  // SLL
-                {7'b000_0000, 3'b010}: alu_opcode_o = ALU_SLT;  // SLT
-                {7'b000_0000, 3'b011}: alu_opcode_o = ALU_SLTU; // SLTU
-                {7'b000_0000, 3'b100}: alu_opcode_o = ALU_XOR;  // XOR
-                {7'b000_0000, 3'b101}: alu_opcode_o = ALU_SRL;  // SRL
-                {7'b010_0000, 3'b101}: alu_opcode_o = ALU_SRA;  // SRA
-                {7'b000_0000, 3'b110}: alu_opcode_o = ALU_OR;   // OR
-                {7'b000_0000, 3'b111}: alu_opcode_o = ALU_AND;  // AND
+                {7'b000_0000, 3'b000}: alu_opcode_o = ALU_ADD;    // ADD
+                {7'b010_0000, 3'b000}: alu_opcode_o = ALU_SUB;    // SUB
+                {7'b000_0000, 3'b001}: alu_opcode_o = ALU_SLL;    // SLL
+                {7'b000_0000, 3'b010}: alu_opcode_o = ALU_SLT;    // SLT
+                {7'b000_0000, 3'b011}: alu_opcode_o = ALU_SLTU;   // SLTU
+                {7'b000_0000, 3'b100}: alu_opcode_o = ALU_XOR;    // XOR
+                {7'b000_0000, 3'b101}: alu_opcode_o = ALU_SRL;    // SRL
+                {7'b010_0000, 3'b101}: alu_opcode_o = ALU_SRA;    // SRA
+                {7'b000_0000, 3'b110}: alu_opcode_o = ALU_OR;     // OR
+                {7'b000_0000, 3'b111}: alu_opcode_o = ALU_AND;    // AND
+                {7'b000_0001, 3'b000}: alu_opcode_o = ALU_MUL;    // MUL
+                {7'b000_0001, 3'b001}: alu_opcode_o = ALU_MULH;   // MUL
+                {7'b000_0001, 3'b010}: alu_opcode_o = ALU_MULHSU; // MULHSU
+                {7'b000_0001, 3'b011}: alu_opcode_o = ALU_MULHU;  // MULHU
+                {7'b000_0001, 3'b100}: alu_opcode_o = ALU_DIV;    // DIV
+                {7'b000_0001, 3'b101}: alu_opcode_o = ALU_DIVU;   // DIVU
+                {7'b000_0001, 3'b110}: alu_opcode_o = ALU_REM;    // REM
+                {7'b000_0001, 3'b111}: alu_opcode_o = ALU_REMU;   // REMU
                 default: ;
             endcase
         end
