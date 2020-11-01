@@ -1,8 +1,9 @@
 # USAGE #
-# compile.tcl <testname>
+# compile.tcl <testname> <use_modelsim>
 
 # ARGS #
 set test_name $1
+set use_modelsim $2
 set GITHUB_CI [pwd]
 set rtl_dir src/rtl
 set tb_dir src/tb
@@ -34,9 +35,8 @@ vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv
 set GITHUB_CI [string range $GITHUB_CI 4 10]
-puts $GITHUB_CI
-puts [string equal $GITHUB_CI "/Segre/"]
-if {[string equal $GITHUB_CI "/Segre/"]} {
+#if {[string equal $GITHUB_CI "/Segre/"]} {
+if { $use_modelsim } {
     vlog -sv -work $work_dir +define+GITHUB_CI=1 $tb_dir/memory.sv
     vlog -sv -work $work_dir +define+GITHUB_CI=1 $tb_dir/top_tb.sv
 } else {
