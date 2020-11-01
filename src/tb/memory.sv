@@ -1,4 +1,4 @@
-`ifdef GITHUB_CI
+`ifdef USE_MODELSIM
     `define uvm_info(_a, _b, _c) $info("%0s: %0s", _a, _b);
     `define uvm_fatal(_a, _b) $fatal("%0s: %0s", _a, _b);
 `else

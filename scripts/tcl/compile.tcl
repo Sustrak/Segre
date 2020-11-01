@@ -34,11 +34,9 @@ vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv
-set GITHUB_CI [string range $GITHUB_CI 4 10]
-#if {[string equal $GITHUB_CI "/Segre/"]} {
 if { $use_modelsim } {
-    vlog -sv -work $work_dir +define+GITHUB_CI=1 $tb_dir/memory.sv
-    vlog -sv -work $work_dir +define+GITHUB_CI=1 $tb_dir/top_tb.sv
+    vlog -sv -work $work_dir +define+USE_MODELSIM=1 $tb_dir/memory.sv
+    vlog -sv -work $work_dir +define+USE_MODELSIM=1 $tb_dir/top_tb.sv
 } else {
     vlog -sv -work $work_dir $tb_dir/memory.sv
     vlog -sv -work $work_dir $tb_dir/top_tb.sv
