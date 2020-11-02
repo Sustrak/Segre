@@ -4,6 +4,7 @@ A RISC-V 32 bit processor
 
 #### Dependences
  - [Spike](https://github.com/riscv/riscv-isa-sim) Isa simulator to get the golden results for tests. Has to be located at same level as segre's folder.
+   - Compile spike with `--enable-commitlog` and `--with-isa=rv32im`
  - Modelsim/Questasim
 
 #### Tests
