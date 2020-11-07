@@ -1,26 +1,27 @@
-import EPI_pkg::*;
+import segre_pkg::*;
 
 module segre_store_buffer
-    #(parameter NUM_ELEMS = 2,
+    #(parameter NUM_ELEMS = 2
     )(input logic clk_i,
       input logic rsn_i,
-      input logic req_store,
-      input logic req_load,
-      input logic alu_op, //our chance to flush elements!
-      input logic data_from_mm,
+      input logic req_store_i,
+      input logic req_load_i,
+      input logic flush_chance_i, //our chance to flush elements!
       input logic [ADDR_SIZE-1:0] addr_i,
       input logic [WORD_SIZE-1:0] data_i,
+      input memop_data_type_e memop_data_type_i,
       output logic hit_o,
       output logic miss_o,
       output logic full_o,
+      output logic data_valid_o,
       output logic [WORD_SIZE-1:0] data_o,
       output logic [ADDR_SIZE-1:0] addr_o
     );
 
 //Logic variables to store the data
 logic [NUM_ELEMS-1:0] buf_position_valid;
-logic [ADDR_SIZE-1:0][NUM_LANES-1:0] buf_address;
-logic [WORD_SIZE-1:0][NUM_LANES-1:0] buf_data;
+logic [ADDR_SIZE-1:0][NUM_ELEMS-1:0] buf_address;
+logic [WORD_SIZE-1:0][NUM_ELEMS-1:0] buf_data;
 
 //Pointers of the circular buffer
 logic [NUM_ELEMS-1:0] head; //where to write NEXT element
@@ -31,23 +32,25 @@ logic [WORD_SIZE-1:0] data_load;
 logic [WORD_SIZE-1:0] data_flush;
 logic [ADDR_SIZE-1:0] address;
 logic full;
-logic hit_vector[NUM_ELEMS-1:0];
+logic [NUM_ELEMS-1:0]hit_vector;
 logic hit;
+logic data_valid;
 
 //TODO change this in the case we scale the size
 always_comb begin : buffer_full
-    full = &position_valid && req_store; //If every position is full and the processor wants to perform a store, we must stall the pipeline
+    full = &buf_position_valid && req_store_i; //If every position is full and the processor wants to perform a store, we must stall the pipeline
 end
 
 always_comb begin : buffer_hit
-    for(int i=0; i<NUM_ELEMS; i++){
+    for(int i=0; i<NUM_ELEMS; i++) begin
         //We save the exact hit because it will be useful
-        hit_vector[i] = (buf_position_valid[i] && (buf_address[i] == addr_i));
-    }
+        hit_vector[i] <= (buf_position_valid[i] & (buf_address[i] == addr_i));
+    end
     hit = |hit_vector;
 end
 
 always_comb begin : buffer_load //The proc issued a load and maybe we are holding that value
+    //for + if
     unique case(hit_vector)
         01 : data_load = buf_data[0];
         10 : data_load = buf_data[1];
@@ -61,21 +64,22 @@ end
 
 always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and restart the pointers
     if (!rsn_i) begin
-        for(int i=0; i<NUM_ELEMS; i++){
+        for(int i=0; i<NUM_ELEMS; i++) begin
             buf_position_valid[i] <= 0;
-            head[i] = 0;
-            tail[i] = 0;
-        }
+            head[i] <= 0;
+            tail[i] <= 0;
+        end
     end 
 end
 
 always_ff @(posedge clk_i) begin : buffer_flush //the cache it's not busy, so we can send an element to the cache
-    if (alu_op) begin
+    if (memop_data_type_i) begin
         if((tail != head || full) && buf_position_valid[tail]) begin
             data_flush <= buf_data[tail];
             address <= buf_address[tail];
             buf_position_valid[tail] <= 0;
-            tail++;
+            data_valid <= 1;
+            tail = tail+1;
         end
         //if tail != head or full (when empty, they are equal)
         //select the position pointed by tail and output it
@@ -84,7 +88,7 @@ always_ff @(posedge clk_i) begin : buffer_flush //the cache it's not busy, so we
 end
 
 always_ff @(posedge clk_i) begin : buffer_store
-    if (req_store) begin
+    if (req_store_i) begin
         if (hit) begin
             for (int j = 0; j < NUM_ELEMS; j++) begin
                 if (hit_vector[j]) //Just one of these bits should be set
@@ -96,7 +100,8 @@ always_ff @(posedge clk_i) begin : buffer_store
                 buf_address[head] <= addr_i;
                 buf_data[head] <= data_i;
                 buf_position_valid[head] <= 1;
-                head++;
+                head = head+1;
+            end
         end
         //Compare all tags
         //if hit, write in the hit position
@@ -109,8 +114,8 @@ end
 assign full_o = full;
 assign hit_o = hit;
 assign miss_o = !hit;
-assign data_o = (req_load) ? data_load : data_flush;
+assign data_o = (req_load_i) ? data_load : data_flush;
 assign addr_o = address;
+assign data_valid_o = data_valid;
 
-endmodule : segre_store_buffer
-      
+endmodule
