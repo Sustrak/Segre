@@ -1,14 +1,14 @@
-import EPI_pkg::*;
+import segre_pkg::*;
 
-module segre_cache_tag
+module segre_dcache_tag
     #(parameter NUM_LANES = 4,
       parameter BYTES_PER_LANE = 16
     )(input logic clk_i,
       input logic rsn_i,
       input logic req_i,
-      input logic data_from_mm_i,
+      input logic mmu_data_i,
       input logic [WORD_SIZE-1:0] addr_i,
-      input logic [ADDR_INDEX_SIZE-1:0] lru_index_i;
+      input logic [DCACHE_INDEX_SIZE-1:0] lru_index_i;
       output logic hit_o,
       output logic miss_o,
     );
@@ -42,7 +42,7 @@ always_ff @(posedge clk_i) begin : tag_reset
 end
 
 always_ff @(posedge clk_i) begin : update_tag
-    if (data_from_mm) begin
+    if (mmu_data_i) begin
         cache_tags[lru_index_i].valid <= 1;
         cache_tags[lru_index_i].tag <= addr_tag;
     end
@@ -55,4 +55,4 @@ end
 assign hit_o = tag_hit & req_i;
 assign miss_o = ~tag_hit & req_i;
 
-endmodule : segre_cache_tag
+endmodule : segre_dcache_tag

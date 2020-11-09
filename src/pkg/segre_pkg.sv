@@ -96,6 +96,14 @@ typedef enum logic [1:0] {
     WORD
 } memop_data_type_e;
 
+typedef enum logic [2:0] {
+    DCACHE_REQ,
+    DCACHE_WAIT,
+    ICACHE_REQ,
+    ICACHE_WAIT,
+    IDLE
+} mmu_fsm_state_e;
+
 /********************
 * RISC-V PARAMETERS *
 ********************/
@@ -103,5 +111,24 @@ typedef enum logic [1:0] {
 parameter WORD_SIZE = 32;
 parameter ADDR_SIZE = 32;
 parameter REG_SIZE  = 5;
+
+/********************
+* SEGRE  PARAMETERS *
+********************/
+/** DATA CACHE **/
+parameter DCACHE_NUM_LANES = 4;
+parameter DCACHE_BYTES_PER_LANE = 16;
+parameter DCACHE_LANE_SIZE = DCACHE_BYTES_PER_LANE * 8;
+parameter DCACHE_BYTE_SIZE = $clog2(DCACHE_BYTES_PER_LANE);
+parameter DCACHE_INDEX_SIZE = $clog2(DCACHE_NUM_LANES);
+parameter DCACHE_TAG_SIZE = ADDR_SIZE - DCACHE_BYTE_SIZE - DCACHE_INDEX_SIZE;
+
+/** INSTRUCTIONS CACHE **/
+parameter ICACHE_NUM_LANES = 4;
+parameter ICACHE_BYTES_PER_LANE = 16;
+parameter ICACHE_LANE_SIZE = ICACHE_BYTES_PER_LANE * 8;
+parameter ICACHE_BYTE_SIZE = $clog2(ICACHE_BYTES_PER_LANE);
+parameter ICACHE_INDEX_SIZE = $clog2(ICACHE_NUM_LANES);
+parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE - ICACHE_INDEX_SIZE;
 
 endpackage : segre_pkg
