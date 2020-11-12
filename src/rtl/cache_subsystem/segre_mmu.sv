@@ -106,15 +106,15 @@ mor1kx_cache_lru #(.NUMWAYS(ICACHE_NUM_LANES)) ic_lru_mor1kx (
 always_ff @(posedge clk_i) begin : reset
     if (!rsn_i) begin
         fsm_state <= IDLE;
-        dc_lru_access  = 0;
-        dc_lru_current = 0;
-        ic_lru_access  = 0;
-        ic_lru_current = 0;
     end
 end
 
 always_comb begin : dc_lru
-    if (dc_access_i && !dc_miss_i) begin
+    if (!rsn_i) begin
+        dc_lru_access  = 0;
+        dc_lru_current = 0;
+    end
+    else if (dc_access_i && !dc_miss_i) begin
         dc_lru_access = dc_addr_index;
     end
     else begin
@@ -125,7 +125,11 @@ always_comb begin : dc_lru
 end
 
 always_comb begin : ic_lru
-    if (ic_access_i && !ic_miss_i) begin
+    if (!rsn_i) begin
+        ic_lru_access  = 0;
+        ic_lru_current = 0;
+    end
+    else if (ic_access_i && !ic_miss_i) begin
         ic_lru_access = ic_addr_index;
     end
     else begin
@@ -138,7 +142,7 @@ end
 always_ff @(posedge clk_i) begin : dc_miss_block
     if (dc_miss_i) begin
         dc_miss <= dc_miss_i;
-        dc_mm_addr <= (dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE-1], DCACHE_BYTE_SIZE-1{1'b0});
+        dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE-1], {DCACHE_BYTE_SIZE{1'b0}}};
         dc_miss_addr <= dc_addr_i;
     end
     if (dc_miss && fsm_state == DCACHE_WAIT && mm_data_rdy_i) begin
@@ -149,7 +153,7 @@ end
 always_ff @(posedge clk_i) begin : ic_miss_block
     if (ic_miss_i) begin
         ic_miss <= ic_miss_i;
-        ic_mm_addr <= (ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE-1], ICACHE_BYTE_SIZE-1{1'b0});
+        ic_mm_addr <= {ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE-1], {ICACHE_BYTE_SIZE{1'b0}}};
         ic_miss_addr <= ic_addr_i;
     end
     if (ic_miss && fsm_state == ICACHE_WAIT && mm_data_rdy_i) begin
@@ -205,7 +209,7 @@ always_comb begin : mmu_fsm
 end
 
 always_comb begin : main_memory_req
-    unique case (mmu_serving_req)
+    unique case (fsm_state)
         DCACHE_REQ: begin
             mm_rd_req = 1;
             mm_addr = dc_mm_addr;
@@ -233,12 +237,12 @@ always_ff @(posedge clk_i) begin
     mm_addr_o   <= mm_addr;
     // Data cache
     dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
-    dc_data_o <= dc_mmu_data;
+    dc_data_o <= dc_mm_data;
     dc_addr_o <= dc_mmu_addr;
     dc_lru_index_o <= dc_lru_index;
     // Instruction cache
     ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
-    ic_data_o <= ic_mmu_data;
+    ic_data_o <= ic_mm_data;
     ic_addr_o <= ic_mmu_addr;
     ic_lru_index_o <= ic_lru_index;
 end

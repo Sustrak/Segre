@@ -1,24 +1,22 @@
 import segre_pkg::*;
 
 module segre_dcache_tag
-    #(parameter NUM_LANES = 4,
-      parameter BYTES_PER_LANE = 16
-    )(input logic clk_i,
+    (input logic clk_i,
       input logic rsn_i,
       input logic req_i,
       input logic mmu_data_i,
       input logic [WORD_SIZE-1:0] addr_i,
-      input logic [DCACHE_INDEX_SIZE-1:0] lru_index_i;
+      input logic [DCACHE_INDEX_SIZE-1:0] lru_index_i,
       input logic invalidate_i,
       output logic hit_o,
-      output logic miss_o,
+      output logic miss_o
     );
 
-localparam ELEMS_PER_LANE = BYTES_PER_LANE/(WORD_SIZE/8);
-localparam ADDR_BYTE_SIZE = $clog2(BYTES_PER_LANE);
-localparam ADDR_INDEX_SIZE = $clog2(NUM_LANES);
-localparam LANE_SIZE = WORD_SIZE * ELEMS_PER_LANE;
-localparam TAG_SIZE  = WORD_SIZE - ADDR_BYTE_SIZE - ADDR_INDEX_SIZE;
+localparam ADDR_BYTE_SIZE  = ICACHE_BYTE_SIZE;
+localparam ADDR_INDEX_SIZE = ICACHE_INDEX_SIZE;
+localparam LANE_SIZE       = ICACHE_LANE_SIZE;
+localparam TAG_SIZE        = ICACHE_TAG_SIZE;
+localparam NUM_LANES       = ICACHE_NUM_LANES;
 
 typedef struct packed {
     logic valid;

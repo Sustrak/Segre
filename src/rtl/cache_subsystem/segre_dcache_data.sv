@@ -1,33 +1,32 @@
 import segre_pkg::*;
 
-module segre_dcache_data
-    #(parameter NUM_LANES = 4,
-      parameter BYTES_PER_LANE = 16
-    )(input logic clk_i,
-      input logic rsn_i,
-      input logic rd_data_i,
-      input logic wr_data_i,
-      input logic mem_wr_data_i,
-      input logic [WORD_SIZE-1:0] addr_i,
-      input memop_data_type_e memop_data_type,
-      input logic [WORD_SIZE-1:0] data_i,
-      input logic [LANE_SIZE-1:0] mem_data_i,
-      output logic [WORD_SIZE-1:0] data_o
-    );
+module segre_dcache_data (
+    input logic clk_i,
+    input logic rsn_i,
+    input logic rd_data_i,
+    input logic wr_data_i,
+    input logic mem_wr_data_i,
+    input logic [WORD_SIZE-1:0] addr_i,
+    input memop_data_type_e memop_data_type_i,
+    input logic [WORD_SIZE-1:0] data_i,
+    input logic [DCACHE_LANE_SIZE-1:0] mem_data_i,
+    output logic [WORD_SIZE-1:0] data_o
+);
 
-localparam ELEMS_PER_LANE = BYTES_PER_LANE/(WORD_SIZE/8);
-localparam ADDR_BYTE_SIZE = $clog2(BYTES_PER_LANE);
-localparam ADDR_INDEX_SIZE = $clog2(NUM_LANES);
-localparam LANE_SIZE = WORD_SIZE * ELEMS_PER_LANE;
-localparam TAG_SIZE  = WORD_SIZE - ADDR_BYTE_SIZE - ADDR_INDEX_SIZE;
+localparam ADDR_BYTE_SIZE = DCACHE_BYTE_SIZE;
+localparam ADDR_INDEX_SIZE = DCACHE_INDEX_SIZE;
+localparam LANE_SIZE = DCACHE_LANE_SIZE;
+localparam TAG_SIZE  = DCACHE_TAG_SIZE;
+localparam NUM_LANES = DCACHE_NUM_LANES;
 
-logic [LANE_SIZE/8-1:0][NUM_LANES-1:0] cache_data;
+logic [NUM_LANES-1:0][LANE_SIZE/8-1:0][7:0] cache_data;
 
 logic [ADDR_BYTE_SIZE-1:0] addr_byte;
 logic [ADDR_INDEX_SIZE-1:0] addr_index;
 logic [WORD_SIZE-1:0] data;
 
 assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
+// TODO: Revise the ~1'h3.
 assign addr_byte  = addr_i[ADDR_BYTE_SIZE-1:0] & ~1'h3; // Access directly to the word
 
 always_ff @(posedge clk_i) begin : cache_reset
@@ -50,7 +49,7 @@ end
 
 always_ff @(posedge clk_i) begin : cache_write
     if (wr_data_i) begin
-        unique case (memop_data_type)
+        unique case (memop_data_type_i)
             BYTE: cache_data[addr_index][addr_byte]   <= data_i[7:0];
             HALF: begin
                     cache_data[addr_index][addr_byte+1] <= data_i[15:8];
@@ -63,6 +62,7 @@ always_ff @(posedge clk_i) begin : cache_write
                     cache_data[addr_index][addr_byte]   <= data_i[7:0];
             end
             default: ;
+        endcase
     end
     else if (mem_wr_data_i) begin
         cache_data[addr_index] <= mem_data_i;
@@ -73,4 +73,4 @@ always_ff @(posedge clk_i) begin
     data_o = data;
 end
 
-endmodule : segre_cache
+endmodule : segre_dcache_data

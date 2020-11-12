@@ -1,4 +1,4 @@
-import EPI_pkg::*;
+import segre_pkg::*;
 
 module segre_tlb (
     input clk_i,
