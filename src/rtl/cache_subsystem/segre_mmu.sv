@@ -1,8 +1,8 @@
 import segre_pkg::*;
 
 module segre_mmu (
-    input logic clk,
-    input logic rsn,
+    input logic clk_i,
+    input logic rsn_i,
     // Data chache
     input logic dc_miss_i,
     input logic [ADDR_SIZE-1:0] dc_addr_i,
@@ -26,7 +26,7 @@ module segre_mmu (
     output logic mm_rd_req_o,
     output logic mm_wr_req_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
-    output logic [DCACHE_LANE_SIZE-1:0] mm_data_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mm_data_o
 );
 
 localparam DC_LRU_WITH = DCACHE_NUM_LANES*(DCACHE_NUM_LANES-1) >> 1;
@@ -36,10 +36,10 @@ localparam IC_LRU_WITH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
 logic dc_miss;
 logic [ADDR_SIZE-1:0] dc_mm_addr;
 logic [ADDR_SIZE-1:0] dc_miss_addr;
-logic dc_mmu_data_rdy,
-logic [DCACHE_LANE_SIZE-1:0] dc_mm_data,
-logic [ADDR_SIZE-1:0] dc_mmu_addr,
-logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index,
+logic dc_mmu_data_rdy;
+logic [DCACHE_LANE_SIZE-1:0] dc_mm_data;
+logic [ADDR_SIZE-1:0] dc_mmu_addr;
+logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
 
 // Data cache LRU
 logic [DC_LRU_WITH-1:0] dc_lru_current, dc_lru_updated;
@@ -49,10 +49,10 @@ logic [DCACHE_NUM_LANES-1:0] dc_lru_access, dc_lru_pre, dc_lru_post;
 logic ic_miss;
 logic [ADDR_SIZE-1:0] ic_mm_addr;
 logic [ADDR_SIZE-1:0] ic_miss_addr;
-logic ic_mmu_data_rdy,
-logic [ICACHE_LANE_SIZE-1:0] ic_mm_data,
-logic [ADDR_SIZE-1:0] ic_mmu_addr,
-logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index,
+logic ic_mmu_data_rdy;
+logic [ICACHE_LANE_SIZE-1:0] ic_mm_data;
+logic [ADDR_SIZE-1:0] ic_mmu_addr;
+logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index;
 
 // Data cache LRU
 logic [IC_LRU_WITH-1:0] ic_lru_current, ic_lru_updated;
@@ -80,7 +80,7 @@ function logic[DCACHE_INDEX_SIZE-1:0] one_hot_to_binary(logic [DCACHE_NUM_LANES-
     return ret;
 endfunction
 
-mor1kx_cache_lru #(.NUMWAYS(DCACHE_NUM_LANES)) dc_lru (
+mor1kx_cache_lru #(.NUMWAYS(DCACHE_NUM_LANES)) dc_lru_mor1kx (
     .current  (dc_lru_current),
     .update   (dc_lru_updated),
     .access   (dc_lru_access),
@@ -88,7 +88,7 @@ mor1kx_cache_lru #(.NUMWAYS(DCACHE_NUM_LANES)) dc_lru (
     .lru_post (dc_lru_post)
 );
 
-mor1kx_cache_lru #(.NUMWAYS(ICACHE_NUM_LANES)) ic_lru (
+mor1kx_cache_lru #(.NUMWAYS(ICACHE_NUM_LANES)) ic_lru_mor1kx (
     .current  (ic_lru_current),
     .update   (ic_lru_updated),
     .access   (ic_lru_access),
@@ -110,7 +110,7 @@ always_comb begin : dc_lru
     if (fsm_state == DCACHE_REQ) begin
         dc_lru_access = dc_miss_addr[DCACHE_INDEX_SIZE+DCACHE_BYTE_SIZE-1:DCACHE_BYTE_SIZE];
     end
-    else if (fsm == DCACHE_WAIT) begin
+    else if (fsm_state == DCACHE_WAIT) begin
         dc_lru_access  = 0;
         dc_lru_current = dc_lru_updated;
         dc_lru_index   = one_hot_to_binary(dc_lru_post);
@@ -121,25 +121,25 @@ always_comb begin : ic_lru
     if (fsm_state == ICACHE_REQ) begin
         ic_lru_access = ic_miss_addr[ICACHE_INDEX_SIZE+ICACHE_BYTE_SIZE-1:ICACHE_BYTE_SIZE];
     end
-    else if (fsm == ICACHE_WAIT) begin
+    else if (fsm_state == ICACHE_WAIT) begin
         ic_lru_access  = 0;
         ic_lru_current = ic_lru_updated;
         ic_lru_index   = one_hot_to_binary(ic_lru_post);
     end
 end
 
-always_ff @(posedge clk_i) begin : dc_miss
+always_ff @(posedge clk_i) begin : dc_miss_block
     if (dc_miss_i) begin
         dc_miss <= dc_miss_i;
-        dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE-1], DCACHE_BYTE_SIZE-1{1'b0}};
+        dc_mm_addr <= (dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE-1], DCACHE_BYTE_SIZE-1{1'b0});
         dc_miss_addr <= dc_addr_i;
     end
 end
 
-always_ff @(posedge clk_i) begin : ic_miss
+always_ff @(posedge clk_i) begin : ic_miss_block
     if (ic_miss_i) begin
         ic_miss <= ic_miss_i;
-        ic_mm_addr <= {ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE-1], ICACHE_BYTE_SIZE-1{1'b0}};
+        ic_mm_addr <= (ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE-1], ICACHE_BYTE_SIZE-1{1'b0});
         ic_miss_addr <= ic_addr_i;
     end
 end

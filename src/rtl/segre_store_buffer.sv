@@ -1,7 +1,8 @@
 import segre_pkg::*;
 
 module segre_store_buffer
-    #(parameter NUM_ELEMS = 2
+    #(parameter NUM_ELEMS = 2,
+      parameter INDEX_SIZE = $clog2(NUM_ELEMS)
     )(input logic clk_i,
       input logic rsn_i,
       input logic req_store_i,
@@ -36,6 +37,18 @@ logic [NUM_ELEMS-1:0]hit_vector;
 logic hit;
 logic data_valid;
 
+// Help Functions
+function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
+    logic [INDEX_SIZE-1:0] ret;
+    foreach(one_hot[index]) begin
+        if (one_hot[index] == 1'b1) begin
+            ret |= index;
+        end
+    end
+    return ret;
+endfunction
+
+
 //TODO change this in the case we scale the size
 always_comb begin : buffer_full
     full = &buf_position_valid && req_store_i; //If every position is full and the processor wants to perform a store, we must stall the pipeline
@@ -51,7 +64,8 @@ end
 
 always_comb begin : buffer_load //The proc issued a load and maybe we are holding that value
     //for + if
-    unique case(hit_vector)
+    data_load <= buf_data[one_hot_to_binary(hit_vector)];
+    /*unique case(hit_vector)
         01 : data_load = buf_data[0];
         10 : data_load = buf_data[1];
         default : ;
@@ -59,7 +73,7 @@ always_comb begin : buffer_load //The proc issued a load and maybe we are holdin
         //if hit, say it and output the desired value
         //else say it's a miss
         //IMPORTANT: do not erase the data, it's not written to cache!!!
-    endcase
+    endcase*/
 end
 
 always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and restart the pointers
@@ -72,13 +86,21 @@ always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and r
     end 
 end
 
+//FIXME: Do this actually work?
+//The idea is that the values are hold correctly during the whole cycle and at the end the always_ff invalidates the position
+always_comb begin : buffer_flush_comb
+    data_flush <= buf_data[tail];
+    address <= buf_address[tail];
+    data_valid <= (memop_data_type_i && (tail != head || full) && buf_position_valid[tail]);
+end
+
 always_ff @(posedge clk_i) begin : buffer_flush //the cache it's not busy, so we can send an element to the cache
     if (memop_data_type_i) begin
         if((tail != head || full) && buf_position_valid[tail]) begin
-            data_flush <= buf_data[tail];
-            address <= buf_address[tail];
+            //data_flush <= buf_data[tail];
+            //address <= buf_address[tail];
             buf_position_valid[tail] <= 0;
-            data_valid <= 1;
+            //data_valid <= 1;
             tail = tail+1;
         end
         //if tail != head or full (when empty, they are equal)
@@ -111,7 +133,7 @@ always_ff @(posedge clk_i) begin : buffer_store
     end
 end
 
-assign full_o = full;
+assign full_o = full & (!hit);
 assign hit_o = hit;
 assign miss_o = !hit;
 assign data_o = (req_load_i) ? data_load : data_flush;
