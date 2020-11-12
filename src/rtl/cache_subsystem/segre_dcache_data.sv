@@ -1,6 +1,6 @@
 import segre_pkg::*;
 
-module segre_cache
+module segre_dcache_data
     #(parameter NUM_LANES = 4,
       parameter BYTES_PER_LANE = 16
     )(input logic clk_i,
@@ -9,6 +9,7 @@ module segre_cache
       input logic wr_data_i,
       input logic mem_wr_data_i,
       input logic [WORD_SIZE-1:0] addr_i,
+      input memop_data_type_e memop_data_type,
       input logic [WORD_SIZE-1:0] data_i,
       input logic [LANE_SIZE-1:0] mem_data_i,
       output logic [WORD_SIZE-1:0] data_o
@@ -27,7 +28,7 @@ logic [ADDR_INDEX_SIZE-1:0] addr_index;
 logic [WORD_SIZE-1:0] data;
 
 assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
-assign addr_byte  = addr_i[ADDR_BYTE_SIZE-1:0];
+assign addr_byte  = addr_i[ADDR_BYTE_SIZE-1:0] & ~1'h3; // Access directly to the word
 
 always_ff @(posedge clk_i) begin : cache_reset
     if (!rsn_i) begin
@@ -49,10 +50,19 @@ end
 
 always_ff @(posedge clk_i) begin : cache_write
     if (wr_data_i) begin
-        cache_data[addr_index][addr_byte+3] <= data_i[7:0];
-        cache_data[addr_index][addr_byte+2] <= data_i[15:8];
-        cache_data[addr_index][addr_byte+1] <= data_i[23:16];
-        cache_data[addr_index][addr_byte]   <= data_i[31:24];
+        unique case (memop_data_type)
+            BYTE: cache_data[addr_index][addr_byte]   <= data_i[7:0];
+            HALF: begin
+                    cache_data[addr_index][addr_byte+1] <= data_i[15:8];
+                    cache_data[addr_index][addr_byte]   <= data_i[7:0];
+            end
+            WORD: begin
+                    cache_data[addr_index][addr_byte+3] <= data_i[31:24];
+                    cache_data[addr_index][addr_byte+2] <= data_i[23:16];
+                    cache_data[addr_index][addr_byte+1] <= data_i[15:8];
+                    cache_data[addr_index][addr_byte]   <= data_i[7:0];
+            end
+            default: ;
     end
     else if (mem_wr_data_i) begin
         cache_data[addr_index] <= mem_data_i;

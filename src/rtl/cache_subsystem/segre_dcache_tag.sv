@@ -9,6 +9,7 @@ module segre_dcache_tag
       input logic mmu_data_i,
       input logic [WORD_SIZE-1:0] addr_i,
       input logic [DCACHE_INDEX_SIZE-1:0] lru_index_i;
+      input logic invalidate_i,
       output logic hit_o,
       output logic miss_o,
     );
@@ -37,6 +38,14 @@ always_ff @(posedge clk_i) begin : tag_reset
         for (int i = 0; i < NUM_LANES; i++) begin
             cache_tags[i].valid <= 0;
             cache_tags[i].tag   <= 0;
+        end
+    end 
+end
+
+always_ff @(posedge clk_i) begin : invalidate_tags
+    if (invalidate_i) begin
+        for (int i = 0; i < NUM_LANES; i++) begin
+            cache_tags[i].valid <= 0;
         end
     end 
 end
