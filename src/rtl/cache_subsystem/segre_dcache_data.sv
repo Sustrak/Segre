@@ -26,8 +26,8 @@ logic [ADDR_INDEX_SIZE-1:0] addr_index;
 logic [WORD_SIZE-1:0] data;
 
 assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
-// TODO: Revise the ~1'h3.
-assign addr_byte  = addr_i[ADDR_BYTE_SIZE-1:0] & ~1'h3; // Access directly to the word
+
+assign addr_byte  = addr_i[ADDR_BYTE_SIZE-1:0];
 
 always_ff @(posedge clk_i) begin : cache_reset
     if (!rsn_i) begin

@@ -12,11 +12,11 @@ module segre_dcache_tag
       output logic miss_o
     );
 
-localparam ADDR_BYTE_SIZE  = ICACHE_BYTE_SIZE;
-localparam ADDR_INDEX_SIZE = ICACHE_INDEX_SIZE;
-localparam LANE_SIZE       = ICACHE_LANE_SIZE;
-localparam TAG_SIZE        = ICACHE_TAG_SIZE;
-localparam NUM_LANES       = ICACHE_NUM_LANES;
+localparam ADDR_BYTE_SIZE  = DCACHE_BYTE_SIZE;
+localparam ADDR_INDEX_SIZE = DCACHE_INDEX_SIZE;
+localparam LANE_SIZE       = DCACHE_LANE_SIZE;
+localparam TAG_SIZE        = DCACHE_TAG_SIZE;
+localparam NUM_LANES       = DCACHE_NUM_LANES;
 
 typedef struct packed {
     logic valid;

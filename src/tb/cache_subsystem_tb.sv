@@ -121,13 +121,24 @@ module cache_subsystem_tb;
         cd_fill_lane(2);
         cd_fill_lane(3);
         cd_read_item(.index(0), .cbyte(0));
-        cd_read_item(.index(1), .cbyte(3));
         cd_read_item(.index(1), .cbyte(4));
+        cd_read_item(.index(1), .cbyte(8));
+        cd_read_item(.index(1), .cbyte(12));
         cd_read_item(.index(2), .cbyte(0));
         cd_write_item(.index(2), .cbyte(8), .access(WORD));
-        cd_write_item(.index(2), .cbyte(10), .access(HALF));
-        cd_write_item(.index(2), .cbyte(12), .access(BYTE));
+        cd_write_item(.index(2), .cbyte(14), .access(HALF));
+        cd_write_item(.index(2), .cbyte(7), .access(BYTE));
     endtask : test_cache_data
+    
+    task dc_data_set_initial_values;
+        dc_data.mem_wr_data_i <= 0;
+        dc_data.wr_data_i <= 0; 
+        dc_data.rd_data_i <= 0;
+        dc_data.addr_i <= 0;
+        dc_data.memop_data_type_i <= WORD;
+        dc_data.data_i <= 0;
+        dc_data.mem_data_i <= 0;
+    endtask : dc_data_set_initial_values
 
     task cd_fill_lane(logic [DCACHE_INDEX_SIZE-1:0] index);
         @(posedge clk);
@@ -167,20 +178,74 @@ module cache_subsystem_tb;
     endtask : cd_write_item
 
     task test_cache_tag;
+        ct_read_item(.index(0));
+        ct_fill_lane(0);
+        ct_read_item(.index(0));
+        ct_read_item(.index(0), .different_tag(1));
+        ct_fill_lane(1);
+        ct_fill_lane(2);
+        ct_fill_lane(3);
+        ct_invalidate;
+        ct_read_item(.index(0));
     endtask : test_cache_tag
+
+    task dc_tag_set_initial_values;
+        dc_tag.req_i <= 0;
+        dc_tag.invalidate_i <= 0;
+        dc_tag.mmu_data_i <= 0;
+        dc_tag.addr_i <= 0;
+        dc_tag.lru_index_i <= 0;
+    endtask : dc_tag_set_initial_values
+
+    task ct_read_item(bit different_tag=0, logic [ICACHE_INDEX_SIZE-1:0] index);
+        @(posedge clk);
+        dc_tag.req_i <= 1;
+        if (different_tag)
+            dc_tag.addr_i <= {{ICACHE_TAG_SIZE{1'b0}}, index, {ICACHE_BYTE_SIZE{1'b0}}};
+        else
+            dc_tag.addr_i <= {{ICACHE_TAG_SIZE{1'b1}}, index, {ICACHE_BYTE_SIZE{1'b0}}};
+        @(posedge clk);
+        dc_tag.req_i <= 0;
+        dc_tag.addr_i <= 0;
+        @(posedge clk);
+    endtask : ct_read_item
+
+    task ct_fill_lane(logic [ICACHE_INDEX_SIZE-1:0] index);
+        @(posedge clk);
+        dc_tag.mmu_data_i <= 1;
+        dc_tag.addr_i <= {{ICACHE_TAG_SIZE{1'b1}}, {ICACHE_INDEX_SIZE{1'b0}}, {ICACHE_BYTE_SIZE{1'b0}}};
+        dc_tag.lru_index_i <= index; 
+        @(posedge clk);
+        dc_tag.mmu_data_i <= 0;
+        dc_tag.addr_i <= 0;
+        dc_tag.lru_index_i <= 0;
+        @(posedge clk);
+    endtask : ct_fill_lane
+
+    task ct_invalidate;
+        @(posedge clk);
+        dc_tag.invalidate_i <= 1;
+        @(posedge clk);
+        dc_tag.invalidate_i <= 0;
+        @(posedge clk);
+    endtask : ct_invalidate
 
     task test_mmu;
     endtask : test_mmu
     
     initial begin
         clk = 0;
-        rsn = 1;
-        repeat(4) @(posedge clk);
         rsn = 0;
+        repeat(4) @(posedge clk);
+        rsn = 1;
+        dc_data_set_initial_values;
         @(posedge clk);
         $display("Starting test_cache_data");
         test_cache_data;
         $display("End test_cache_data");
+        $display("Starting test_cace_tag");
+        test_cache_tag;
+        $display("End test_cache_tag");
         $finish;
     end
 
