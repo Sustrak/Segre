@@ -5,21 +5,13 @@ module segre_mem_stage (
     input logic clk_i,
     input logic rsn_i,
 
-    // Memory
-    input logic  [WORD_SIZE-1:0] data_i,
-    output logic [WORD_SIZE-1:0] data_o,
-    output logic [WORD_SIZE-1:0] addr_o,
-    output logic memop_rd_o,
-    output logic memop_wr_o,
-    output memop_data_type_e memop_type_o,
-
-    // EX MEM interface
+    // TL MEM interface
     // ALU
-    input logic [WORD_SIZE-1:0] alu_res_i,
+    input logic [WORD_SIZE-1:0] alu_res_i, // TODO: Change this name to memop_addr_i
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
-    input logic [WORD_SIZE-1:0] rf_st_data_i,
+    input logic [WORD_SIZE-1:0] rf_st_data_i, // TODO: Change this name to memop_wr_data_i
     // Memop
     input memop_data_type_e memop_type_i,
     input logic memop_sign_ext_i,
@@ -36,43 +28,97 @@ module segre_mem_stage (
     output logic [REG_SIZE-1:0] rf_waddr_o,
     // Branch | Jal
     output logic tkbr_o,
-    output logic [WORD_SIZE-1:0] new_pc_o
+    output logic [WORD_SIZE-1:0] new_pc_o,
+
+    // MMU
+    input logic mmu_data_rdy_i,
+    input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
+    input logic [ADDR_SIZE-1:0] mmu_addr_i
 );
 
-logic [WORD_SIZE-1:0] mem_data;
+dcache_data_t cache_data;
+store_buffer_t sb;
 
-always_comb begin
+logic [WORD_SIZE-1:0] mem_data;
+logic [WORD_SIZE-1:0] mem_data_aux;
+
+assign mem_data_aux = sb.hit ? sb.data_o : cache_data.data_o;
+
+// DCACHE_DATA
+assign cache_data.rd_data = memop_rd_i;
+assign cache_data.wr_data = sb.data_valid;
+assign cache_data.mmu_wr_data = mmu_data_rdy_i;
+assign cache_data.addr    = sb.data_valid ? sb.addr_o :
+                            mmu_data_rdy_i ? mmu_addr_i :
+                            alu_res_i;
+assign cache_data.memop_data_type = memop_data_type_i;
+assign cache_data.data_i  = sb.data_o;
+assign cache_data.mmu_data = mmu_data_i;
+
+// STORE BUFFER
+assign sb.req_store = memop_wr_i;
+assign sb.req_load  = memop_rd_i;
+assign sb.flush_chance = //TODO: Declare input
+assign sb.addr_i    = alu_res_i;
+assign sb.data_i    = rf_st_data_i;
+assign sb.memop_data_type = memop_data_type_i;
+
+segre_dcache_data dcache_data (
+    .clk_i             (clk_i),
+    .rsn_i             (rsn_i),
+    .rd_data_i         (cache_data.rd_data),
+    .wr_data_i         (cache_data.wr_data),
+    .mmu_wr_data_i     (cache_data.mmu_wr_data),
+    .addr_i            (cache_data.addr),
+    .memop_data_type_i (cache_data.memop_data_type),
+    .data_i            (cache_data.data_i),
+    .mmu_data_i        (cache_data.mmu_data),
+    .data_o            (cache_data.data_o)
+);
+
+segre_store_buffer store_buffer (
+    .clk_i             (clk_i),
+    .rsn_i             (rsn_i),
+    .req_store_i       (sb.req_store),
+    .req_load_i        (sb.req_load),
+    .flush_chance_i    (sb.flush_chance),
+    .addr_i            (sb.addr_i),
+    .data_i            (sb.data_i),
+    .memop_data_type_i (sb.memop_data_type),
+    .hit_o             (sb.hit),
+    .miss_o            (sb.miss),
+    .full_o            (sb.full),
+    .data_valid_o      (sb.data_valid),
+    .data_o            (sb.data_o),
+    .addr_o            (sb.addr_o)
+);
+
+always_comb begin : sign_extension
     if (memop_sign_ext_i) begin
         unique case(memop_type_i)
-            BYTE: mem_data = { {24{data_i[7]}}, data_i[7:0] };
-            HALF: mem_data = { {16{data_i[15]}}, data_i[15:0] };
-            WORD: mem_data = data_i;
-            default: mem_data = data_i;
+            BYTE: mem_data = { {24{mem_data_aux[7]}}, mem_data_aux[7:0] };
+            HALF: mem_data = { {16{mem_data_aux[15]}}, mem_data_aux[15:0] };
+            WORD: mem_data = mem_data_aux;
+            default: mem_data = mem_data_aux;
         endcase
     end
     else begin
         unique case(memop_type_i)
-            BYTE: mem_data = { {24{1'b0}}, data_i[7:0] };
-            HALF: mem_data = { {16{1'b0}}, data_i[15:0] };
-            WORD: mem_data = data_i;
-            default: mem_data = data_i;
+            BYTE: mem_data = { {24{1'b0}}, mem_data_aux[7:0] };
+            HALF: mem_data = { {16{1'b0}}, mem_data_aux[15:0] };
+            WORD: mem_data = mem_data_aux;
+            default: mem_data = mem_data_aux;
         endcase
     end
 end
 
-// To memory
-assign memop_rd_o   = memop_rd_i;
-assign memop_wr_o   = memop_wr_i;
-assign addr_o       = alu_res_i;
-assign memop_type_o = memop_type_i;
-assign data_o       = rf_st_data_i;
 
 always_ff @(posedge clk_i) begin
     // To WB
-    op_res_o   = memop_rd_i ? mem_data : alu_res_i;
-    rf_we_o    = rf_we_i;
-    rf_waddr_o = rf_waddr_i;
-    tkbr_o     = tkbr_i;
-    new_pc_o   = new_pc_i;
+    op_res_o   <= memop_rd_i ? mem_data : alu_res_i;
+    rf_we_o    <= rf_we_i;
+    rf_waddr_o <= rf_waddr_i;
+    tkbr_o     <= tkbr_i;
+    new_pc_o   <= new_pc_i;
 end
 endmodule

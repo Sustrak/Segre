@@ -12,7 +12,6 @@ module segre_mmu (
     output logic dc_mmu_data_rdy_o,
     output logic [DCACHE_LANE_SIZE-1:0] dc_data_o,
     output logic [ADDR_SIZE-1:0] dc_addr_o,
-    output logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index_o,
     // Instruction cache
     input  logic ic_miss_i,
     input  logic [ADDR_SIZE-1:0] ic_addr_i,
@@ -20,8 +19,6 @@ module segre_mmu (
     output logic ic_mmu_data_rdy_o,
     output logic [ICACHE_LANE_SIZE-1:0] ic_data_o,
     output logic [ADDR_SIZE-1:0] ic_addr_o,
-    output logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index_o,
-
     // Main memory
     input logic mm_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mm_data_i, // If $D and $I have different LANE_SIZE we need to change this
@@ -238,13 +235,11 @@ always_ff @(posedge clk_i) begin
     // Data cache
     dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
     dc_data_o <= dc_mm_data;
-    dc_addr_o <= dc_mmu_addr;
-    dc_lru_index_o <= dc_lru_index;
+    dc_addr_o <= {{DCACHE_TAG_SIZE'{1'b0}}, dc_lru_index, {DCACHE_BYTE_SIZE{1'b0}}};
     // Instruction cache
     ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
     ic_data_o <= ic_mm_data;
-    ic_addr_o <= ic_mmu_addr;
-    ic_lru_index_o <= ic_lru_index;
+    ic_addr_o <= {{ICACHE_TAG_SIZE'{1'b0}}, ic_lru_index, {ICACHE_BYTE_SIZE{1'b0}}};
 end
 
 endmodule : segre_mmu

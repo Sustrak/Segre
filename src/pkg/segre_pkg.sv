@@ -105,6 +105,45 @@ typedef enum logic [2:0] {
 } mmu_fsm_state_e;
 
 /********************
+* SEGRE  DATATYPES  *
+********************/
+typedef struct packed {
+    logic req;
+    logic mmu_data;
+    logic [WORD_SIZE-1:0] addr;
+    logic [DCACHE_INDEX_SIZE-1:0] lru_index;
+    logic invalidate;
+    logic hit;
+    logic miss;
+} dcache_tag_t;
+
+typedef struct packed {
+    logic rd_data;
+    logic wr_data;
+    logic mmu_wr_data;
+    logic [WORD_SIZE-1:0] addr;
+    memop_data_type_e memop_data_type;
+    logic [WORD_SIZE-1:0] data;
+    logic [DCACHE_LANE_SIZE-1:0] mmu_data;
+    logic [WORD_SIZE-1:0] data;
+} dcache_data_t;
+
+typedef struct packed {
+    logic req_store;
+    logic req_load;
+    logic flush_chance;
+    logic [ADDR_SIZE-1:0] addr;
+    logic [WORD_SIZE-1:0] data;
+    memop_data_type_e memop_data_type;
+    logic hit;
+    logic miss;
+    logic full;
+    logic data_valid;
+    logic [WORD_SIZE-1:0] data;
+    logic [ADDR_SIZE-1:0] addr;
+} store_buffer_t;
+
+/********************
 * RISC-V PARAMETERS *
 ********************/
 
@@ -130,5 +169,8 @@ parameter ICACHE_LANE_SIZE = ICACHE_BYTES_PER_LANE * 8;
 parameter ICACHE_BYTE_SIZE = $clog2(ICACHE_BYTES_PER_LANE);
 parameter ICACHE_INDEX_SIZE = $clog2(ICACHE_NUM_LANES);
 parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE - ICACHE_INDEX_SIZE;
+
+/* STORE BUFFER */
+parameter STORE_BUFFER_NUM_ELEMS = 2;
 
 endpackage : segre_pkg

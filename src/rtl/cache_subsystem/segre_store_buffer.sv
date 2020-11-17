@@ -1,23 +1,24 @@
 import segre_pkg::*;
 
-module segre_store_buffer
-    #(parameter NUM_ELEMS = 2,
-      parameter INDEX_SIZE = $clog2(NUM_ELEMS)
-    )(input logic clk_i,
-      input logic rsn_i,
-      input logic req_store_i,
-      input logic req_load_i,
-      input logic flush_chance_i, //our chance to flush elements!
-      input logic [ADDR_SIZE-1:0] addr_i,
-      input logic [WORD_SIZE-1:0] data_i,
-      input memop_data_type_e memop_data_type_i,
-      output logic hit_o,
-      output logic miss_o,
-      output logic full_o,
-      output logic data_valid_o,
-      output logic [WORD_SIZE-1:0] data_o,
-      output logic [ADDR_SIZE-1:0] addr_o
-    );
+module segre_store_buffer (
+    input logic clk_i,
+    input logic rsn_i,
+    input logic req_store_i,
+    input logic req_load_i,
+    input logic flush_chance_i, //our chance to flush elements!
+    input logic [ADDR_SIZE-1:0] addr_i,
+    input logic [WORD_SIZE-1:0] data_i,
+    input memop_data_type_e memop_data_type_i,
+    output logic hit_o,
+    output logic miss_o,
+    output logic full_o,
+    output logic data_valid_o,
+    output logic [WORD_SIZE-1:0] data_o,
+    output logic [ADDR_SIZE-1:0] addr_o
+);
+
+localparam NUM_ELEMS = STORE_BUFFER_NUM_ELEMS;
+localparam INDEX_SIZE = $clog2(NUM_ELEMS);
 
 //Logic variables to store the data
 logic [NUM_ELEMS-1:0] buf_position_valid;
