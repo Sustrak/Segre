@@ -143,6 +143,86 @@ typedef struct packed {
     logic [ADDR_SIZE-1:0] addr;
 } store_buffer_t;
 
+typedef struct packed {
+    logic [WORD_SIZE-1:0] addr;
+    logic mem_rd;
+    logic [WORD_SIZE-1:0] new_pc;
+    logic tkbr;
+} core_if_t
+
+typedef struct packed {
+    logic [WORD_SIZE-1:0] instr;
+} core_id_t
+
+typedef struct packed {
+    memop_data_type_e memop_type;
+    logic [WORD_SIZE-1:0] alu_src_a;
+    logic [WORD_SIZE-1:0] alu_src_b;
+    logic [WORD_SIZE-1:0] rf_st_data;
+    logic rf_we;
+    logic [REG_SIZE-1:0] rf_waddr;
+    alu_opcode_e alu_opcode;
+    logic memop_rd;
+    logic memop_wr;
+    logic memop_sign_ext;
+    logic [WORD_SIZE-1:0] br_src_a;
+    logic [WORD_SIZE-1:0] br_src_b;
+} core_ex_t
+
+typedef struct packed {
+} core_tl_t
+
+typedef struct packed {
+    memop_data_type_e memop_type;
+    memop_data_type_e data_type;
+    logic [WORD_SIZE-1:0] alu_res;
+    logic [WORD_SIZE-1:0] addr;
+    logic [WORD_SIZE-1:0] wr_data;
+    logic [WORD_SIZE-1:0] rf_st_data;
+    logic [REG_SIZE-1:0]  rf_waddr;
+    logic memop_rd;
+    logic memop_wr;
+    logic memop_sign_ext;
+    logic rf_we;
+    logic rd;
+    logic wr;
+    logic tkbr;
+    logic [WORD_SIZE-1:0] new_pc;
+} core_mem_t
+
+typedef struct packed {
+    logic [REG_SIZE-1:0] raddr_a;
+    logic [REG_SIZE-1:0] raddr_b;
+    logic [REG_SIZE-1:0] waddr_w;
+    logic [WORD_SIZE-1:0] data_a;
+    logic [WORD_SIZE-1:0] data_b;
+    logic [WORD_SIZE-1:0] data_w;
+    logic we;
+} core_rf_t
+
+typedef struct packed {
+    logic dc_miss;
+    logic [ADDR_SIZE-1:0] dc_addr_i;
+    logic dc_store;
+    logic [DCACHE_LANE_SIZE-1:0] dc_data_i;
+    logic dc_access;
+    logic dc_mmu_data_rdy;
+    logic [DCACHE_LANE_SIZE-1:0] dc_data_o;
+    logic [ADDR_SIZE-1:0] dc_addr_o;
+    logic ic_miss;
+    logic [ADDR_SIZE-1:0] ic_addr_i;
+    logic ic_access;
+    logic ic_mmu_data_rdy;
+    logic [ICACHE_LANE_SIZE-1:0] ic_data;
+    logic [ADDR_SIZE-1:0] ic_addr_o;
+    logic mm_data_rdy;
+    logic [DCACHE_LANE_SIZE-1:0] mm_data_i; // If $D and $I have different LANE_SIZE we need to change this
+    logic mm_rd_req;
+    logic mm_wr_req;
+    logic [ADDR_SIZE-1:0] mm_addr;
+    logic [DCACHE_LANE_SIZE-1:0] mm_data_o
+} core_mmu_t
+
 /********************
 * RISC-V PARAMETERS *
 ********************/
@@ -170,7 +250,7 @@ parameter ICACHE_BYTE_SIZE = $clog2(ICACHE_BYTES_PER_LANE);
 parameter ICACHE_INDEX_SIZE = $clog2(ICACHE_NUM_LANES);
 parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE - ICACHE_INDEX_SIZE;
 
-/* STORE BUFFER */
+/** STORE BUFFER **/
 parameter STORE_BUFFER_NUM_ELEMS = 2;
 
 endpackage : segre_pkg

@@ -13,56 +13,17 @@ module segre_core (
     output logic mem_wr_o,
     output memop_data_type_e mem_data_type_o
 );
-//IF STAGE
-logic [WORD_SIZE-1:0] if_addr;
-logic if_mem_rd;
-// ID STAGE
-logic [WORD_SIZE-1:0] id_instr;
-// REGISTER FILE
-logic [REG_SIZE-1:0] rf_raddr_a;
-logic [REG_SIZE-1:0] rf_raddr_b;
-logic [WORD_SIZE-1:0] rf_data_a;
-logic [WORD_SIZE-1:0] rf_data_b;
-// FSM
-fsm_state_e fsm_state;
-// EX STAGE
-memop_data_type_e ex_memop_type;
-logic [WORD_SIZE-1:0] ex_alu_src_a;
-logic [WORD_SIZE-1:0] ex_alu_src_b;
-logic [WORD_SIZE-1:0] ex_rf_st_data;
-logic ex_rf_we;
-logic [REG_SIZE-1:0] ex_rf_waddr;
-alu_opcode_e ex_alu_opcode;
-logic ex_memop_rd;
-logic ex_memop_wr;
-logic ex_memop_sign_ext;
-logic [WORD_SIZE-1:0] ex_br_src_a;
-logic [WORD_SIZE-1:0] ex_br_src_b;
-// MEM STAGE
-memop_data_type_e mem_memop_type;
-memop_data_type_e mem_data_type;
-logic [WORD_SIZE-1:0] mem_alu_res;
-logic [WORD_SIZE-1:0] mem_addr;
-logic [WORD_SIZE-1:0] mem_wr_data;
-logic [WORD_SIZE-1:0] mem_rf_st_data;
-logic [REG_SIZE-1:0]  mem_rf_waddr;
-logic mem_memop_rd;
-logic mem_memop_wr;
-logic mem_memop_sign_ext;
-logic mem_rf_we;
-logic mem_rd;
-logic mem_wr;
-logic mem_tkbr;
-logic [WORD_SIZE-1:0] mem_new_pc;
-// WB STAGE
-logic [WORD_SIZE-1:0] wb_res;
-logic [REG_SIZE-1:0] wb_rf_waddr;
-logic wb_rf_we;
-logic [WORD_SIZE-1:0] wb_new_pc;
-logic wb_tkbr;
 
-assign addr_o          = fsm_state == MEM_STATE ? mem_addr       : if_addr;
-assign mem_rd_o        = fsm_state == MEM_STATE ? mem_rd         : if_mem_rd;
+core_if_t core_if;
+core_id_t core_id;
+core_ex_t core_ex;
+core_tl_t core_tl;
+core_mem_t core_mem;
+core_rf_t core_rf;
+core_mmu_t core_mmu;
+
+assign addr_o          = fsm_state == MEM_STATE ? mem_addr       : core_if.addr;
+assign mem_rd_o        = fsm_state == MEM_STATE ? mem_rd         : core_if.mem_rd;
 assign mem_wr_o        = fsm_state == MEM_STATE ? mem_wr         : 1'b0;
 assign mem_data_type_o = fsm_state == MEM_STATE ? mem_data_type  : WORD;
 assign mem_wr_data_o   = mem_wr_data;
@@ -71,58 +32,50 @@ segre_if_stage if_stage (
     // Clock and Reset
     .clk_i (clk_i),
     .rsn_i (rsn_i),
-
     // Memory
     .instr_i     (mem_rd_data_i),
-    .pc_o        (if_addr),
-    .mem_rd_o    (if_mem_rd),
-
+    .pc_o        (core_if.addr),
+    .mem_rd_o    (core_if.mem_rd),
     // FSM state
     .fsm_state_i (fsm_state),
-
     // IF ID interface
-    .instr_o     (id_instr),
-
+    .instr_o     (core_id.instr),
     // WB interface
-    .tkbr_i      (wb_tkbr),
-    .new_pc_i    (wb_new_pc)
+    .tkbr_i      (core_if.tkbr),
+    .new_pc_i    (core_if.new_pc)
 );
 
 segre_id_stage id_stage (
     // Clock and Reset
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
-
     // FSM State
     .fsm_state_i      (fsm_state),
-
     // IF ID interface
-    .instr_i          (id_instr),
-    .pc_i             (if_addr),
-
+    .instr_i          (core_id.instr),
+    .pc_i             (core_if.addr),
     // Register file read operands
-    .rf_raddr_a_o     (rf_raddr_a),
-    .rf_raddr_b_o     (rf_raddr_b),
-    .rf_data_a_i      (rf_data_a),
-    .rf_data_b_i      (rf_data_b),
-
+    .rf_raddr_a_o     (core_rf.raddr_a),
+    .rf_raddr_b_o     (core_rf.raddr_b),
+    .rf_data_a_i      (core_rf.data_a),
+    .rf_data_b_i      (core_rf.data_b),
     // ID EX interface
     // ALU
-    .alu_opcode_o     (ex_alu_opcode),
-    .alu_src_a_o      (ex_alu_src_a),
-    .alu_src_b_o      (ex_alu_src_b),
+    .alu_opcode_o     (core_ex.alu_opcode),
+    .alu_src_a_o      (core_ex.alu_src_a),
+    .alu_src_b_o      (core_ex.alu_src_b),
     // Register file
-    .rf_we_o          (ex_rf_we),
-    .rf_waddr_o       (ex_rf_waddr),
+    .rf_we_o          (core_ex.rf_we),
+    .rf_waddr_o       (core_ex.rf_waddr),
     // Memop
-    .memop_type_o      (ex_memop_type),
-    .memop_rd_o        (ex_memop_rd),
-    .memop_wr_o        (ex_memop_wr),
-    .memop_sign_ext_o  (ex_memop_sign_ext),
-    .memop_rf_data_o   (ex_rf_st_data),
+    .memop_type_o      (core_ex.memop_type),
+    .memop_rd_o        (core_ex.memop_rd),
+    .memop_wr_o        (core_ex.memop_wr),
+    .memop_sign_ext_o  (core_ex.memop_sign_ext),
+    .memop_rf_data_o   (core_ex.rf_st_data),
     // Branch | Jump
-    .br_src_a_o        (ex_br_src_a),
-    .br_src_b_o        (ex_br_src_b)
+    .br_src_a_o        (core_ex.br_src_a),
+    .br_src_b_o        (core_ex.br_src_b)
 );
 
 segre_ex_stage ex_stage (
@@ -132,38 +85,40 @@ segre_ex_stage ex_stage (
 
     // ID EX interface
     // ALU
-    .alu_opcode_i     (ex_alu_opcode),
-    .alu_src_a_i      (ex_alu_src_a),
-    .alu_src_b_i      (ex_alu_src_b),
+    .alu_opcode_i     (core_ex.alu_opcode),
+    .alu_src_a_i      (core_ex.alu_src_a),
+    .alu_src_b_i      (core_ex.alu_src_b),
     // Register file
-    .rf_we_i          (ex_rf_we),
-    .rf_waddr_i       (ex_rf_waddr),
-    .rf_st_data_i     (ex_rf_st_data),
+    .rf_we_i          (core_ex.rf_we),
+    .rf_waddr_i       (core_ex.rf_waddr),
+    .rf_st_data_i     (core_ex.rf_st_data),
     // Memop
-    .memop_type_i      (ex_memop_type),
-    .memop_rd_i        (ex_memop_rd),
-    .memop_wr_i        (ex_memop_wr),
-    .memop_sign_ext_i  (ex_memop_sign_ext),
+    .memop_type_i      (core_ex.memop_type),
+    .memop_rd_i        (core_ex.memop_rd),
+    .memop_wr_i        (core_ex.memop_wr),
+    .memop_sign_ext_i  (core_ex.memop_sign_ext),
     // Branch | Jump
-    .br_src_a_i        (ex_br_src_a),
-    .br_src_b_i        (ex_br_src_b),
+    .br_src_a_i        (core_ex.br_src_a),
+    .br_src_b_i        (core_ex.br_src_b),
 
     // EX MEM interface
     // ALU
-    .alu_res_o        (mem_alu_res),
+    .alu_res_o        (core_mem.alu_res),
     // Register file
-    .rf_we_o          (mem_rf_we),
-    .rf_waddr_o       (mem_rf_waddr),
-    .rf_st_data_o     (mem_rf_st_data),
+    .rf_we_o          (core_mem.rf_we),
+    .rf_waddr_o       (core_mem.rf_waddr),
+    .rf_st_data_o     (core_mem.rf_st_data),
     // Memop
-    .memop_type_o     (mem_memop_type),
-    .memop_rd_o       (mem_memop_rd),
-    .memop_wr_o       (mem_memop_wr),
-    .memop_sign_ext_o (mem_memop_sign_ext),
+    .memop_type_o     (core_mem.memop_type),
+    .memop_rd_o       (core_mem.memop_rd),
+    .memop_wr_o       (core_mem.memop_wr),
+    .memop_sign_ext_o (core_mem.memop_sign_ext),
     // Branch | Jal
-    .tkbr_o           (mem_tkbr),
-    .new_pc_o         (mem_new_pc)
+    .tkbr_o           (core_mem.tkbr),
+    .new_pc_o         (core_mem.new_pc)
 );
+
+segre_tl_stage tl_stage();
 
 segre_mem_stage mem_stage (
     // Clock and Reset
@@ -171,35 +126,35 @@ segre_mem_stage mem_stage (
     .rsn_i            (rsn_i),
 
     // Memory
-    .data_i           (mem_rd_data_i),
-    .data_o           (mem_wr_data),
-    .addr_o           (mem_addr),
-    .memop_rd_o       (mem_rd),
-    .memop_wr_o       (mem_wr),
-    .memop_type_o     (mem_data_type),
+    .data_i           (core_mem.rd_data_i),
+    .data_o           (core_mem.wr_data),
+    .addr_o           (core_mem.addr),
+    .memop_rd_o       (core_mem.rd),
+    .memop_wr_o       (core_mem.wr),
+    .memop_type_o     (core_mem.data_type),
 
     // EX MEM interface
     // ALU
-    .alu_res_i        (mem_alu_res),
+    .alu_res_i        (core_mem.alu_res),
     // Register file
-    .rf_we_i          (mem_rf_we),
-    .rf_waddr_i       (mem_rf_waddr),
-    .rf_st_data_i     (mem_rf_st_data),
+    .rf_we_i          (core_mem.rf_we),
+    .rf_waddr_i       (core_mem.rf_waddr),
+    .rf_st_data_i     (core_mem.rf_st_data),
     // Memop
-    .memop_type_i     (mem_memop_type),
-    .memop_rd_i       (mem_memop_rd),
-    .memop_wr_i       (mem_memop_wr),
-    .memop_sign_ext_i (mem_memop_sign_ext),
+    .memop_type_i     (core_mem.memop_type),
+    .memop_rd_i       (core_mem.memop_rd),
+    .memop_wr_i       (core_mem.memop_wr),
+    .memop_sign_ext_i (core_mem.memop_sign_ext),
     // Branch | Jal
-    .tkbr_i           (mem_tkbr),
-    .new_pc_i         (mem_new_pc),
+    .tkbr_i           (core_mem.tkbr),
+    .new_pc_i         (core_mem.new_pc),
 
     // MEM WB intereface
-    .op_res_o         (wb_res),
-    .rf_we_o          (wb_rf_we),
-    .rf_waddr_o       (wb_rf_waddr),
-    .tkbr_o           (wb_tkbr),
-    .new_pc_o         (wb_new_pc)
+    .op_res_o         (core_rf.data_w),
+    .rf_we_o          (core_rf.we),
+    .rf_waddr_o       (core_rf.waddr_w),
+    .tkbr_o           (core_if.tkbr),
+    .new_pc_o         (core_if.new_pc)
 );
 
 segre_register_file segre_rf (
@@ -207,13 +162,13 @@ segre_register_file segre_rf (
     .clk_i       (clk_i),
     .rsn_i       (rsn_i),
 
-    .we_i        (wb_rf_we),
-    .raddr_a_i   (rf_raddr_a),
-    .data_a_o    (rf_data_a),
-    .raddr_b_i   (rf_raddr_b),
-    .data_b_o    (rf_data_b),
-    .waddr_i     (wb_rf_waddr),
-    .data_w_i    (wb_res)
+    .we_i        (core_rf.we),
+    .raddr_a_i   (core_rf.raddr_a),
+    .data_a_o    (core_rf.data_a),
+    .raddr_b_i   (core_rf.raddr_b),
+    .data_b_o    (core_rf.data_b),
+    .waddr_i     (core_rf.waddr_w),
+    .data_w_i    (core_rd.data_w)
 );
 
 segre_controller controller (
@@ -224,5 +179,33 @@ segre_controller controller (
     // State
     .state_o (fsm_state)
 );
+
+segre_mmu mmu (
+    .clk_i             (clk_i),
+    .rsn_i             (rsn_i),
+    // Data chache
+    .dc_miss_i         (core_mmu.dc_miss),
+    .dc_addr_i         (core_mmu.dc_addr_i),
+    .dc_store_i        (core_mmu.dc_store),
+    .dc_data_i         (core_mmu.dc_data_i),
+    .dc_access_i       (core_mmu.dc_access),
+    .dc_mmu_data_rdy_o (core_mmu.dc_mmu_data_rdy),
+    .dc_data_o         (core_mmu.dc_data_o),
+    .dc_addr_o         (core_mmu.dc_addr_o),
+    // Instruction cache
+    .ic_miss_i         (core_mmu.ic_miss),
+    .ic_addr_i         (core_mmu.ic_addr_i),
+    .ic_access_i       (core_mmu.ic_access),
+    .ic_mmu_data_rdy_o (core_mmu.ic_mmu_data_rdy),
+    .ic_data_o         (core_mmu.ic_data),
+    .ic_addr_o         (core_mmu.ic_addr_o),
+    // Main memory
+    .mm_data_rdy_i     (core_mmu.mm_data_rdy),
+    .mm_data_i         (core_mmu.mm_data_i), // If $D and $I have different LANE_SIZE we need to change this
+    .mm_rd_req_o       (core_mmu.mm_rd_req),
+    .mm_wr_req_o       (core_mmu.mm_wr_req),
+    .mm_addr_o         (core_mmu.mm_addr),
+    .mm_data_o         (core_mmu.mm_data_o)
+)
 
 endmodule : segre_core
