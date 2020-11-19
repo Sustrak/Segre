@@ -215,12 +215,6 @@ typedef struct packed {
     logic ic_mmu_data_rdy;
     logic [ICACHE_LANE_SIZE-1:0] ic_data;
     logic [ADDR_SIZE-1:0] ic_addr_o;
-    logic mm_data_rdy;
-    logic [DCACHE_LANE_SIZE-1:0] mm_data_i; // If $D and $I have different LANE_SIZE we need to change this
-    logic mm_rd_req;
-    logic mm_wr_req;
-    logic [ADDR_SIZE-1:0] mm_addr;
-    logic [DCACHE_LANE_SIZE-1:0] mm_data_o
 } core_mmu_t
 
 /********************

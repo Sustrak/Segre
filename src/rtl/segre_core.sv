@@ -5,13 +5,14 @@ module segre_core (
     input logic clk_i,
     input logic rsn_i,
 
-    // Memory signals
-    input  logic [WORD_SIZE-1:0] mem_rd_data_i,
-    output logic [WORD_SIZE-1:0] mem_wr_data_o,
-    output logic [ADDR_SIZE-1:0] addr_o,
-    output logic mem_rd_o,
-    output logic mem_wr_o,
-    output memop_data_type_e mem_data_type_o
+    // Main memory signals
+    input  logic mm_data_rdy_i,
+    input  logic [DCACHE_LANE_SIZE-1:0] mm_rd_data_i,
+    output logic [WORD_SIZE-1:0] mm_wr_data_o,
+    output logic [ADDR_SIZE-1:0] mm_addr_o,
+    output logic mm_rd_o,
+    output logic mm_wr_o,
+    output memop_data_type_e mm_wr_data_type_o
 );
 
 core_if_t core_if;
@@ -21,12 +22,6 @@ core_tl_t core_tl;
 core_mem_t core_mem;
 core_rf_t core_rf;
 core_mmu_t core_mmu;
-
-assign addr_o          = fsm_state == MEM_STATE ? mem_addr       : core_if.addr;
-assign mem_rd_o        = fsm_state == MEM_STATE ? mem_rd         : core_if.mem_rd;
-assign mem_wr_o        = fsm_state == MEM_STATE ? mem_wr         : 1'b0;
-assign mem_data_type_o = fsm_state == MEM_STATE ? mem_data_type  : WORD;
-assign mem_wr_data_o   = mem_wr_data;
 
 segre_if_stage if_stage (
     // Clock and Reset
@@ -200,12 +195,13 @@ segre_mmu mmu (
     .ic_data_o         (core_mmu.ic_data),
     .ic_addr_o         (core_mmu.ic_addr_o),
     // Main memory
-    .mm_data_rdy_i     (core_mmu.mm_data_rdy),
-    .mm_data_i         (core_mmu.mm_data_i), // If $D and $I have different LANE_SIZE we need to change this
-    .mm_rd_req_o       (core_mmu.mm_rd_req),
-    .mm_wr_req_o       (core_mmu.mm_wr_req),
-    .mm_addr_o         (core_mmu.mm_addr),
-    .mm_data_o         (core_mmu.mm_data_o)
+    .mm_data_rdy_i     (mm_data_rdy_i),
+    .mm_data_i         (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this
+    .mm_rd_req_o       (mm_rd_o),
+    .mm_wr_req_o       (mm_wr_o),
+    .mm_wr_data_type_o (mm_wr_data_type_o),
+    .mm_addr_o         (mm_addr_o),
+    .mm_data_o         (mm_wr_data_o)
 )
 
 endmodule : segre_core

@@ -7,6 +7,7 @@ module segre_mmu (
     input  logic dc_miss_i,
     input  logic [ADDR_SIZE-1:0] dc_addr_i,
     input  logic dc_store_i,
+    input  memop_data_type_e dc_store_data_type_i,
     input  logic [DCACHE_LANE_SIZE-1:0] dc_data_i,
     input  logic dc_access_i,
     output logic dc_mmu_data_rdy_o,
@@ -20,12 +21,13 @@ module segre_mmu (
     output logic [ICACHE_LANE_SIZE-1:0] ic_data_o,
     output logic [ADDR_SIZE-1:0] ic_addr_o,
     // Main memory
-    input logic mm_data_rdy_i,
-    input logic [DCACHE_LANE_SIZE-1:0] mm_data_i, // If $D and $I have different LANE_SIZE we need to change this
+    input  logic mm_data_rdy_i,
+    input  logic [DCACHE_LANE_SIZE-1:0] mm_data_i, // If $D and $I have different LANE_SIZE we need to change this
     output logic mm_rd_req_o,
     output logic mm_wr_req_o,
+    output memop_data_type_e mm_wr_data_type_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
-    output logic [DCACHE_LANE_SIZE-1:0] mm_data_o
+    output logic [WORD_SIZE-1:0] mm_data_o
 );
 
 localparam DC_LRU_WITH = DCACHE_NUM_LANES*(DCACHE_NUM_LANES-1) >> 1;
@@ -207,21 +209,27 @@ end
 
 always_comb begin : main_memory_req
     unique case (fsm_state)
-        DCACHE_REQ: begin
+        DCACHE_RD_REQ: begin
             mm_rd_req = 1;
+            mm_wr_req = 0;
             mm_addr = dc_mm_addr;
         end
-        ICACHE_REQ: begin
+        ICACHE__RD_REQ: begin
             mm_rd_req = 1;
+            mm_wr_req = 0;
             mm_addr = ic_mm_addr;
         end
         DCACHE_WAIT, ICACHE_WAIT : begin
             mm_rd_req = 0;
-            mm_wr_req = 0;
+        end
+        MM_WRITE: begin
+            mm_rd_req = 0;
+            mm_wr_req = 1;
+            mm_addr = 
         end
         IDLE: begin
             mm_rd_req = 0;
-            mm_wr_req = 0;
+            mm_wr_req = 1;
         end
     endcase
 end

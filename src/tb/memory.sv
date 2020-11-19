@@ -16,17 +16,18 @@ module memory (
     input memop_data_type_e data_type_i,
     input logic [WORD_SIZE-1:0] addr_i,
     input logic [WORD_SIZE-1:0] data_i,
-    output logic [WORD_SIZE-1:0] data_o
+    output logic data_rdy_o,
+    output logic [DCACHE_LINE_SIZE-1:0] data_o
 );
 
-parameter NUM_WORDS = 1024 * 64; // 64Kb
+parameter NUM_WORDS = 1024 * 64; // 64KB
 parameter TEXT_REGION = 0;
 //parameter DATA_REGION = 1024*32;
 parameter DATA_REGION = 32'hA000;
 
 logic [7:0] mem [NUM_WORDS-1:0];
 
-logic [WORD_SIZE-1:0] rd_data;
+logic [DCACHE_LINE_SIZE-1:0] rd_data;
 
 int num_of_instructions = 0;
 
@@ -104,7 +105,12 @@ end
 
 always @(posedge clk_i) begin
     if (rd_i) begin
-        rd_data = {mem[addr_i+3], mem[addr_i+2], mem[addr_i+1], mem[addr_i]};
+        rd_data = {
+            mem[addr_i+15], mem[addr_i+14], mem[addr_i+13], mem[addr_i+12],
+            mem[addr_i+11], mem[addr_i+10], mem[addr_i+9], mem[addr_i+8],
+            mem[addr_i+7], mem[addr_i+6], mem[addr_i+5], mem[addr_i+4],
+            mem[addr_i+3], mem[addr_i+2], mem[addr_i+1], mem[addr_i]
+        };
     end
     if (wr_i) begin
         case(data_type_i)
@@ -129,7 +135,18 @@ always @(posedge clk_i) begin
     memory_verbose();
 end
 
-always @(posedge clk_i) data_o <= rd_data;
+always @(posedge clk_i) begin
+    if (rd_i) begin
+        repeat(9) @(posedge clk_i);
+        data_o <= rd_data;
+        data_rdy_o <= 1;
+    end
+end
+
+always @(posedge data_rdy_o) begin
+    @(posedge clk_i);
+    data_rdy_o <= 0;
+end
 
 task memory_verbose;
     if (rd_i) begin

@@ -37,24 +37,26 @@ module top_tb;
     assign segre_core_if.rsn = rsn;
 
     segre_core dut(
-        .clk_i           (segre_core_if.clk),
-        .rsn_i           (segre_core_if.rsn),
-        .mem_rd_data_i   (segre_core_if.mem_rd_data),
-        .mem_wr_data_o   (segre_core_if.mem_wr_data),
-        .addr_o          (segre_core_if.addr),
-        .mem_rd_o        (segre_core_if.mem_rd),
-        .mem_wr_o        (segre_core_if.mem_wr),
-        .mem_data_type_o (segre_core_if.mem_data_type)
+        .clk_i              (segre_core_if.clk),
+        .rsn_i              (segre_core_if.rsn),
+        .mm_data_rdy_i      (segre_core_if.mm_data_rdy),
+        .mm_rd_data_i       (segre_core_if.mm_rd_data),
+        .mm_wr_data_o       (segre_core_if.mm_wr_data),
+        .mm_addr_o          (segre_core_if.mm_addr),
+        .mm_rd_o            (segre_core_if.mm_rd),
+        .mm_wr_o            (segre_core_if.mm_wr),
+        .mm_wr_data_type_o  (segre_core_if.mem_data_type)
     );
 
     memory tb_mem (
         .clk_i       (clk_mem),
         .rsn_i       (rsn),
-        .data_i      (segre_core_if.mem_wr_data),
-        .data_o      (segre_core_if.mem_rd_data),
-        .addr_i      (segre_core_if.addr),
-        .rd_i        (segre_core_if.mem_rd),
-        .wr_i        (segre_core_if.mem_wr),
+        .data_rdy_o  (segre_core_if.mm_data_rdy),
+        .data_i      (segre_core_if.mm_wr_data),
+        .data_o      (segre_core_if.mm_rd_data),
+        .addr_i      (segre_core_if.mm_addr),
+        .rd_i        (segre_core_if.mm_rd),
+        .wr_i        (segre_core_if.mm_wr),
         .data_type_i (segre_core_if.mem_data_type)
     );
 
@@ -76,7 +78,7 @@ module top_tb;
     end
 
     always #10 clk = ~clk;
-    always #5  clk_mem = ~clk_mem;
+    always #10 clk_mem = ~clk_mem;
 
     initial begin
         repeat(2) @(posedge clk);
