@@ -83,20 +83,21 @@ always_comb begin : buffer_load //The proc issued a load and maybe we are holdin
     //for + if
     static int aux = one_hot_to_binary(hit_vector);
     //TODO: Can I do this in a single sentence now?
-    //TODO: DO wee need to return this with the relevant info in the lower bytes??
-    data_load[7:0] <= buffer[aux].data[0];
-    data_load[15:8] <= buffer[aux].data[1];
-    data_load[23:16] <= buffer[aux].data[2];
-    data_load[31:24] <= buffer[aux].data[3];
-    /*unique case(hit_vector)
-        01 : data_load = buf_data[0];
-        10 : data_load = buf_data[1];
-        default : ;
-        //Compare all tags
-        //if hit, say it and output the desired value
-        //else say it's a miss
-        //IMPORTANT: do not erase the data, it's not written to cache!!!
-    endcase*/
+    unique case (buffer[aux].data_type)
+        BYTE: data_load[7:0] <= buffer[aux].data[buffer[aux].address[1:0]];
+        HALF: begin
+            data_load[7:0] <= buffer[aux].data[{buffer[aux].address[1:1], 1'b0}];
+            data_load[15:8] <= buffer[aux].data[{buffer[aux].address[1:1], 1'b1}];
+        end
+        WORD: begin
+            data_load[7:0] <= buffer[aux].data[0];
+            data_load[15:8] <= buffer[aux].data[1];
+            data_load[23:16] <= buffer[aux].data[2];
+            data_load[31:24] <= buffer[aux].data[3];
+        end
+        default: ;
+    endcase
+    
 end
 
 always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and restart the pointers
@@ -112,22 +113,28 @@ end
 //FIXME: Do this actually work?
 //The idea is that the values are hold correctly during the whole cycle and at the end the always_ff invalidates the position
 always_comb begin : buffer_flush_comb
-    //data_flush <= buf_data[tail];
-    data_flush[7:0] <= buffer[tail].data[0];
-    data_flush[15:8] <= buffer[tail].data[1];
-    data_flush[23:16] <= buffer[tail].data[2];
-    data_flush[31:24] <= buffer[tail].data[3];
+    unique case (buffer[tail].data_type)
+        BYTE: data_flush[7:0] <= buffer[tail].data[buffer[tail].address[1:0]];
+        HALF: begin
+            data_flush[7:0] <= buffer[tail].data[{buffer[tail].address[1:1], 1'b0}];
+            data_flush[15:8] <= buffer[tail].data[{buffer[tail].address[1:1], 1'b1}];
+        end
+        WORD: begin
+            data_flush[7:0] <= buffer[tail].data[0];
+            data_flush[15:8] <= buffer[tail].data[1];
+            data_flush[23:16] <= buffer[tail].data[2];
+            data_flush[31:24] <= buffer[tail].data[3];
+        end
+        default: ;
+    endcase
     address <= buffer[tail].address;
-    data_valid <= (memop_data_type_i && (tail != head || full) && buffer[tail].valid);
+    data_valid <= (flush_chance_i && (tail != head || full) && buffer[tail].valid);
 end
 
 always_ff @(posedge clk_i) begin : buffer_flush //the cache it's not busy, so we can send an element to the cache
-    if (memop_data_type_i) begin
+    if (flush_chance_i) begin
         if((tail != head || full) && buffer[tail].valid) begin
-            //data_flush <= buf_data[tail];
-            //address <= buf_address[tail];
             buffer[tail].valid <= 0;
-            //data_valid <= 1;
             tail = tail+1;
         end
         //if tail != head or full (when empty, they are equal)
@@ -218,8 +225,6 @@ always_ff @(posedge clk_i) begin : buffer_store
                     default: ;
                 endcase
                 buffer[head].address <= addr_i;
-                //TODO: case here
-                //buf_data[head] <= data_i;
                 buffer[head].valid <= 1;
                 buffer[head].data_type <= memop_data_type_i;
                 head = head+1;
