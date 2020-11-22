@@ -15,6 +15,7 @@ module memory (
     input logic wr_i,
     input memop_data_type_e data_type_i,
     input logic [WORD_SIZE-1:0] addr_i,
+    input logic [WORD_SIZE-1:0] wr_addr_i,
     input logic [WORD_SIZE-1:0] data_i,
     output logic data_rdy_o,
     output logic [DCACHE_LINE_SIZE-1:0] data_o
@@ -115,19 +116,19 @@ always @(posedge clk_i) begin
     if (wr_i) begin
         case(data_type_i)
             BYTE: begin
-                mem[addr_i] = data_i[7:0];
+                mem[wr_addr_i] = data_i[7:0];
             end
 
             HALF: begin
-                mem[addr_i] = data_i[7:0];
-                mem[addr_i+1] = data_i[15:8];
+                mem[wr_addr_i] = data_i[7:0];
+                mem[wr_addr_i+1] = data_i[15:8];
             end
 
             WORD: begin
-                mem[addr_i] = data_i[7:0];
-                mem[addr_i+1] = data_i[15:8];
-                mem[addr_i+2] = data_i[23:16];
-                mem[addr_i+3] = data_i[31:24];
+                mem[wr_addr_i] = data_i[7:0];
+                mem[wr_addr_i+1] = data_i[15:8];
+                mem[wr_addr_i+2] = data_i[23:16];
+                mem[wr_addr_i+3] = data_i[31:24];
             end
             default: ;
         endcase

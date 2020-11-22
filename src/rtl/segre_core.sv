@@ -10,6 +10,7 @@ module segre_core (
     input  logic [DCACHE_LANE_SIZE-1:0] mm_rd_data_i,
     output logic [WORD_SIZE-1:0] mm_wr_data_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
+    output logic [ADDR_SIZE-1:0] mm_wr_addr_o,
     output logic mm_rd_o,
     output logic mm_wr_o,
     output memop_data_type_e mm_wr_data_type_o
@@ -201,7 +202,8 @@ segre_mmu mmu (
     .mm_wr_req_o       (mm_wr_o),
     .mm_wr_data_type_o (mm_wr_data_type_o),
     .mm_addr_o         (mm_addr_o),
+    .mm_wr_addr_o      (mm_wr_addr_o),
     .mm_data_o         (mm_wr_data_o)
-)
+);
 
 endmodule : segre_core

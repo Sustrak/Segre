@@ -43,6 +43,7 @@ module top_tb;
         .mm_rd_data_i       (segre_core_if.mm_rd_data),
         .mm_wr_data_o       (segre_core_if.mm_wr_data),
         .mm_addr_o          (segre_core_if.mm_addr),
+        .mm_wr_addr_o       (segre_core_if.mm_wr_addr),
         .mm_rd_o            (segre_core_if.mm_rd),
         .mm_wr_o            (segre_core_if.mm_wr),
         .mm_wr_data_type_o  (segre_core_if.mem_data_type)
@@ -55,6 +56,7 @@ module top_tb;
         .data_i      (segre_core_if.mm_wr_data),
         .data_o      (segre_core_if.mm_rd_data),
         .addr_i      (segre_core_if.mm_addr),
+        .wr_addr_i   (segre_core_if.mm_wr_addr),
         .rd_i        (segre_core_if.mm_rd),
         .wr_i        (segre_core_if.mm_wr),
         .data_type_i (segre_core_if.mem_data_type)

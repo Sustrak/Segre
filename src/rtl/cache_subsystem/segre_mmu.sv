@@ -27,6 +27,7 @@ module segre_mmu (
     output logic mm_wr_req_o,
     output memop_data_type_e mm_wr_data_type_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
+    output logic [ADDR_SIZE-1:0] mm_wr_addr_o,
     output logic [WORD_SIZE-1:0] mm_data_o
 );
 
@@ -63,7 +64,6 @@ logic [ICACHE_NUM_LANES-1:0] ic_lru_access, ic_lru_pre, ic_lru_post;
 
 // Main memory
 logic mm_rd_req;
-logic mm_wr_req;
 logic [ADDR_SIZE-1:0] mm_addr;
 logic [DCACHE_LANE_SIZE-1:0] mm_data;
 logic [DCACHE_LANE_SIZE-1:0] mm_dc_data;
@@ -85,6 +85,12 @@ endfunction
 
 assign dc_addr_index = dc_addr_i[DCACHE_INDEX_SIZE+DCACHE_BYTE_SIZE-1:DCACHE_BYTE_SIZE];
 assign ic_addr_index = dc_addr_i[ICACHE_INDEX_SIZE+ICACHE_BYTE_SIZE-1:ICACHE_BYTE_SIZE];
+
+// Bypass store signals directly to main memory
+assign mm_wr_req_o = dc_store_i;
+assign mm_wr_addr_o = dc_addr_i;
+assign mm_data_o = dc_data_i;
+assign mm_wr_data_type_o = dc_store_data_type_i;
 
 mor1kx_cache_lru #(.NUMWAYS(DCACHE_NUM_LANES)) dc_lru_mor1kx (
     .current  (dc_lru_current),
@@ -211,25 +217,17 @@ always_comb begin : main_memory_req
     unique case (fsm_state)
         DCACHE_RD_REQ: begin
             mm_rd_req = 1;
-            mm_wr_req = 0;
             mm_addr = dc_mm_addr;
         end
         ICACHE__RD_REQ: begin
             mm_rd_req = 1;
-            mm_wr_req = 0;
             mm_addr = ic_mm_addr;
         end
         DCACHE_WAIT, ICACHE_WAIT : begin
             mm_rd_req = 0;
         end
-        MM_WRITE: begin
-            mm_rd_req = 0;
-            mm_wr_req = 1;
-            mm_addr = 
-        end
         IDLE: begin
             mm_rd_req = 0;
-            mm_wr_req = 1;
         end
     endcase
 end
@@ -238,7 +236,6 @@ always_ff @(posedge clk_i) begin
     fsm_state   <= fsm_nxt_state;
     // Main memory
     mm_rd_req_o <= mm_rd_req;
-    mm_wr_req_o <= mm_wr_req;
     mm_addr_o   <= mm_addr;
     // Data cache
     dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
