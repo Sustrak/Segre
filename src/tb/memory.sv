@@ -18,7 +18,7 @@ module memory (
     input logic [WORD_SIZE-1:0] wr_addr_i,
     input logic [WORD_SIZE-1:0] data_i,
     output logic data_rdy_o,
-    output logic [DCACHE_LINE_SIZE-1:0] data_o
+    output logic [DCACHE_LANE_SIZE-1:0] data_o
 );
 
 parameter NUM_WORDS = 1024 * 64; // 64KB
@@ -28,7 +28,7 @@ parameter DATA_REGION = 32'hA000;
 
 logic [7:0] mem [NUM_WORDS-1:0];
 
-logic [DCACHE_LINE_SIZE-1:0] rd_data;
+logic [DCACHE_LANE_SIZE-1:0] rd_data;
 
 int num_of_instructions = 0;
 

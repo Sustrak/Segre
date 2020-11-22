@@ -46,7 +46,7 @@ module top_tb;
         .mm_wr_addr_o       (segre_core_if.mm_wr_addr),
         .mm_rd_o            (segre_core_if.mm_rd),
         .mm_wr_o            (segre_core_if.mm_wr),
-        .mm_wr_data_type_o  (segre_core_if.mem_data_type)
+        .mm_wr_data_type_o  (segre_core_if.mm_data_type)
     );
 
     memory tb_mem (
@@ -59,7 +59,7 @@ module top_tb;
         .wr_addr_i   (segre_core_if.mm_wr_addr),
         .rd_i        (segre_core_if.mm_rd),
         .wr_i        (segre_core_if.mm_wr),
-        .data_type_i (segre_core_if.mem_data_type)
+        .data_type_i (segre_core_if.mm_data_type)
     );
 
     initial begin
@@ -105,7 +105,7 @@ module top_tb;
     endtask
 
     function bit keep_running_tb();
-        if (segre_core_if.addr < tb_mem.DATA_REGION && segre_core_if.mem_rd_data == 32'hfff01073) begin
+        if (segre_core_if.mm_addr < tb_mem.DATA_REGION && segre_core_if.mm_rd_data == 32'hfff01073) begin
             return 0;
         end
 
@@ -160,13 +160,13 @@ module top_tb;
         forever begin
             static string instr_decoded;
             @(posedge clk);
-            if (segre_core_if.mem_rd) begin
-                if (segre_core_if.addr < tb_mem.DATA_REGION) begin
-                    $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data);
+            if (segre_core_if.mm_rd) begin
+                if (segre_core_if.mm_addr < tb_mem.DATA_REGION) begin
+                    $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mm_rd_data);
 `ifndef USE_MODELSIM
-                    instr_decoded = decode_instruction(int'(segre_core_if.mem_rd_data));
+                    instr_decoded = decode_instruction(int'(segre_core_if.mm_rd_data));
 `endif
-                    `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data), UVM_LOW)
+                    `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.mm_addr, instr_decoded, segre_core_if.mm_rd_data), UVM_LOW)
                 end
             end
         end

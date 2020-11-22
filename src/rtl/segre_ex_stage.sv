@@ -23,7 +23,7 @@ module segre_ex_stage (
     input logic [WORD_SIZE-1:0] br_src_a_i,
     input logic [WORD_SIZE-1:0] br_src_b_i,
 
-    // EX MEM interface
+    // EX TL interface
     // ALU
     output logic [WORD_SIZE-1:0] alu_res_o,
     // Register file

@@ -20,6 +20,9 @@ module segre_mem_stage (
     // Branch | Jal
     input logic tkbr_i,
     input logic [WORD_SIZE-1:0] new_pc_i,
+    // Store buffer
+    input logic sb_hit_i,
+    input logic [WORD_SIZE-1:0] sb_data_i,
 
     // MEM WB interface
     output logic [WORD_SIZE-1:0] op_res_o,
@@ -41,7 +44,7 @@ dcache_data_t cache_data;
 logic [WORD_SIZE-1:0] mem_data;
 logic [WORD_SIZE-1:0] mem_data_aux;
 
-assign mem_data_aux = sb.hit ? sb.data_o : cache_data.data_o;
+assign mem_data_aux = sb_hit_i ? sb_data_i : cache_data.data_o;
 
 // DCACHE_DATA
 assign cache_data.rd_data = memop_rd_i;
@@ -50,7 +53,7 @@ assign cache_data.mmu_wr_data = mmu_data_rdy_i;
 assign cache_data.addr    = sb.data_valid ? sb.addr_o :
                             mmu_data_rdy_i ? mmu_addr_i :
                             alu_res_i;
-assign cache_data.memop_data_type = memop_data_type_i;
+assign cache_data.memop_data_type = memop_type_i;
 assign cache_data.data_i  = sb.data_o;
 assign cache_data.mmu_data = mmu_data_i;
 

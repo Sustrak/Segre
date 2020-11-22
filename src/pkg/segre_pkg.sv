@@ -1,5 +1,35 @@
 package segre_pkg;
 
+/********************
+* RISC-V PARAMETERS *
+********************/
+
+parameter WORD_SIZE = 32;
+parameter ADDR_SIZE = 32;
+parameter REG_SIZE  = 5;
+
+/********************
+* SEGRE  PARAMETERS *
+********************/
+/** DATA CACHE **/
+parameter DCACHE_NUM_LANES = 4;
+parameter DCACHE_BYTES_PER_LANE = 16;
+parameter DCACHE_LANE_SIZE = DCACHE_BYTES_PER_LANE * 8;
+parameter DCACHE_BYTE_SIZE = $clog2(DCACHE_BYTES_PER_LANE);
+parameter DCACHE_INDEX_SIZE = $clog2(DCACHE_NUM_LANES);
+parameter DCACHE_TAG_SIZE = ADDR_SIZE - DCACHE_BYTE_SIZE - DCACHE_INDEX_SIZE;
+
+/** INSTRUCTIONS CACHE **/
+parameter ICACHE_NUM_LANES = 4;
+parameter ICACHE_BYTES_PER_LANE = 16;
+parameter ICACHE_LANE_SIZE = ICACHE_BYTES_PER_LANE * 8;
+parameter ICACHE_BYTE_SIZE = $clog2(ICACHE_BYTES_PER_LANE);
+parameter ICACHE_INDEX_SIZE = $clog2(ICACHE_NUM_LANES);
+parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE - ICACHE_INDEX_SIZE;
+
+/** STORE BUFFER **/
+parameter STORE_BUFFER_NUM_ELEMS = 2;
+
 /*****************
 *    OPCODES     *
 *****************/
@@ -123,24 +153,26 @@ typedef struct packed {
     logic mmu_wr_data;
     logic [WORD_SIZE-1:0] addr;
     memop_data_type_e memop_data_type;
-    logic [WORD_SIZE-1:0] data;
+    logic [WORD_SIZE-1:0] data_i;
     logic [DCACHE_LANE_SIZE-1:0] mmu_data;
-    logic [WORD_SIZE-1:0] data;
+    logic [WORD_SIZE-1:0] data_o;
 } dcache_data_t;
 
 typedef struct packed {
     logic req_store;
     logic req_load;
     logic flush_chance;
-    logic [ADDR_SIZE-1:0] addr;
-    logic [WORD_SIZE-1:0] data;
-    memop_data_type_e memop_data_type;
+    logic [ADDR_SIZE-1:0] addr_i;
+    logic [WORD_SIZE-1:0] data_i;
+    memop_data_type_e memop_data_type_i;
     logic hit;
     logic miss;
     logic full;
     logic data_valid;
-    logic [WORD_SIZE-1:0] data;
-    logic [ADDR_SIZE-1:0] addr;
+    logic trouble;
+    memop_data_type_e memop_data_type_o;
+    logic [WORD_SIZE-1:0] data_o;
+    logic [ADDR_SIZE-1:0] addr_o;
 } store_buffer_t;
 
 typedef struct packed {
@@ -148,11 +180,11 @@ typedef struct packed {
     logic mem_rd;
     logic [WORD_SIZE-1:0] new_pc;
     logic tkbr;
-} core_if_t
+} core_if_t;
 
 typedef struct packed {
     logic [WORD_SIZE-1:0] instr;
-} core_id_t
+} core_id_t;
 
 typedef struct packed {
     memop_data_type_e memop_type;
@@ -167,10 +199,20 @@ typedef struct packed {
     logic memop_sign_ext;
     logic [WORD_SIZE-1:0] br_src_a;
     logic [WORD_SIZE-1:0] br_src_b;
-} core_ex_t
+} core_ex_t;
 
 typedef struct packed {
-} core_tl_t
+    logic [WORD_SIZE-1:0] alu_res;
+    logic rf_we;
+    logic [REG_SIZE-1:0] rf_waddr;
+    logic [WORD_SIZE-1:0] rf_st_data;
+    logic memop_rd;
+    logic memop_wr;
+    logic memop_sign_ext;
+    memop_data_type_e memop_type;
+    logic tkbr;
+    logic [WORD_SIZE-1:0] new_pc;
+} core_tl_t;
 
 typedef struct packed {
     memop_data_type_e memop_type;
@@ -188,7 +230,9 @@ typedef struct packed {
     logic wr;
     logic tkbr;
     logic [WORD_SIZE-1:0] new_pc;
-} core_mem_t
+    logic sb_hit;
+    logic [WORD_SIZE-1:0] sb_data;
+} core_mem_t;
 
 typedef struct packed {
     logic [REG_SIZE-1:0] raddr_a;
@@ -198,7 +242,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] data_b;
     logic [WORD_SIZE-1:0] data_w;
     logic we;
-} core_rf_t
+} core_rf_t;
 
 typedef struct packed {
     logic dc_miss;
@@ -215,36 +259,10 @@ typedef struct packed {
     logic ic_mmu_data_rdy;
     logic [ICACHE_LANE_SIZE-1:0] ic_data;
     logic [ADDR_SIZE-1:0] ic_addr_o;
-} core_mmu_t
+} core_mmu_t;
 
-/********************
-* RISC-V PARAMETERS *
-********************/
-
-parameter WORD_SIZE = 32;
-parameter ADDR_SIZE = 32;
-parameter REG_SIZE  = 5;
-
-/********************
-* SEGRE  PARAMETERS *
-********************/
-/** DATA CACHE **/
-parameter DCACHE_NUM_LANES = 4;
-parameter DCACHE_BYTES_PER_LANE = 16;
-parameter DCACHE_LANE_SIZE = DCACHE_BYTES_PER_LANE * 8;
-parameter DCACHE_BYTE_SIZE = $clog2(DCACHE_BYTES_PER_LANE);
-parameter DCACHE_INDEX_SIZE = $clog2(DCACHE_NUM_LANES);
-parameter DCACHE_TAG_SIZE = ADDR_SIZE - DCACHE_BYTE_SIZE - DCACHE_INDEX_SIZE;
-
-/** INSTRUCTIONS CACHE **/
-parameter ICACHE_NUM_LANES = 4;
-parameter ICACHE_BYTES_PER_LANE = 16;
-parameter ICACHE_LANE_SIZE = ICACHE_BYTES_PER_LANE * 8;
-parameter ICACHE_BYTE_SIZE = $clog2(ICACHE_BYTES_PER_LANE);
-parameter ICACHE_INDEX_SIZE = $clog2(ICACHE_NUM_LANES);
-parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE - ICACHE_INDEX_SIZE;
-
-/** STORE BUFFER **/
-parameter STORE_BUFFER_NUM_ELEMS = 2;
+typedef struct packed {
+    logic tl;
+} core_hazards_t;
 
 endpackage : segre_pkg

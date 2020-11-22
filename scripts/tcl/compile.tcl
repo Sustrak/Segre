@@ -21,7 +21,6 @@ vlib $work_dir
 vlog -sv -work $work_dir $pkg_dir/segre_pkg.sv
 
 # Compile rtl
-vlog -sv -work $work_dir $rtl_dir/segre_store_buffer.sv
 vlog -sv -work $work_dir $rtl_dir/segre_controller.sv
 vlog -sv -work $work_dir $rtl_dir/segre_if_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_decode.sv
@@ -29,9 +28,11 @@ vlog -sv -work $work_dir $rtl_dir/segre_id_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_alu.sv
 vlog -sv -work $work_dir $rtl_dir/segre_tkbr.sv
 vlog -sv -work $work_dir $rtl_dir/segre_ex_stage.sv
+vlog -sv -work $work_dir $rtl_dir/segre_tl_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_mem_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_register_file.sv
 vlog -sv -work $work_dir $rtl_dir/segre_core.sv
+vlog -sv -work $work_dir -F $rtl_dir/cache_subsystem/filelist.f
 
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv
@@ -50,4 +51,4 @@ vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=$test_name -vop
 do scripts/wave.do
 
 # Run all
-run -all
+#run -all

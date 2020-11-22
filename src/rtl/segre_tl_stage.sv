@@ -16,7 +16,7 @@ module segre_tl_stage (
     input logic memop_sign_ext_i,
     input memop_data_type_e memop_type_i,
     // Tkbr
-    input logic tkbr_i
+    input logic tkbr_i,
     input logic [WORD_SIZE-1:0] new_pc_i,
 
     // TL MEM interface
@@ -32,8 +32,11 @@ module segre_tl_stage (
     output logic memop_sign_ext_o,
     output memop_data_type_e memop_type_o,
     // Tkbr
-    output logic tkbr_o
+    output logic tkbr_o,
     output logic [WORD_SIZE-1:0] new_pc_o,
+    // Store buffer
+    output logic sb_hit_o,
+    output logic [WORD_SIZE-1:0] sb_data_o,
 
     // MMU interface
     input logic mmu_data_rdy_i,
@@ -66,9 +69,9 @@ assign pipeline_hazard_o = pipeline_hazard;
 assign sb.req_store = memop_wr_i;
 assign sb.req_load  = memop_rd_i;
 assign sb.flush_chance = !memop_wr_i & !memop_rd_i;
-assign sb.addr    = alu_res_i;
-assign sb.data    = rf_st_data_i;
-assign sb.memop_data_type = memop_data_type_i;
+assign sb.addr_i    = alu_res_i;
+assign sb.data_i    = rf_st_data_i;
+assign sb.memop_data_type_i = memop_type_i;
 
 segre_dcache_tag dcache_tag (
     .clk_i        (clk_i),
@@ -88,13 +91,13 @@ segre_store_buffer store_buffer (
     .req_store_i       (sb.req_store),
     .req_load_i        (sb.req_load),
     .flush_chance_i    (sb.flush_chance),
-    .addr_i            (sb.addr),
-    .data_i            (sb.data),
-    .memop_data_type_i (sb.memop_data_type),
+    .addr_i            (sb.addr_i),
+    .data_i            (sb.data_i),
+    .memop_data_type_i (sb.memop_data_type_i),
     .hit_o             (sb.hit),
     .miss_o            (sb.miss),
     .full_o            (sb.full),
-    .trouble_o         (sb.trouble)
+    .trouble_o         (sb.trouble),
     .data_valid_o      (sb.data_valid),
     .memop_data_type_o (sb.memop_data_type_o),
     .data_o            (sb.data_o),
@@ -102,8 +105,7 @@ segre_store_buffer store_buffer (
 );
 
 //TODO: Include the trouble from Store Buffer
-// TODO: Calculate in always_comb and store the value for next cycles
-always_ff @(posedge clk_i) begin : pipeline_stop
+always_comb begin : pipeline_stop
     if (!rsn_i) begin
         pipeline_hazard <= 0;
     end

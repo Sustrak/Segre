@@ -215,11 +215,11 @@ end
 
 always_comb begin : main_memory_req
     unique case (fsm_state)
-        DCACHE_RD_REQ: begin
+        DCACHE_REQ: begin
             mm_rd_req = 1;
             mm_addr = dc_mm_addr;
         end
-        ICACHE__RD_REQ: begin
+        ICACHE_REQ: begin
             mm_rd_req = 1;
             mm_addr = ic_mm_addr;
         end
@@ -240,11 +240,11 @@ always_ff @(posedge clk_i) begin
     // Data cache
     dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
     dc_data_o <= dc_mm_data;
-    dc_addr_o <= {{DCACHE_TAG_SIZE'{1'b0}}, dc_lru_index, {DCACHE_BYTE_SIZE{1'b0}}};
+    dc_addr_o <= {{DCACHE_TAG_SIZE{1'b0}}, dc_lru_index, {DCACHE_BYTE_SIZE{1'b0}}};
     // Instruction cache
     ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
     ic_data_o <= ic_mm_data;
-    ic_addr_o <= {{ICACHE_TAG_SIZE'{1'b0}}, ic_lru_index, {ICACHE_BYTE_SIZE{1'b0}}};
+    ic_addr_o <= {{ICACHE_TAG_SIZE{1'b0}}, ic_lru_index, {ICACHE_BYTE_SIZE{1'b0}}};
 end
 
 endmodule : segre_mmu

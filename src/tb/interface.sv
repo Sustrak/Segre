@@ -9,5 +9,5 @@ interface segre_core_if_t;
     logic mm_rd;
     logic mm_wr;
     logic mm_data_rdy;
-    memop_data_type_e mem_data_type;
+    memop_data_type_e mm_data_type;
 endinterface : segre_core_if_t
