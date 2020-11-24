@@ -4,6 +4,9 @@ module segre_ex_stage (
     // Clock and Reset
     input logic clk_i,
     input logic rsn_i,
+    
+    // Hazard
+    input logic hazard_i,
 
     // ID EX interface
     // ALU
@@ -63,16 +66,23 @@ segre_tkbr trbr (
 );
 
 always_ff @(posedge clk_i) begin
-    alu_res_o        = (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
-    rf_we_o          = rf_we_i;
-    rf_waddr_o       = rf_waddr_i;
-    rf_st_data_o     = rf_st_data_i;
-    memop_type_o     = memop_type_i;
-    memop_rd_o       = memop_rd_i;
-    memop_wr_o       = memop_wr_i;
-    memop_sign_ext_o = memop_sign_ext_i;
-    tkbr_o           = tkbr;
-    new_pc_o         = alu_res;
+    if (!hazard_i) begin
+        alu_res_o        <= (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
+        rf_we_o          <= rf_we_i;
+        rf_waddr_o       <= rf_waddr_i;
+        rf_st_data_o     <= rf_st_data_i;
+        memop_type_o     <= memop_type_i;
+        memop_rd_o       <= memop_rd_i;
+        memop_wr_o       <= memop_wr_i;
+        memop_sign_ext_o <= memop_sign_ext_i;
+        tkbr_o           <= tkbr;
+        new_pc_o         <= alu_res;
+    end else begin
+        rf_we_o    <= 0;
+        memop_rd_o <= 0;
+        memop_wr_o <= 0;
+        tkbr_o     <= 0;
+    end
 end
 
 

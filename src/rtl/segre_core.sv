@@ -24,11 +24,32 @@ core_mem_t core_mem;
 core_rf_t core_rf;
 core_mmu_t core_mmu;
 core_hazards_t core_hazards;
+core_stage_hazards_t stage_hazards;
+
+core_fsm_state_e fsm_state;
+
+// HAZARD CONTROL
+always_comb begin : hazard_control
+    if (core_hazards.tl) begin
+        stage_hazards.ifs = 1;
+        stage_hazards.id  = 1;
+        stage_hazards.ex  = 1;
+    end
+    else begin
+        stage_hazards.ifs = 0;
+        stage_hazards.id  = 0;
+        stage_hazards.ex  = 0;
+        stage_hazards.tl  = 0;
+        stage_hazards.mem = 0;
+    end
+end
 
 segre_if_stage if_stage (
     // Clock and Reset
     .clk_i (clk_i),
     .rsn_i (rsn_i),
+    // Hazard
+    .hazard_i    (stage_hazards.ifs),
     // Memory
     .instr_i     (mem_rd_data_i),
     .pc_o        (core_if.addr),
@@ -46,6 +67,8 @@ segre_id_stage id_stage (
     // Clock and Reset
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
+    // Hazard
+    .hazard_i         (stage_hazards.id),
     // FSM State
     .fsm_state_i      (fsm_state),
     // IF ID interface
@@ -79,6 +102,9 @@ segre_ex_stage ex_stage (
     // Clock and Reset
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
+    
+    // Hazards
+    .hazard_i         (stage_hazards.ex),
 
     // ID EX interface
     // ALU
@@ -100,19 +126,19 @@ segre_ex_stage ex_stage (
 
     // EX TL interface
     // ALU
-    .alu_res_o        (core_mem.alu_res),
+    .alu_res_o        (core_tl.alu_res),
     // Register file
-    .rf_we_o          (core_mem.rf_we),
-    .rf_waddr_o       (core_mem.rf_waddr),
-    .rf_st_data_o     (core_mem.rf_st_data),
+    .rf_we_o          (core_tl.rf_we),
+    .rf_waddr_o       (core_tl.rf_waddr),
+    .rf_st_data_o     (core_tl.rf_st_data),
     // Memop
-    .memop_type_o     (core_mem.memop_type),
-    .memop_rd_o       (core_mem.memop_rd),
-    .memop_wr_o       (core_mem.memop_wr),
-    .memop_sign_ext_o (core_mem.memop_sign_ext),
+    .memop_type_o     (core_tl.memop_type),
+    .memop_rd_o       (core_tl.memop_rd),
+    .memop_wr_o       (core_tl.memop_wr),
+    .memop_sign_ext_o (core_tl.memop_sign_ext),
     // Branch | Jal
-    .tkbr_o           (core_mem.tkbr),
-    .new_pc_o         (core_mem.new_pc)
+    .tkbr_o           (core_tl.tkbr),
+    .new_pc_o         (core_tl.new_pc)
 );
 
 segre_tl_stage tl_stage(
@@ -140,7 +166,6 @@ segre_tl_stage tl_stage(
     // Register file
     .rf_we_o            (core_mem.rf_we),
     .rf_waddr_o         (core_mem.rf_waddr),
-    .rf_st_data_o       (core_mem.rf_st_data),
     // Memop
     .memop_rd_o         (core_mem.memop_rd),
     .memop_wr_o         (core_mem.memop_wr),
@@ -149,6 +174,10 @@ segre_tl_stage tl_stage(
     // Tkbr
     .tkbr_o             (core_mem.tkbr),
     .new_pc_o           (core_mem.new_pc),
+    // Store buffer
+    .sb_hit_o           (core_mem.sb_hit),
+    .sb_data_o          (core_mem.sb_data),
+    .sb_addr_o          (core_mem.sb_addr),
 
     // MMU interface
     .mmu_data_rdy_i     (core_mmu.dc_mmu_data_rdy),
@@ -185,6 +214,7 @@ segre_mem_stage mem_stage (
     // Store Buffer
     .sb_hit_i         (core_mem.sb_hit),
     .sb_data_i        (core_mem.sb_data),
+    .sb_addr_i        (core_mem.sb_addr),
 
     // MEM WB intereface
     .op_res_o         (core_rf.data_w),

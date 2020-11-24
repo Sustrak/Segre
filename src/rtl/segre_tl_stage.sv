@@ -25,7 +25,6 @@ module segre_tl_stage (
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
-    output logic [WORD_SIZE-1:0] rf_st_data_o,
     // Memop
     output logic memop_rd_o,
     output logic memop_wr_o,
@@ -37,6 +36,7 @@ module segre_tl_stage (
     // Store buffer
     output logic sb_hit_o,
     output logic [WORD_SIZE-1:0] sb_data_o,
+    output logic [ADDR_SIZE-1:0] sb_addr_o,
 
     // MMU interface
     input logic mmu_data_rdy_i,
@@ -53,6 +53,8 @@ module segre_tl_stage (
 dcache_tag_t cache_tag;
 store_buffer_t sb;
 
+tl_fsm_state_e fsm_state;
+tl_fsm_state_e fsm_nxt_state;
 logic pipeline_hazard;
 
 assign cache_tag.req        = memop_rd_i | memop_wr_i;
@@ -61,14 +63,14 @@ assign cache_tag.addr       = mmu_data_rdy_i ? mmu_addr_i : alu_res_i;
 assign cache_tag.invalidate = 0;
 
 assign mmu_cache_access_o = cache_tag.req;
-assign mmu_addr_o = cache_tag.addr;
+assign mmu_addr_o = alu_res_i;
 
 assign pipeline_hazard_o = pipeline_hazard;
 
 // STORE BUFFER
 assign sb.req_store = memop_wr_i;
 assign sb.req_load  = memop_rd_i;
-assign sb.flush_chance = !memop_wr_i & !memop_rd_i;
+assign sb.flush_chance = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
 assign sb.addr_i    = alu_res_i;
 assign sb.data_i    = rf_st_data_i;
 assign sb.memop_data_type_i = memop_type_i;
@@ -79,7 +81,6 @@ segre_dcache_tag dcache_tag (
     .req_i        (cache_tag.req),
     .mmu_data_i   (cache_tag.mmu_data),
     .addr_i       (cache_tag.addr),
-    .lru_index_i  (cache_tag.lru_index),
     .invalidate_i (cache_tag.invalidate),
     .hit_o        (cache_tag.hit),
     .miss_o       (cache_tag.miss)
@@ -107,57 +108,70 @@ segre_store_buffer store_buffer (
 //TODO: Include the trouble from Store Buffer
 always_comb begin : pipeline_stop
     if (!rsn_i) begin
-        pipeline_hazard <= 0;
+        pipeline_hazard = 0;
     end
-    else if (mmu_data_rdy_i) begin
-        pipeline_hazard <= 0;
+    else begin
+        unique case (fsm_state)
+            HAZARD_DC_MISS, HAZARD_SB_TROUBLE: pipeline_hazard = 1;
+            TL_IDLE: pipeline_hazard = sb.trouble | cache_tag.miss;
+            default:;
+        endcase
     end
-    else if (!pipeline_hazard & cache_tag.miss) begin
-        pipeline_hazard <= 1;
-    end 
+end
+
+always_comb begin : tl_fsm
+    if (!rsn_i) begin
+        fsm_nxt_state = TL_IDLE;
+    end else begin
+        unique case (fsm_state)
+            HAZARD_DC_MISS: begin
+                if (mmu_data_i) fsm_nxt_state = TL_IDLE;
+            end
+            HAZARD_SB_TROUBLE: begin
+                if (!sb.trouble) fsm_nxt_state = TL_IDLE;
+            end
+            TL_IDLE: begin
+                if (cache_tag.miss)  fsm_nxt_state = HAZARD_DC_MISS;
+                else if (sb.trouble) fsm_nxt_state = HAZARD_SB_TROUBLE;
+                else                 fsm_nxt_state = TL_IDLE;
+            end
+            default:;
+        endcase
+    end
 end
 
 always_ff @(posedge clk_i) begin : stage_latch
     if (!pipeline_hazard) begin
         if(sb.flush_chance & sb.data_valid) begin
-            alu_res_o        <= sb.addr_o;
-            rf_we_o          <= rf_we_i;
-            rf_waddr_o       <= rf_waddr_i;
-            rf_st_data_o     <= sb.data_o;
-            memop_rd_o       <= 1'b0; 
-            memop_wr_o       <= 1'b1; 
-            memop_sign_ext_o <= memop_sign_ext_i;
+            // Flush data from store buffer to the data cache
+            sb_addr_o        <= sb.addr_o;
+            sb_data_o        <= sb.data_o;
+            sb_hit_o         <= 1'b0;
+            memop_rd_o       <= 1'b0;
+            memop_wr_o       <= sb.data_valid;
             memop_type_o     <= sb.memop_data_type_o;
-            tkbr_o           <= tkbr_i;
-            new_pc_o         <= new_pc_i;
-            mmu_miss_o       <= sb.miss; //TODO: is this used in this situation?
         end
-        else if(sb.hit) begin //Load or Store succesful at store buffer, no need to access cache
-            alu_res_o        <= sb.addr_o;
-            rf_we_o          <= rf_we_i;
-            rf_waddr_o       <= rf_waddr_i;
-            rf_st_data_o     <= sb.data_o;
+        else if(sb.hit) begin
+            //Load or Store hit at store buffer, no need to access cache
+            sb_data_o        <= sb.data_o;
+            sb_hit_o         <= sb.hit;
             memop_rd_o       <= 1'b0; //We have already read
             memop_wr_o       <= 1'b0; //We have already write
-            memop_sign_ext_o <= memop_sign_ext_i;
             memop_type_o     <= sb.memop_data_type_o;
-            tkbr_o           <= tkbr_i;
-            new_pc_o         <= new_pc_i;
-            mmu_miss_o       <= sb.miss; //TODO: is this used in this situation?
         end
         else begin
-            alu_res_o        <= alu_res_i;
-            rf_we_o          <= rf_we_i;
-            rf_waddr_o       <= rf_waddr_i;
-            rf_st_data_o     <= rf_st_data_i;
+            // Miss in store buffer or no memory operation and store buffer empty
             memop_rd_o       <= memop_rd_i;
             memop_wr_o       <= memop_wr_i;
-            memop_sign_ext_o <= memop_sign_ext_i;
             memop_type_o     <= memop_type_i;
-            tkbr_o           <= tkbr_i;
-            new_pc_o         <= new_pc_i;
-            mmu_miss_o       <= cache_tag.miss;
         end
+        alu_res_o        <= alu_res_i;
+        rf_we_o          <= rf_we_i;
+        rf_waddr_o       <= rf_waddr_i;
+        memop_sign_ext_o <= memop_sign_ext_i;
+        tkbr_o           <= tkbr_i;
+        new_pc_o         <= new_pc_i;
+        mmu_miss_o       <= cache_tag.miss & sb.miss;
     end
     else begin
         rf_we_o    <= 0;
@@ -166,6 +180,8 @@ always_ff @(posedge clk_i) begin : stage_latch
         tkbr_o     <= 0;
         mmu_miss_o <= 0;
     end
+    
+    fsm_state <= fsm_nxt_state;
 end
 
 endmodule : segre_tl_stage

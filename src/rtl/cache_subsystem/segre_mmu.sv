@@ -110,7 +110,7 @@ mor1kx_cache_lru #(.NUMWAYS(ICACHE_NUM_LANES)) ic_lru_mor1kx (
 
 always_ff @(posedge clk_i) begin : reset
     if (!rsn_i) begin
-        fsm_state <= IDLE;
+        fsm_state <= MMU_IDLE;
     end
 end
 
@@ -193,7 +193,7 @@ always_comb begin : mmu_fsm
         DCACHE_WAIT : begin
             if (mm_data_rdy_i) begin
                 if (ic_miss) fsm_nxt_state = ICACHE_REQ;
-                else fsm_nxt_state = IDLE;
+                else fsm_nxt_state = MMU_IDLE;
             end
         end
         ICACHE_REQ  : begin
@@ -202,13 +202,13 @@ always_comb begin : mmu_fsm
         ICACHE_WAIT : begin
             if (mm_data_rdy_i) begin
                 if (dc_miss) fsm_nxt_state = DCACHE_REQ;
-                else fsm_nxt_state = IDLE;
+                else fsm_nxt_state = MMU_IDLE;
             end
         end
-        IDLE  : begin
+        MMU_IDLE  : begin
             if (dc_miss) fsm_nxt_state = DCACHE_REQ;
             else if (ic_miss) fsm_nxt_state = ICACHE_REQ;
-            else fsm_nxt_state = IDLE;
+            else fsm_nxt_state = MMU_IDLE;
         end
     endcase
 end
@@ -226,7 +226,7 @@ always_comb begin : main_memory_req
         DCACHE_WAIT, ICACHE_WAIT : begin
             mm_rd_req = 0;
         end
-        IDLE: begin
+        MMU_IDLE: begin
             mm_rd_req = 0;
         end
     endcase

@@ -4,7 +4,6 @@ module segre_icache_data (
     input logic clk_i,
     input logic rsn_i,
     input logic rd_data_i,
-    input logic wr_data_i,
     input logic mmu_wr_data_i,
     input logic [WORD_SIZE-1:0] addr_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,

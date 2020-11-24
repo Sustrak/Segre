@@ -6,11 +6,11 @@ module segre_controller (
     input logic rsn_i,
 
     // State
-    output fsm_state_e state_o
+    output core_fsm_state_e state_o
 );
 
-fsm_state_e state = IF_STATE;
-fsm_state_e next_state;
+core_fsm_state_e state = IF_STATE;
+core_fsm_state_e next_state;
 
 always_ff @(posedge clk_i) begin
     next_state = IF_STATE;

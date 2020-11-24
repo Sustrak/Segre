@@ -4,9 +4,12 @@ module segre_id_stage (
     // Clock and Reset
     input logic clk_i,
     input logic rsn_i,
+    
+    // Hazard
+    input logic hazard_i,
 
     // FSM State
-    input fsm_state_e fsm_state_i,
+    input core_fsm_state_e fsm_state_i,
 
     // IF and ID stage
     input logic [WORD_SIZE-1:0] instr_i,
@@ -150,16 +153,22 @@ always_comb begin : br_src_b_mux
 end
 
 always_ff @(posedge clk_i) begin
-    alu_src_a_o      = alu_src_a;
-    alu_src_b_o      = alu_src_b;
-    rf_we_o          = (fsm_state_i == ID_STATE) ? rf_we : 1'b0;
-    rf_waddr_o       = rf_waddr;
-    memop_sign_ext_o = memop_sign_ext;
-    memop_type_o     = memop_type;
-    memop_rd_o       = (fsm_state_i == ID_STATE) ? memop_rd : 1'b0;
-    memop_wr_o       = (fsm_state_i == ID_STATE) ? memop_wr : 1'b0;
-    br_src_a_o       = br_src_a;
-    br_src_b_o       = br_src_b;
+    if (!hazard_i) begin
+        alu_src_a_o      <= alu_src_a;
+        alu_src_b_o      <= alu_src_b;
+        rf_we_o          <= (fsm_state_i == ID_STATE) ? rf_we : 1'b0;
+        rf_waddr_o       <= rf_waddr;
+        memop_sign_ext_o <= memop_sign_ext;
+        memop_type_o     <= memop_type;
+        memop_rd_o       <= (fsm_state_i == ID_STATE) ? memop_rd : 1'b0;
+        memop_wr_o       <= (fsm_state_i == ID_STATE) ? memop_wr : 1'b0;
+        br_src_a_o       <= br_src_a;
+        br_src_b_o       <= br_src_b;
+    end else begin
+        rf_we_o <= 0;
+        memop_rd_o <= 0;
+        memop_wr_o <= 0;
+    end
 end
 
 endmodule

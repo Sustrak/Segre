@@ -118,7 +118,7 @@ typedef enum logic [2:0] {
     EX_STATE,
     MEM_STATE,
     WB_STATE
-} fsm_state_e;
+} core_fsm_state_e;
 
 typedef enum logic [1:0] {
     BYTE,
@@ -131,8 +131,14 @@ typedef enum logic [2:0] {
     DCACHE_WAIT,
     ICACHE_REQ,
     ICACHE_WAIT,
-    IDLE
+    MMU_IDLE
 } mmu_fsm_state_e;
+
+typedef enum logic [1:0] {
+    HAZARD_DC_MISS,
+    HAZARD_SB_TROUBLE,
+    TL_IDLE
+} tl_fsm_state_e;
 
 /********************
 * SEGRE  DATATYPES  *
@@ -141,11 +147,19 @@ typedef struct packed {
     logic req;
     logic mmu_data;
     logic [WORD_SIZE-1:0] addr;
-    logic [DCACHE_INDEX_SIZE-1:0] lru_index;
     logic invalidate;
     logic hit;
     logic miss;
 } dcache_tag_t;
+
+typedef struct packed {
+    logic req;
+    logic mmu_data;
+    logic [WORD_SIZE-1:0] addr;
+    logic invalidate;
+    logic hit;
+    logic miss;
+} icache_tag_t;
 
 typedef struct packed {
     logic rd_data;
@@ -157,6 +171,14 @@ typedef struct packed {
     logic [DCACHE_LANE_SIZE-1:0] mmu_data;
     logic [WORD_SIZE-1:0] data_o;
 } dcache_data_t;
+
+typedef struct packed {
+    logic rd_data;
+    logic mmu_wr_data;
+    logic [WORD_SIZE-1:0] addr;
+    logic [DCACHE_LANE_SIZE-1:0] mmu_data;
+    logic [WORD_SIZE-1:0] data_o;
+} icache_data_t;
 
 typedef struct packed {
     logic req_store;
@@ -212,6 +234,8 @@ typedef struct packed {
     memop_data_type_e memop_type;
     logic tkbr;
     logic [WORD_SIZE-1:0] new_pc;
+    logic sb_hit;
+    logic [WORD_SIZE-1:0] sb_data;
 } core_tl_t;
 
 typedef struct packed {
@@ -232,6 +256,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] new_pc;
     logic sb_hit;
     logic [WORD_SIZE-1:0] sb_data;
+    logic [ADDR_SIZE-1:0] sb_addr;
 } core_mem_t;
 
 typedef struct packed {
@@ -264,5 +289,13 @@ typedef struct packed {
 typedef struct packed {
     logic tl;
 } core_hazards_t;
+
+typedef struct packed {
+    logic ifs;
+    logic id;
+    logic ex;
+    logic tl;
+    logic mem;
+} core_stage_hazards_t;
 
 endpackage : segre_pkg

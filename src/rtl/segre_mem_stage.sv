@@ -23,6 +23,7 @@ module segre_mem_stage (
     // Store buffer
     input logic sb_hit_i,
     input logic [WORD_SIZE-1:0] sb_data_i,
+    input logic [ADDR_SIZE-1:0] sb_addr_i,
 
     // MEM WB interface
     output logic [WORD_SIZE-1:0] op_res_o,
@@ -47,15 +48,13 @@ logic [WORD_SIZE-1:0] mem_data_aux;
 assign mem_data_aux = sb_hit_i ? sb_data_i : cache_data.data_o;
 
 // DCACHE_DATA
-assign cache_data.rd_data = memop_rd_i;
-assign cache_data.wr_data = sb.data_valid;
-assign cache_data.mmu_wr_data = mmu_data_rdy_i;
-assign cache_data.addr    = sb.data_valid ? sb.addr_o :
-                            mmu_data_rdy_i ? mmu_addr_i :
-                            alu_res_i;
+assign cache_data.rd_data         = memop_rd_i;
+assign cache_data.wr_data         = memop_wr_i;
+assign cache_data.mmu_wr_data     = mmu_data_rdy_i;
+assign cache_data.addr            = mmu_data_rdy_i ? mmu_addr_i : memop_rd_i ? alu_res_i : sb_addr_i;
 assign cache_data.memop_data_type = memop_type_i;
-assign cache_data.data_i  = sb.data_o;
-assign cache_data.mmu_data = mmu_data_i;
+assign cache_data.data_i          = sb_data_i;
+assign cache_data.mmu_data        = mmu_data_i;
 
 segre_dcache_data dcache_data (
     .clk_i             (clk_i),
