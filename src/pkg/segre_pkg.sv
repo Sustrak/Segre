@@ -7,6 +7,7 @@ package segre_pkg;
 parameter WORD_SIZE = 32;
 parameter ADDR_SIZE = 32;
 parameter REG_SIZE  = 5;
+parameter NOP = 32'h00000013;
 
 /********************
 * SEGRE  PARAMETERS *
@@ -116,6 +117,7 @@ typedef enum logic [2:0] {
     IF_STATE = 0,
     ID_STATE,
     EX_STATE,
+    TL_STATE,
     MEM_STATE,
     WB_STATE
 } core_fsm_state_e;
@@ -139,6 +141,11 @@ typedef enum logic [1:0] {
     HAZARD_SB_TROUBLE,
     TL_IDLE
 } tl_fsm_state_e;
+
+typedef enum logic {
+    IF_IC_MISS,
+    IF_IDLE
+} if_fsm_state_e;
 
 /********************
 * SEGRE  DATATYPES  *
@@ -287,7 +294,11 @@ typedef struct packed {
 } core_mmu_t;
 
 typedef struct packed {
+    logic ifs;
+    logic id;
+    logic ex;
     logic tl;
+    logic mem;
 } core_hazards_t;
 
 typedef struct packed {

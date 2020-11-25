@@ -77,11 +77,6 @@ always_ff @(posedge clk_i) begin
         memop_sign_ext_o <= memop_sign_ext_i;
         tkbr_o           <= tkbr;
         new_pc_o         <= alu_res;
-    end else begin
-        rf_we_o    <= 0;
-        memop_rd_o <= 0;
-        memop_wr_o <= 0;
-        tkbr_o     <= 0;
     end
 end
 

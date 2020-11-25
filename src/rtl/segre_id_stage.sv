@@ -164,10 +164,6 @@ always_ff @(posedge clk_i) begin
         memop_wr_o       <= (fsm_state_i == ID_STATE) ? memop_wr : 1'b0;
         br_src_a_o       <= br_src_a;
         br_src_b_o       <= br_src_b;
-    end else begin
-        rf_we_o <= 0;
-        memop_rd_o <= 0;
-        memop_wr_o <= 0;
     end
 end
 

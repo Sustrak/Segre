@@ -48,7 +48,7 @@ if { $use_modelsim } {
 vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=$test_name -voptargs=+acc -sv_lib lib/libdecoder $work_dir.top_tb
 
 # Add the wave to the simulation
-do scripts/wave.do
+#do scripts/wave.do
 
 # Run all
 #run -all

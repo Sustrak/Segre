@@ -105,7 +105,7 @@ module top_tb;
     endtask
 
     function bit keep_running_tb();
-        if (segre_core_if.mm_addr < tb_mem.DATA_REGION && segre_core_if.mm_rd_data == 32'hfff01073) begin
+        if (dut.if_stage.cache_data.data_o == 32'hfff01073) begin
             return 0;
         end
 

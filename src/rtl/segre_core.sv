@@ -26,7 +26,13 @@ core_mmu_t core_mmu;
 core_hazards_t core_hazards;
 core_stage_hazards_t stage_hazards;
 
+logic controller_hazard;
+
 core_fsm_state_e fsm_state;
+
+assign controller_hazard = stage_hazards.ifs | stage_hazards.id |
+                           stage_hazards.ex  | stage_hazards.tl | 
+                           stage_hazards.mem;
 
 // HAZARD CONTROL
 always_comb begin : hazard_control
@@ -34,6 +40,9 @@ always_comb begin : hazard_control
         stage_hazards.ifs = 1;
         stage_hazards.id  = 1;
         stage_hazards.ex  = 1;
+    end
+    else if(core_hazards.ifs) begin
+        stage_hazards.ifs = 1;
     end
     else begin
         stage_hazards.ifs = 0;
@@ -46,21 +55,25 @@ end
 
 segre_if_stage if_stage (
     // Clock and Reset
-    .clk_i (clk_i),
-    .rsn_i (rsn_i),
+    .clk_i         (clk_i),
+    .rsn_i         (rsn_i),
     // Hazard
-    .hazard_i    (stage_hazards.ifs),
-    // Memory
-    .instr_i     (mem_rd_data_i),
-    .pc_o        (core_if.addr),
-    .mem_rd_o    (core_if.mem_rd),
+    .hazard_i      (stage_hazards.ifs),
+    .hazard_o      (core_hazards.ifs),
     // FSM state
-    .fsm_state_i (fsm_state),
+    .fsm_state_i   (fsm_state),
     // IF ID interface
-    .instr_o     (core_id.instr),
+    .instr_o       (core_id.instr),
     // WB interface
-    .tkbr_i      (core_if.tkbr),
-    .new_pc_i    (core_if.new_pc)
+    .tkbr_i        (core_if.tkbr),
+    .new_pc_i      (core_if.new_pc),
+    // MMU interface
+    .mmu_data_i    (core_mmu.ic_mmu_data_rdy),
+    .mmu_wr_data_i (core_mmu.ic_data),
+    .mmu_addr_i    (core_mmu.ic_addr_o),
+    .ic_miss_o     (core_mmu.ic_miss),
+    .ic_addr_o     (core_mmu.ic_addr_i),
+    .ic_access_o   (core_mmu.ic_access)
 );
 
 segre_id_stage id_stage (
@@ -242,6 +255,7 @@ segre_controller controller (
     // Clock and Reset
     .clk_i (clk_i),
     .rsn_i (rsn_i),
+    .hazard_i (controller_hazard),
 
     // State
     .state_o (fsm_state)
