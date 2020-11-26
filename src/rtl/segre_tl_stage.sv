@@ -26,6 +26,7 @@ module segre_tl_stage (
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
     // Memop
+    output logic [DCACHE_INDEX_SIZE-1:0] addr_index_o,
     output logic memop_rd_o,
     output logic memop_wr_o,
     output logic memop_sign_ext_o,
@@ -82,6 +83,7 @@ segre_dcache_tag dcache_tag (
     .mmu_data_i   (cache_tag.mmu_data),
     .addr_i       (cache_tag.addr),
     .invalidate_i (cache_tag.invalidate),
+    .addr_index_o (cache_tag.addr_index),
     .hit_o        (cache_tag.hit),
     .miss_o       (cache_tag.miss)
 );
@@ -172,6 +174,7 @@ always_ff @(posedge clk_i) begin : stage_latch
         tkbr_o           <= tkbr_i;
         new_pc_o         <= new_pc_i;
         mmu_miss_o       <= cache_tag.miss & sb.miss;
+        addr_index_o     <= cache_tag.addr_index;
     end
     else begin
         rf_we_o    <= 0;

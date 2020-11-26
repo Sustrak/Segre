@@ -155,6 +155,7 @@ typedef struct packed {
     logic mmu_data;
     logic [WORD_SIZE-1:0] addr;
     logic invalidate;
+    logic [DCACHE_INDEX_SIZE-1:0] addr_index;
     logic hit;
     logic miss;
 } dcache_tag_t;
@@ -164,6 +165,7 @@ typedef struct packed {
     logic mmu_data;
     logic [WORD_SIZE-1:0] addr;
     logic invalidate;
+    logic [ICACHE_INDEX_SIZE-1:0] addr_index;
     logic hit;
     logic miss;
 } icache_tag_t;
@@ -243,6 +245,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] new_pc;
     logic sb_hit;
     logic [WORD_SIZE-1:0] sb_data;
+    logic [DCACHE_INDEX_SIZE-1:0] addr_index;
 } core_tl_t;
 
 typedef struct packed {
@@ -264,6 +267,7 @@ typedef struct packed {
     logic sb_hit;
     logic [WORD_SIZE-1:0] sb_data;
     logic [ADDR_SIZE-1:0] sb_addr;
+    //logic [DCACHE_INDEX_SIZE-1:0] addr_index;
 } core_mem_t;
 
 typedef struct packed {

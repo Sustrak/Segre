@@ -60,6 +60,7 @@ segre_icache_tag icache_tag (
     .mmu_data_i   (cache_tag.mmu_data),
     .addr_i       (cache_tag.addr),
     .invalidate_i (cache_tag.invalidate),
+    .addr_index_o (cache_tag.addr_index),
     .hit_o        (cache_tag.hit),
     .miss_o       (cache_tag.miss)
 );
@@ -71,6 +72,7 @@ segre_icache_data icache_data (
     .mmu_wr_data_i (mmu_wr_data_i),
     .addr_i        (cache_data.addr),
     .mmu_data_i    (mmu_data_i),
+    .addr_index_i  (cache_tag.addr_index),
     .data_o        (cache_data.data_o)
 );
 

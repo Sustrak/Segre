@@ -10,22 +10,24 @@ module segre_dcache_data (
     input memop_data_type_e memop_data_type_i,
     input logic [WORD_SIZE-1:0] data_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
+    input logic [DCACHE_INDEX_SIZE-1:0] addr_index_i,
     output logic [WORD_SIZE-1:0] data_o
 );
 
-localparam ADDR_BYTE_SIZE  = ICACHE_BYTE_SIZE;
-localparam ADDR_INDEX_SIZE = ICACHE_INDEX_SIZE;
-localparam LANE_SIZE       = ICACHE_LANE_SIZE;
-localparam TAG_SIZE        = ICACHE_TAG_SIZE;
-localparam NUM_LANES       = ICACHE_NUM_LANES;
-
+localparam ADDR_BYTE_SIZE  = DCACHE_BYTE_SIZE;
+localparam ADDR_INDEX_SIZE = DCACHE_INDEX_SIZE;
+localparam LANE_SIZE       = DCACHE_LANE_SIZE;
+localparam TAG_SIZE        = DCACHE_TAG_SIZE;
+localparam NUM_LANES       = DCACHE_NUM_LANES;
+localparam INDEX_SIZE = DCACHE_INDEX_SIZE;
 logic [NUM_LANES-1:0][LANE_SIZE/8-1:0][7:0] cache_data;
 
 logic [ADDR_BYTE_SIZE-1:0] addr_byte;
 logic [ADDR_INDEX_SIZE-1:0] addr_index;
 logic [WORD_SIZE-1:0] data;
 
-assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
+assign addr_index = addr_index_i;
+//assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
 
 assign addr_byte  = addr_i[ADDR_BYTE_SIZE-1:0];
 

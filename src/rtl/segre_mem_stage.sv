@@ -13,6 +13,7 @@ module segre_mem_stage (
     input logic [REG_SIZE-1:0] rf_waddr_i,
     input logic [WORD_SIZE-1:0] rf_st_data_i, // TODO: Change this name to memop_wr_data_i
     // Memop
+    input logic [DCACHE_INDEX_SIZE-1:0] addr_index_i,
     input memop_data_type_e memop_type_i,
     input logic memop_sign_ext_i,
     input logic memop_rd_i,
@@ -66,6 +67,7 @@ segre_dcache_data dcache_data (
     .memop_data_type_i (cache_data.memop_data_type),
     .data_i            (cache_data.data_i),
     .mmu_data_i        (cache_data.mmu_data),
+    .addr_index_i      (addr_index_i),
     .data_o            (cache_data.data_o)
 );
 

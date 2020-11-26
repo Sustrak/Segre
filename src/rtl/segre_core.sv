@@ -180,6 +180,7 @@ segre_tl_stage tl_stage(
     .rf_we_o            (core_mem.rf_we),
     .rf_waddr_o         (core_mem.rf_waddr),
     // Memop
+    .addr_index_o       (core_tl.addr_index),
     .memop_rd_o         (core_mem.memop_rd),
     .memop_wr_o         (core_mem.memop_wr),
     .memop_sign_ext_o   (core_mem.memop_sign_ext),
@@ -217,6 +218,7 @@ segre_mem_stage mem_stage (
     .rf_waddr_i       (core_mem.rf_waddr),
     .rf_st_data_i     (core_mem.rf_st_data),
     // Memop
+    .addr_index_i     (core_tl.addr_index),
     .memop_type_i     (core_mem.memop_type),
     .memop_rd_i       (core_mem.memop_rd),
     .memop_wr_i       (core_mem.memop_wr),
