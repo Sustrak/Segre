@@ -32,7 +32,7 @@ end
 always_ff @(posedge clk_i) begin
     if (!rsn_i)
         state = IF_STATE;
-    else
+    else if (!hazard_i)
         state = next_state;
 end
 

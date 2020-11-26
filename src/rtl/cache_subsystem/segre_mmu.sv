@@ -108,12 +108,6 @@ mor1kx_cache_lru #(.NUMWAYS(ICACHE_NUM_LANES)) ic_lru_mor1kx (
     .lru_post (ic_lru_post)
 );
 
-always_ff @(posedge clk_i) begin : reset
-    if (!rsn_i) begin
-        fsm_state <= MMU_IDLE;
-    end
-end
-
 always_comb begin : dc_lru
     if (!rsn_i) begin
         dc_lru_access  = 0;
@@ -233,18 +227,26 @@ always_comb begin : main_memory_req
 end
 
 always_ff @(posedge clk_i) begin
-    fsm_state   <= fsm_nxt_state;
-    // Main memory
-    mm_rd_req_o <= mm_rd_req;
-    mm_addr_o   <= mm_addr;
-    // Data cache
-    dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
-    dc_data_o <= dc_mm_data;
-    dc_addr_o <= {{DCACHE_TAG_SIZE{1'b0}}, dc_lru_index, {DCACHE_BYTE_SIZE{1'b0}}};
-    // Instruction cache
-    ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
-    ic_data_o <= ic_mm_data;
-    ic_addr_o <= {{ICACHE_TAG_SIZE{1'b0}}, ic_lru_index, {ICACHE_BYTE_SIZE{1'b0}}};
+    if (!rsn_i) begin
+        fsm_state <= MMU_IDLE;
+        ic_mmu_data_rdy_o <= 0;
+        dc_mmu_data_rdy_o <= 0;
+        mm_rd_req_o <= 0;
+    end
+    else begin
+        fsm_state   <= fsm_nxt_state;
+        // Main memory
+        mm_rd_req_o <= mm_rd_req;
+        mm_addr_o   <= mm_addr;
+        // Data cache
+        dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
+        dc_data_o <= dc_mm_data;
+        dc_addr_o <= {{DCACHE_TAG_SIZE{1'b0}}, dc_lru_index, {DCACHE_BYTE_SIZE{1'b0}}};
+        // Instruction cache
+        ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
+        ic_data_o <= ic_mm_data;
+        ic_addr_o <= {{ICACHE_TAG_SIZE{1'b0}}, ic_lru_index, {ICACHE_BYTE_SIZE{1'b0}}};
+    end
 end
 
 endmodule : segre_mmu

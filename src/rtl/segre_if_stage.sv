@@ -41,10 +41,15 @@ logic pipeline_hazard;
 
 assign cache_tag.addr    = mmu_data_i ? mmu_addr_i : pc;
 assign cache_tag.req = (if_fsm_state == IF_IDLE && fsm_state_i == IF_STATE) ? 1'b1 : 1'b0;
-assign ic_access_o = cache_tag.req;
+assign cache_tag.invalidate = 1'b0;
+assign cache_tag.mmu_data = mmu_data_i;
 
 assign cache_data.rd_data = fsm_state_i == IF_STATE ? 1'b1 : 1'b0;
 assign cache_data.addr    = mmu_data_i ? mmu_addr_i : pc;
+
+assign ic_access_o = cache_tag.req & rsn_i;
+assign ic_miss_o = cache_tag.miss;
+assign ic_addr_o = pc;
 
 assign hazard_o = pipeline_hazard;
 
@@ -52,9 +57,9 @@ segre_icache_tag icache_tag (
     .clk_i        (clk_i),
     .rsn_i        (rsn_i),
     .req_i        (cache_tag.req),
-    .mmu_data_i   (mmu_data_i),
+    .mmu_data_i   (cache_tag.mmu_data),
     .addr_i       (cache_tag.addr),
-    .invalidate_i (1'b0),
+    .invalidate_i (cache_tag.invalidate),
     .hit_o        (cache_tag.hit),
     .miss_o       (cache_tag.miss)
 );
