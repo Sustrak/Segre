@@ -8,7 +8,7 @@ module segre_mmu (
     input  logic [ADDR_SIZE-1:0] dc_addr_i,
     input  logic dc_store_i,
     input  memop_data_type_e dc_store_data_type_i,
-    input  logic [DCACHE_LANE_SIZE-1:0] dc_data_i,
+    input  logic [WORD_SIZE-1:0] dc_data_i, 
     input  logic dc_access_i,
     output logic dc_mmu_data_rdy_o,
     output logic [DCACHE_LANE_SIZE-1:0] dc_data_o,

@@ -38,7 +38,9 @@ module segre_mem_stage (
     // MMU
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
-    input logic [ADDR_SIZE-1:0] mmu_addr_i
+    input logic [ADDR_SIZE-1:0] mmu_addr_i,
+    output logic [WORD_SIZE-1:0] data_o,
+    output memop_data_type_e store_data_type_o
 );
 
 dcache_data_t cache_data;
@@ -56,6 +58,9 @@ assign cache_data.addr            = mmu_data_rdy_i ? mmu_addr_i : memop_rd_i ? a
 assign cache_data.memop_data_type = memop_type_i;
 assign cache_data.data_i          = sb_data_i;
 assign cache_data.mmu_data        = mmu_data_i;
+//MMU outputs
+assign data_o = cache_data.data_o;
+assign store_data_type_o = cache_data.store_data_type_o;
 
 segre_dcache_data dcache_data (
     .clk_i             (clk_i),
@@ -68,7 +73,8 @@ segre_dcache_data dcache_data (
     .data_i            (cache_data.data_i),
     .mmu_data_i        (cache_data.mmu_data),
     .addr_index_i      (addr_index_i),
-    .data_o            (cache_data.data_o)
+    .data_o            (cache_data.data_o),
+    .store_data_type_o (cache_data.store_data_type_o)
 );
 
 always_comb begin : sign_extension

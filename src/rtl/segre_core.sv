@@ -207,36 +207,42 @@ segre_tl_stage tl_stage(
 
 segre_mem_stage mem_stage (
     // Clock and Reset
-    .clk_i            (clk_i),
-    .rsn_i            (rsn_i),
-
+    .clk_i             (clk_i),
+    .rsn_i             (rsn_i),
     // TL MEM interface
     // ALU
-    .alu_res_i        (core_mem.alu_res),
+    .alu_res_i         (core_mem.alu_res),
     // Register file
-    .rf_we_i          (core_mem.rf_we),
-    .rf_waddr_i       (core_mem.rf_waddr),
-    .rf_st_data_i     (core_mem.rf_st_data),
+    .rf_we_i           (core_mem.rf_we),
+    .rf_waddr_i        (core_mem.rf_waddr),
+    .rf_st_data_i      (core_mem.rf_st_data),
     // Memop
-    .addr_index_i     (core_tl.addr_index),
-    .memop_type_i     (core_mem.memop_type),
-    .memop_rd_i       (core_mem.memop_rd),
-    .memop_wr_i       (core_mem.memop_wr),
-    .memop_sign_ext_i (core_mem.memop_sign_ext),
+    .addr_index_i      (core_tl.addr_index),
+    .memop_type_i      (core_mem.memop_type),
+    .memop_sign_ext_i  (core_mem.memop_sign_ext),
+    .memop_rd_i        (core_mem.memop_rd),
+    .memop_wr_i        (core_mem.memop_wr),
     // Branch | Jal
-    .tkbr_i           (core_mem.tkbr),
-    .new_pc_i         (core_mem.new_pc),
+    .tkbr_i            (core_mem.tkbr),
+    .new_pc_i          (core_mem.new_pc),
     // Store Buffer
-    .sb_hit_i         (core_mem.sb_hit),
-    .sb_data_i        (core_mem.sb_data),
-    .sb_addr_i        (core_mem.sb_addr),
-
+    .sb_hit_i          (core_mem.sb_hit),
+    .sb_data_i         (core_mem.sb_data),
+    .sb_addr_i         (core_mem.sb_addr),
     // MEM WB intereface
-    .op_res_o         (core_rf.data_w),
-    .rf_we_o          (core_rf.we),
-    .rf_waddr_o       (core_rf.waddr_w),
-    .tkbr_o           (core_if.tkbr),
-    .new_pc_o         (core_if.new_pc)
+    .op_res_o          (core_rf.data_w),
+    //Register file
+    .rf_we_o           (core_rf.we),
+    .rf_waddr_o        (core_rf.waddr_w),
+    //Branch | Jal
+    .tkbr_o            (core_if.tkbr),
+    .new_pc_o          (core_if.new_pc),
+    //MMU
+    .mmu_data_rdy_i    (),
+    .mmu_data_i        ()
+    .mmu_addr_i        (),
+    .data_o            (core_mmu.dc_data_i),
+    .store_data_type_o (core_mmu.dc_store_data_type_i)
 );
 
 segre_register_file segre_rf (
@@ -264,33 +270,34 @@ segre_controller controller (
 );
 
 segre_mmu mmu (
-    .clk_i             (clk_i),
-    .rsn_i             (rsn_i),
+    .clk_i                (clk_i),
+    .rsn_i                (rsn_i),
     // Data chache
-    .dc_miss_i         (core_mmu.dc_miss),
-    .dc_addr_i         (core_mmu.dc_addr_i),
-    .dc_store_i        (core_mmu.dc_store),
-    .dc_data_i         (core_mmu.dc_data_i),
-    .dc_access_i       (core_mmu.dc_access),
-    .dc_mmu_data_rdy_o (core_mmu.dc_mmu_data_rdy),
-    .dc_data_o         (core_mmu.dc_data_o),
-    .dc_addr_o         (core_mmu.dc_addr_o),
+    .dc_miss_i            (core_mmu.dc_miss),
+    .dc_addr_i            (core_mmu.dc_addr_i),
+    .dc_store_i           (core_mmu.dc_store),
+    .dc_store_data_type_i (core_mmu.dc_store_data_type_i),
+    .dc_data_i            (core_mmu.dc_data_i),
+    .dc_access_i          (core_mmu.dc_access),
+    .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),
+    .dc_data_o            (core_mmu.dc_data_o),
+    .dc_addr_o            (core_mmu.dc_addr_o),
     // Instruction cache
-    .ic_miss_i         (core_mmu.ic_miss),
-    .ic_addr_i         (core_mmu.ic_addr_i),
-    .ic_access_i       (core_mmu.ic_access),
-    .ic_mmu_data_rdy_o (core_mmu.ic_mmu_data_rdy),
-    .ic_data_o         (core_mmu.ic_data),
-    .ic_addr_o         (core_mmu.ic_addr_o),
+    .ic_miss_i            (core_mmu.ic_miss),
+    .ic_addr_i            (core_mmu.ic_addr_i),
+    .ic_access_i          (core_mmu.ic_access),
+    .ic_mmu_data_rdy_o    (core_mmu.ic_mmu_data_rdy),
+    .ic_data_o            (core_mmu.ic_data),
+    .ic_addr_o            (core_mmu.ic_addr_o),
     // Main memory
-    .mm_data_rdy_i     (mm_data_rdy_i),
-    .mm_data_i         (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this
-    .mm_rd_req_o       (mm_rd_o),
-    .mm_wr_req_o       (mm_wr_o),
-    .mm_wr_data_type_o (mm_wr_data_type_o),
-    .mm_addr_o         (mm_addr_o),
-    .mm_wr_addr_o      (mm_wr_addr_o),
-    .mm_data_o         (mm_wr_data_o)
+    .mm_data_rdy_i        (mm_data_rdy_i),
+    .mm_data_i            (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this
+    .mm_rd_req_o          (mm_rd_o),
+    .mm_wr_req_o          (mm_wr_o),
+    .mm_wr_data_type_o    (mm_wr_data_type_o),
+    .mm_addr_o            (mm_addr_o),
+    .mm_wr_addr_o         (mm_wr_addr_o),
+    .mm_data_o            (mm_wr_data_o)
 );
 
 endmodule : segre_core

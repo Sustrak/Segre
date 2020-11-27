@@ -4,9 +4,9 @@ module segre_icache_data (
     input logic clk_i,
     input logic rsn_i,
     input logic rd_data_i,
-    input logic mmu_wr_data_i,
+    input logic [DCACHE_LANE_SIZE-1:0] mmu_wr_data_i,
     input logic [WORD_SIZE-1:0] addr_i,
-    input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
+    input logic mmu_data_i,
     input logic [ICACHE_INDEX_SIZE-1:0] addr_index_i,
     output logic [WORD_SIZE-1:0] data_o
 );
@@ -47,8 +47,8 @@ always_comb begin : cache_read
 end
 
 always_ff @(posedge clk_i) begin : cache_write
-    if (mmu_wr_data_i) begin
-        cache_data[addr_index] <= mmu_data_i;
+    if (mmu_data_i) begin
+        cache_data[addr_index] <= mmu_wr_data_i;
     end
 end
 

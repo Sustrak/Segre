@@ -11,7 +11,8 @@ module segre_dcache_data (
     input logic [WORD_SIZE-1:0] data_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
     input logic [DCACHE_INDEX_SIZE-1:0] addr_index_i,
-    output logic [WORD_SIZE-1:0] data_o
+    output logic [WORD_SIZE-1:0] data_o,
+    output memop_data_type_e store_data_type_o //Type of store for the write-through
 );
 
 localparam ADDR_BYTE_SIZE  = DCACHE_BYTE_SIZE;
@@ -26,6 +27,7 @@ logic [ADDR_BYTE_SIZE-1:0] addr_byte;
 logic [ADDR_INDEX_SIZE-1:0] addr_index;
 logic [WORD_SIZE-1:0] data;
 
+assign store_data_type_o = memop_data_type_i;
 assign addr_index = addr_index_i;
 //assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
 
