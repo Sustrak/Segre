@@ -238,9 +238,9 @@ segre_mem_stage mem_stage (
     .tkbr_o            (core_if.tkbr),
     .new_pc_o          (core_if.new_pc),
     //MMU
-    .mmu_data_rdy_i    (),
-    .mmu_data_i        ()
-    .mmu_addr_i        (),
+    .mmu_data_rdy_i    (core_mmu.dc_mmu_data_rdy),
+    .mmu_data_i        (core_mmu.dc_data_o),
+    .mmu_addr_i        (core_mmu.dc_addr_o),
     .data_o            (core_mmu.dc_data_i),
     .store_data_type_o (core_mmu.dc_store_data_type_i)
 );

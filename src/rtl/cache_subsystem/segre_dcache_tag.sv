@@ -32,7 +32,7 @@ logic  tag_hit;
 
 // Help Functions
 function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_LANES-1:0] one_hot);
-    logic [INDEX_SIZE-1:0] ret;
+    static logic [INDEX_SIZE-1:0] ret = 0;
     foreach(one_hot[index]) begin
         if (one_hot[index] == 1'b1) begin
             ret |= index;
@@ -70,14 +70,12 @@ end
 
 always_comb begin : tag_rd
     for(int i=0; i<NUM_LANES; i++) begin
-        hit_vector[i] <= (cache_tags[i].tag == addr_tag) & cache_tags[i].valid;
+        hit_vector[i] = (cache_tags[i].tag == addr_tag) & cache_tags[i].valid;
     end
     tag_hit = |hit_vector;
-    //tag_hit = (cache_tags[addr_index].tag == addr_tag) & cache_tags[addr_index].valid;
 end
 
 assign addr_index_o = one_hot_to_binary(hit_vector);
-
 assign hit_o = tag_hit & req_i;
 assign miss_o = ~tag_hit & req_i;
 
