@@ -31,13 +31,12 @@ logic  tag_hit;
 
 // Help Functions
 function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_LANES-1:0] one_hot);
-    static logic [INDEX_SIZE-1:0] ret = 0;
-    foreach(one_hot[index]) begin
-        if (one_hot[index] == 1'b1) begin
-            ret |= index;
-        end
-    end
-    return ret;
+    unique case (one_hot)
+        1 : return 0;
+        2 : return 1;
+        4 : return 2;
+        8 : return 3;
+    endcase
 endfunction
 
 always_ff @(posedge clk_i) begin : tag_reset

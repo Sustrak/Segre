@@ -31,8 +31,8 @@ module segre_mmu (
     output logic [WORD_SIZE-1:0] mm_data_o
 );
 
-localparam DC_LRU_WITH = DCACHE_NUM_LANES*(DCACHE_NUM_LANES-1) >> 1;
-localparam IC_LRU_WITH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
+localparam DC_LRU_WIDTH = DCACHE_NUM_LANES*(DCACHE_NUM_LANES-1) >> 1;
+localparam IC_LRU_WIDTH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
 
 // Data cache
 logic dc_miss;
@@ -45,7 +45,7 @@ logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
 logic [DCACHE_INDEX_SIZE-1:0] dc_addr_index;
 
 // Data cache LRU
-logic [DC_LRU_WITH-1:0] dc_lru_current, dc_lru_updated;
+logic [DC_LRU_WIDTH-1:0] dc_lru_current, dc_lru_updated;
 logic [DCACHE_NUM_LANES-1:0] dc_lru_access, dc_lru_pre, dc_lru_post;
 
 // Instruction cache
@@ -59,7 +59,7 @@ logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index;
 logic [DCACHE_INDEX_SIZE-1:0] ic_addr_index;
 
 // Data cache LRU
-logic [IC_LRU_WITH-1:0] ic_lru_current, ic_lru_updated;
+logic [IC_LRU_WIDTH-1:0] ic_lru_current, ic_lru_updated;
 logic [ICACHE_NUM_LANES-1:0] ic_lru_access, ic_lru_pre, ic_lru_post;
 
 // Main memory
@@ -74,17 +74,25 @@ mmu_fsm_state_e fsm_nxt_state;
 
 // Help Functions
 function logic[DCACHE_INDEX_SIZE-1:0] one_hot_to_binary(logic [DCACHE_NUM_LANES-1:0] one_hot);
-    logic [DCACHE_INDEX_SIZE-1:0] ret;
-    foreach(one_hot[index]) begin
-        if (one_hot[index] == 1'b1) begin
-            ret |= index;
-        end
-    end
-    return ret;
-endfunction
+    unique case (one_hot)
+        1 : return 0;
+        2 : return 1;
+        4 : return 2;
+        8 : return 3;
+    endcase
+endfunction : one_hot_to_binary
 
-assign dc_addr_index = dc_addr_i[DCACHE_INDEX_SIZE+DCACHE_BYTE_SIZE-1:DCACHE_BYTE_SIZE];
-assign ic_addr_index = dc_addr_i[ICACHE_INDEX_SIZE+ICACHE_BYTE_SIZE-1:ICACHE_BYTE_SIZE];
+function logic[ICACHE_NUM_LANES-1:0] binary_to_one_hot(logic [ICACHE_INDEX_SIZE-1:0] index);
+    unique case (index)
+        0 : return 1;
+        1 : return 2;
+        2 : return 4;
+        3 : return 8;
+    endcase
+endfunction : binary_to_one_hot
+
+assign dc_addr_index = dc_addr_i[DCACHE_INDEX_SIZE-1:0];
+assign ic_addr_index = ic_addr_i[ICACHE_INDEX_SIZE-1:0];
 
 // Bypass store signals directly to main memory
 assign mm_wr_req_o = dc_store_i;
@@ -114,7 +122,7 @@ always_comb begin : dc_lru
         dc_lru_current = 0;
     end
     else if (dc_access_i && !dc_miss_i) begin
-        dc_lru_access = dc_addr_index;
+        dc_lru_access = binary_to_one_hot(dc_addr_index);
     end
     else begin
         dc_lru_access  = 0;
@@ -129,7 +137,7 @@ always_comb begin : ic_lru
         ic_lru_current = 0;
     end
     else if (ic_access_i && !ic_miss_i) begin
-        ic_lru_access = ic_addr_index;
+        ic_lru_access = binary_to_one_hot(ic_addr_index);
     end
     else begin
         ic_lru_access  = 0;
