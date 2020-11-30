@@ -55,25 +55,25 @@ end
 
 segre_if_stage if_stage (
     // Clock and Reset
-    .clk_i         (clk_i),
-    .rsn_i         (rsn_i),
+    .clk_i           (clk_i),
+    .rsn_i           (rsn_i),
     // Hazard
-    .hazard_i      (stage_hazards.ifs),
-    .hazard_o      (core_hazards.ifs),
+    .hazard_i        (stage_hazards.ifs),
+    .hazard_o        (core_hazards.ifs),
     // FSM state
-    .fsm_state_i   (fsm_state),
+    .fsm_state_i     (fsm_state),
     // IF ID interface
-    .instr_o       (core_id.instr),
+    .instr_o         (core_id.instr),
     // WB interface
-    .tkbr_i        (core_if.tkbr),
-    .new_pc_i      (core_if.new_pc),
+    .tkbr_i          (core_if.tkbr),
+    .new_pc_i        (core_if.new_pc),
     // MMU interface
-    .mmu_data_i    (core_mmu.ic_mmu_data_rdy),
-    .mmu_wr_data_i (core_mmu.ic_data),
-    .mmu_addr_i    (core_mmu.ic_addr_o),
-    .ic_miss_o     (core_mmu.ic_miss),
-    .ic_addr_o     (core_mmu.ic_addr_i),
-    .ic_access_o   (core_mmu.ic_access)
+    .mmu_data_i      (core_mmu.ic_mmu_data_rdy),
+    .mmu_wr_data_i   (core_mmu.ic_data),
+    .mmu_lru_index_i (core_mmu.ic_lru_index),
+    .ic_miss_o       (core_mmu.ic_miss),
+    .ic_addr_o       (core_mmu.ic_addr_i),
+    .ic_access_o     (core_mmu.ic_access)
 );
 
 segre_id_stage id_stage (
@@ -196,7 +196,7 @@ segre_tl_stage tl_stage(
     // MMU interface
     .mmu_data_rdy_i     (core_mmu.dc_mmu_data_rdy),
     .mmu_data_i         (core_mmu.dc_data_o),
-    .mmu_addr_i         (core_mmu.dc_addr_o),
+    .mmu_lru_index_i    (core_mmu.dc_lru_index),
     .mmu_miss_o         (core_mmu.dc_miss),
     .mmu_addr_o         (core_mmu.dc_addr_i),
     .mmu_cache_access_o (core_mmu.dc_access),
@@ -240,7 +240,7 @@ segre_mem_stage mem_stage (
     //MMU
     .mmu_data_rdy_i    (core_mmu.dc_mmu_data_rdy),
     .mmu_data_i        (core_mmu.dc_data_o),
-    .mmu_addr_i        (core_mmu.dc_addr_o),
+    .mmu_lru_index_i   (core_mmu.dc_lru_index),
     .data_o            (core_mmu.dc_data_i),
     .store_data_type_o (core_mmu.dc_store_data_type_i)
 );
@@ -281,14 +281,14 @@ segre_mmu mmu (
     .dc_access_i          (core_mmu.dc_access),
     .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),
     .dc_data_o            (core_mmu.dc_data_o),
-    .dc_addr_o            (core_mmu.dc_addr_o),
+    .dc_lru_index_o       (core_mmu.dc_lru_index),
     // Instruction cache
     .ic_miss_i            (core_mmu.ic_miss),
     .ic_addr_i            (core_mmu.ic_addr_i),
     .ic_access_i          (core_mmu.ic_access),
     .ic_mmu_data_rdy_o    (core_mmu.ic_mmu_data_rdy),
     .ic_data_o            (core_mmu.ic_data),
-    .ic_addr_o            (core_mmu.ic_addr_o),
+    .ic_lru_index_o       (core_mmu.ic_lru_index),
     // Main memory
     .mm_data_rdy_i        (mm_data_rdy_i),
     .mm_data_i            (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this

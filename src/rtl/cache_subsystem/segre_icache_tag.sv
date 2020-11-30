@@ -5,7 +5,8 @@ module segre_icache_tag
       input logic rsn_i,
       input logic req_i,
       input logic mmu_data_i,
-      input logic [WORD_SIZE-1:0] addr_i,
+      input logic [ICACHE_INDEX_SIZE-1:0] index_i,
+      input logic [ICACHE_TAG_SIZE-1:0] tag_i,
       input logic invalidate_i,
       output logic [ICACHE_INDEX_SIZE-1:0] addr_index_o,
       output logic hit_o,
@@ -25,8 +26,6 @@ typedef struct packed {
 } tags_t;
 
 tags_t [NUM_LANES-1:0] cache_tags;
-logic  [TAG_SIZE-1:0] addr_tag;
-logic  [ADDR_INDEX_SIZE-1:0] addr_index;
 logic  [NUM_LANES-1:0] hit_vector;
 logic  tag_hit;
 
@@ -40,9 +39,6 @@ function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_LANES-1:0] one_hot);
     end
     return ret;
 endfunction
-
-assign addr_tag   = addr_i[WORD_SIZE-1:ADDR_INDEX_SIZE+ADDR_BYTE_SIZE];
-assign addr_index = addr_i[ADDR_INDEX_SIZE+ADDR_BYTE_SIZE-1:ADDR_BYTE_SIZE];
 
 always_ff @(posedge clk_i) begin : tag_reset
     if (!rsn_i) begin
@@ -63,14 +59,14 @@ end
 
 always_ff @(posedge clk_i) begin : update_tag
     if (mmu_data_i) begin
-        cache_tags[addr_index].valid <= 1;
-        cache_tags[addr_index].tag <= addr_tag;
+        cache_tags[index_i].valid <= 1;
+        cache_tags[index_i].tag <= tag_i;
     end
 end
 
 always_comb begin : tag_rd
     for(int i=0; i<NUM_LANES; i++) begin
-        hit_vector[i] = (cache_tags[i].tag == addr_tag) & cache_tags[i].valid;
+        hit_vector[i] = (cache_tags[i].tag == tag_i) & cache_tags[i].valid;
     end
     tag_hit = |hit_vector;
 end

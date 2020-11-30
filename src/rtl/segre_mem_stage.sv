@@ -38,7 +38,7 @@ module segre_mem_stage (
     // MMU
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
-    input logic [ADDR_SIZE-1:0] mmu_addr_i,
+    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
     output logic [WORD_SIZE-1:0] data_o,
     output memop_data_type_e store_data_type_o
 );
@@ -54,7 +54,8 @@ assign mem_data_aux = sb_hit_i ? sb_data_i : cache_data.data_o;
 assign cache_data.rd_data         = memop_rd_i;
 assign cache_data.wr_data         = memop_wr_i;
 assign cache_data.mmu_wr_data     = mmu_data_rdy_i;
-assign cache_data.addr            = mmu_data_rdy_i ? mmu_addr_i : memop_rd_i ? alu_res_i : sb_addr_i;
+assign cache_data.index           = mmu_data_rdy_i ? mmu_lru_index_i : addr_index_i;
+assign cache_data.byte_i          = alu_res_i[DCACHE_BYTE_SIZE-1:0];
 assign cache_data.memop_data_type = memop_type_i;
 assign cache_data.data_i          = sb_data_i;
 assign cache_data.mmu_data        = mmu_data_i;
@@ -68,11 +69,11 @@ segre_dcache_data dcache_data (
     .rd_data_i         (cache_data.rd_data),
     .wr_data_i         (cache_data.wr_data),
     .mmu_wr_data_i     (cache_data.mmu_wr_data),
-    .addr_i            (cache_data.addr),
+    .index_i           (cache_data.index),
+    .byte_i            (cache_data.byte_i),
     .memop_data_type_i (cache_data.memop_data_type),
     .data_i            (cache_data.data_i),
     .mmu_data_i        (cache_data.mmu_data),
-    .addr_index_i      (addr_index_i),
     .data_o            (cache_data.data_o),
     .store_data_type_o (cache_data.store_data_type_o)
 );

@@ -18,7 +18,7 @@ parameter DCACHE_BYTES_PER_LANE = 16;
 parameter DCACHE_LANE_SIZE = DCACHE_BYTES_PER_LANE * 8;
 parameter DCACHE_BYTE_SIZE = $clog2(DCACHE_BYTES_PER_LANE);
 parameter DCACHE_INDEX_SIZE = $clog2(DCACHE_NUM_LANES);
-parameter DCACHE_TAG_SIZE = ADDR_SIZE - DCACHE_BYTE_SIZE - DCACHE_INDEX_SIZE;
+parameter DCACHE_TAG_SIZE = ADDR_SIZE - DCACHE_BYTE_SIZE;
 
 /** INSTRUCTIONS CACHE **/
 parameter ICACHE_NUM_LANES = 4;
@@ -26,7 +26,7 @@ parameter ICACHE_BYTES_PER_LANE = 16;
 parameter ICACHE_LANE_SIZE = ICACHE_BYTES_PER_LANE * 8;
 parameter ICACHE_BYTE_SIZE = $clog2(ICACHE_BYTES_PER_LANE);
 parameter ICACHE_INDEX_SIZE = $clog2(ICACHE_NUM_LANES);
-parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE - ICACHE_INDEX_SIZE;
+parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE;
 
 /** STORE BUFFER **/
 parameter STORE_BUFFER_NUM_ELEMS = 2;
@@ -153,7 +153,8 @@ typedef enum logic {
 typedef struct packed {
     logic req;
     logic mmu_data;
-    logic [WORD_SIZE-1:0] addr;
+    logic [DCACHE_INDEX_SIZE-1:0] index;
+    logic [DCACHE_TAG_SIZE-1:0] tag;
     logic invalidate;
     logic [DCACHE_INDEX_SIZE-1:0] addr_index;
     logic hit;
@@ -163,7 +164,8 @@ typedef struct packed {
 typedef struct packed {
     logic req;
     logic mmu_data;
-    logic [WORD_SIZE-1:0] addr;
+    logic [ICACHE_INDEX_SIZE-1:0] index;
+    logic [ICACHE_TAG_SIZE-1:0] tag;
     logic invalidate;
     logic [ICACHE_INDEX_SIZE-1:0] addr_index;
     logic hit;
@@ -174,9 +176,10 @@ typedef struct packed {
     logic rd_data;
     logic wr_data;
     logic mmu_wr_data;
-    logic [WORD_SIZE-1:0] addr;
     memop_data_type_e memop_data_type;
     logic [WORD_SIZE-1:0] data_i;
+    logic [DCACHE_INDEX_SIZE-1:0] index;
+    logic [DCACHE_BYTE_SIZE-1:0] byte_i;
     logic [DCACHE_LANE_SIZE-1:0] mmu_data;
     logic [WORD_SIZE-1:0] data_o;
     memop_data_type_e store_data_type_o;
@@ -184,9 +187,10 @@ typedef struct packed {
 
 typedef struct packed {
     logic rd_data;
-    logic mmu_wr_data;
-    logic [WORD_SIZE-1:0] addr;
-    logic [DCACHE_LANE_SIZE-1:0] mmu_data;
+    logic mmu_data;
+    logic [ICACHE_INDEX_SIZE-1:0] index;
+    logic [ICACHE_BYTE_SIZE-1:0] byte_i;
+    logic [ICACHE_LANE_SIZE-1:0] mmu_wr_data;
     logic [WORD_SIZE-1:0] data_o;
 } icache_data_t;
 
@@ -290,13 +294,13 @@ typedef struct packed {
     logic dc_access;
     logic dc_mmu_data_rdy;
     logic [DCACHE_LANE_SIZE-1:0] dc_data_o;
-    logic [ADDR_SIZE-1:0] dc_addr_o;
+    logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
     logic ic_miss;
     logic [ADDR_SIZE-1:0] ic_addr_i;
     logic ic_access;
     logic ic_mmu_data_rdy;
     logic [ICACHE_LANE_SIZE-1:0] ic_data;
-    logic [ADDR_SIZE-1:0] ic_addr_o;
+    logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index;
 } core_mmu_t;
 
 typedef struct packed {

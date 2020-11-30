@@ -42,7 +42,7 @@ module segre_tl_stage (
     // MMU interface
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
-    input logic [ADDR_SIZE-1:0] mmu_addr_i,
+    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
@@ -60,7 +60,8 @@ logic pipeline_hazard;
 
 assign cache_tag.req        = memop_rd_i | memop_wr_i;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
-assign cache_tag.addr       = mmu_data_rdy_i ? mmu_addr_i : alu_res_i;
+assign cache_tag.index      = mmu_lru_index_i;
+assign cache_tag.tag        = alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE];
 assign cache_tag.invalidate = 0;
 
 assign mmu_cache_access_o = cache_tag.req;
@@ -81,7 +82,8 @@ segre_dcache_tag dcache_tag (
     .rsn_i        (rsn_i),
     .req_i        (cache_tag.req),
     .mmu_data_i   (cache_tag.mmu_data),
-    .addr_i       (cache_tag.addr),
+    .index_i      (cache_tag.index),
+    .tag_i        (cache_tag.tag),
     .invalidate_i (cache_tag.invalidate),
     .addr_index_o (cache_tag.addr_index),
     .hit_o        (cache_tag.hit),
