@@ -32,11 +32,11 @@ end
 
 always_comb begin : cache_read
     if (rd_data_i) begin
-        data <= {cache_data[index_i][byte_i+3], 
-                 cache_data[index_i][byte_i+2],
-                 cache_data[index_i][byte_i+1],
-                 cache_data[index_i][byte_i]
-                };
+        data_o = {cache_data[index_i][byte_i+3], 
+                  cache_data[index_i][byte_i+2],
+                  cache_data[index_i][byte_i+1],
+                  cache_data[index_i][byte_i]
+                 };
     end
 end
 
@@ -44,10 +44,6 @@ always_ff @(posedge clk_i) begin : cache_write
     if (mmu_data_i) begin
         cache_data[index_i] <= mmu_wr_data_i;
     end
-end
-
-always_ff @(posedge clk_i) begin
-    data_o = data;
 end
 
 endmodule : segre_icache_data

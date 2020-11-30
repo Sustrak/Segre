@@ -101,15 +101,15 @@ end
 
 always_comb begin : pc_logic
     if (!rsn_i) begin
-        nxt_pc <= 0;
-    end else if (!hazard_i | if_fsm_state == IF_IC_MISS) begin
-        if (tkbr_i && fsm_state_i == WB_STATE) begin
-            nxt_pc <= new_pc_i;
-        end else if (fsm_state_i == WB_STATE) begin
-            nxt_pc <= nxt_pc + 4;
-        end
+        nxt_pc = 0;
     end else begin
-        nxt_pc <= nxt_pc;
+        if (tkbr_i && fsm_state_i == WB_STATE) begin
+            nxt_pc = new_pc_i;
+        end else if (fsm_state_i == WB_STATE) begin
+            nxt_pc = pc + 4;
+        end else begin
+            nxt_pc = pc;
+        end
     end
 end
 
