@@ -64,6 +64,7 @@ segre_if_stage if_stage (
     .fsm_state_i     (fsm_state),
     // IF ID interface
     .instr_o         (core_id.instr),
+    .pc_o            (core_id.pc),
     // WB interface
     .tkbr_i          (core_if.tkbr),
     .new_pc_i        (core_if.new_pc),
@@ -86,7 +87,7 @@ segre_id_stage id_stage (
     .fsm_state_i      (fsm_state),
     // IF ID interface
     .instr_i          (core_id.instr),
-    .pc_i             (core_if.addr),
+    .pc_i             (core_id.pc),
     // Register file read operands
     .rf_raddr_a_o     (core_rf.raddr_a),
     .rf_raddr_b_o     (core_rf.raddr_b),

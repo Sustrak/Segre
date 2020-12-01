@@ -164,7 +164,7 @@ module top_tb;
 `ifndef USE_MODELSIM
                 instr_decoded = decode_instruction(int'(dut.if_stage.cache_data.data_o));
 `endif
-                `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", dut.if_stage.pc, instr_decoded, dut.if_stage.cache_data.data_o), UVM_LOW)
+                `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", dut.if_stage.pc_o, instr_decoded, dut.if_stage.cache_data.data_o), UVM_LOW)
             end
         end
         `uvm_fatal("top_tb", "Shouldn't have reach this part of the monitor_tb")

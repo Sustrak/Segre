@@ -65,10 +65,10 @@ memop_data_type_e memop_type;
 logic memop_rd;
 logic memop_wr;
 logic memop_sign_ext;
+alu_opcode_e alu_opcode;
 
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
-assign memop_rf_data_o = rf_data_b_i;
 
 segre_decode decode (
     // Clock and Reset
@@ -85,7 +85,7 @@ segre_decode decode (
     .imm_b_type_o     (imm_b_type),
 
     // ALU
-    .alu_opcode_o     (alu_opcode_o),
+    .alu_opcode_o     (alu_opcode),
     .src_a_mux_sel_o  (src_a_mux_sel),
     .src_b_mux_sel_o  (src_b_mux_sel),
     .a_imm_mux_sel_o  (a_imm_mux_sel),
@@ -164,6 +164,8 @@ always_ff @(posedge clk_i) begin
         memop_wr_o       <= (fsm_state_i == ID_STATE) ? memop_wr : 1'b0;
         br_src_a_o       <= br_src_a;
         br_src_b_o       <= br_src_b;
+        alu_opcode_o     <= alu_opcode;
+        memop_rf_data_o  <= rf_data_b_i;
     end
 end
 

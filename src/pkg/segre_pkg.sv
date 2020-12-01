@@ -220,6 +220,7 @@ typedef struct packed {
 
 typedef struct packed {
     logic [WORD_SIZE-1:0] instr;
+    logic [ADDR_SIZE-1:0] pc;
 } core_id_t;
 
 typedef struct packed {

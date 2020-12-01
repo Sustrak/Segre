@@ -40,7 +40,6 @@ logic [ADDR_SIZE-1:0] dc_mm_addr;
 logic [ADDR_SIZE-1:0] dc_miss_addr;
 logic dc_mmu_data_rdy;
 logic [DCACHE_LANE_SIZE-1:0] dc_mm_data;
-logic [ADDR_SIZE-1:0] dc_mmu_addr;
 logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
 logic [DCACHE_INDEX_SIZE-1:0] dc_addr_index;
 
@@ -54,7 +53,6 @@ logic [ADDR_SIZE-1:0] ic_mm_addr;
 logic [ADDR_SIZE-1:0] ic_miss_addr;
 logic ic_mmu_data_rdy;
 logic [ICACHE_LANE_SIZE-1:0] ic_mm_data;
-logic [ADDR_SIZE-1:0] ic_mmu_addr;
 logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index;
 logic [DCACHE_INDEX_SIZE-1:0] ic_addr_index;
 
@@ -150,7 +148,6 @@ always_ff @(posedge clk_i) begin : dc_miss_block
     if (dc_miss_i) begin
         dc_miss <= dc_miss_i;
         dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE-1], {DCACHE_BYTE_SIZE{1'b0}}};
-        dc_miss_addr <= dc_addr_i;
     end
     if (dc_miss && fsm_state == DCACHE_WAIT && mm_data_rdy_i) begin
         dc_miss <= 0;
@@ -161,7 +158,6 @@ always_ff @(posedge clk_i) begin : ic_miss_block
     if (ic_miss_i) begin
         ic_miss <= ic_miss_i;
         ic_mm_addr <= {ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE-1], {ICACHE_BYTE_SIZE{1'b0}}};
-        ic_miss_addr <= ic_addr_i;
     end
     if (ic_miss && fsm_state == ICACHE_WAIT && mm_data_rdy_i) begin
         ic_miss <= 0;
@@ -172,12 +168,10 @@ always_comb begin : mm_data_ready
     if (mm_data_rdy_i) begin
         if (fsm_state == DCACHE_WAIT) begin
             dc_mmu_data_rdy = 1;
-            dc_mmu_addr = dc_miss_addr;
             dc_mm_data  = mm_data_i;
         end
         else if (fsm_state == ICACHE_WAIT) begin
             ic_mmu_data_rdy = 1;
-            ic_mmu_addr     = ic_miss_addr;
             ic_mm_data      = mm_data_i;
         end
     end
