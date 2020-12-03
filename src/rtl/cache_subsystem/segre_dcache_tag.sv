@@ -36,6 +36,7 @@ function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_LANES-1:0] one_hot);
         2 : return 1;
         4 : return 2;
         8 : return 3;
+        default: return 0;
     endcase
 endfunction
 

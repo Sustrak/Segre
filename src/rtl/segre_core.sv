@@ -216,7 +216,6 @@ segre_mem_stage mem_stage (
     // Register file
     .rf_we_i           (core_mem.rf_we),
     .rf_waddr_i        (core_mem.rf_waddr),
-    .rf_st_data_i      (core_mem.rf_st_data),
     // Memop
     .addr_index_i      (core_tl.addr_index),
     .memop_type_i      (core_mem.memop_type),

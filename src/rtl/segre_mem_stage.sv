@@ -11,7 +11,6 @@ module segre_mem_stage (
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
-    input logic [WORD_SIZE-1:0] rf_st_data_i, // TODO: Change this name to memop_wr_data_i
     // Memop
     input logic [DCACHE_INDEX_SIZE-1:0] addr_index_i,
     input memop_data_type_e memop_type_i,

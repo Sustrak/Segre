@@ -260,7 +260,6 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] alu_res;
     logic [WORD_SIZE-1:0] addr;
     logic [WORD_SIZE-1:0] wr_data;
-    logic [WORD_SIZE-1:0] rf_st_data;
     logic [REG_SIZE-1:0]  rf_waddr;
     logic memop_rd;
     logic memop_wr;
