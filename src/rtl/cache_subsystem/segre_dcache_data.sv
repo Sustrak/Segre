@@ -37,11 +37,16 @@ end
 
 always_comb begin : cache_read
     if (rd_data_i) begin
-        data_o <= {cache_data[index_i][byte_i+3], 
-                   cache_data[index_i][byte_i+2],
-                   cache_data[index_i][byte_i+1],
-                   cache_data[index_i][byte_i]
-                  };
+        unique case (memop_data_type_i)
+            BYTE: data_o = {{24{1'b0}}, cache_data[index_i][byte_i]};
+            HALF: data_o = {{16{1'b0}}, cache_data[index_i][byte_i+1], cache_data[index_i][byte_i]};
+            WORD: data_o = {cache_data[index_i][byte_i+3], 
+                            cache_data[index_i][byte_i+2],
+                            cache_data[index_i][byte_i+1],
+                            cache_data[index_i][byte_i]
+                           };
+            default: ;
+        endcase
     end
 end
 

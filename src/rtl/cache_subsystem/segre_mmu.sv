@@ -37,7 +37,6 @@ localparam IC_LRU_WIDTH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
 // Data cache
 logic dc_miss;
 logic [ADDR_SIZE-1:0] dc_mm_addr;
-logic [ADDR_SIZE-1:0] dc_miss_addr;
 logic dc_mmu_data_rdy;
 logic [DCACHE_LANE_SIZE-1:0] dc_mm_data;
 logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
@@ -50,7 +49,6 @@ logic [DCACHE_NUM_LANES-1:0] dc_lru_access, dc_lru_pre, dc_lru_post;
 // Instruction cache
 logic ic_miss;
 logic [ADDR_SIZE-1:0] ic_mm_addr;
-logic [ADDR_SIZE-1:0] ic_miss_addr;
 logic ic_mmu_data_rdy;
 logic [ICACHE_LANE_SIZE-1:0] ic_mm_data;
 logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index;
