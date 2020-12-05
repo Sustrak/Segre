@@ -58,6 +58,11 @@ tl_fsm_state_e fsm_state;
 tl_fsm_state_e fsm_nxt_state;
 logic pipeline_hazard;
 
+logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_next;
+logic valid_tag_in_flight_next;
+logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_reg;
+logic valid_tag_in_flight_reg;
+
 assign cache_tag.req        = fsm_state == TL_IDLE && (memop_rd_i | memop_wr_i) ? 1'b1 : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
@@ -117,7 +122,10 @@ always_comb begin : pipeline_stop
     end
     else begin
         unique case (fsm_state)
-            HAZARD_DC_MISS, HAZARD_SB_TROUBLE: pipeline_hazard = 1;
+            HAZARD_DC_STORE_MISS: pipeline_hazard = 1;
+            HAZARD_DC_LOAD_MISS: pipeline_hazard = 1;
+            HAZARD_SB_TROUBLE: pipeline_hazard = 1;
+            MISS_IN_FLIGHT: pipeline_hazard = memop_wr_i && (cache_tag.miss & sb.miss) || (cache_tag.miss & sb.hit & sb.trouble);
             TL_IDLE: pipeline_hazard = sb.trouble | cache_tag.miss;
             default:;
         endcase
@@ -129,19 +137,54 @@ always_comb begin : tl_fsm
         fsm_nxt_state = TL_IDLE;
     end else begin
         unique case (fsm_state)
-            HAZARD_DC_MISS: begin
+            MISS_IN_FLIGHT: begin
+                if(memop_wr_i) begin //We have an store pending an another one occurs
+                    if(cache_tag.miss & sb.miss) //The data itself it's not in cache or store buffer
+                        fsm_next_state = HAZARD_DC_STORE_MISS;
+                    else if(cache_tag.miss & sb.hit & sb.trouble) //The data its in the store buffer but it generates a troubling situation
+                        fsm_next_state = HAZARD_DC_STORE_MISS;
+                end
+                else if(mmu_data_rdy_i) fsm_next_state = TL_IDLE;
+            end
+            HAZARD_DC_STORE_MISS: begin
+                if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+            end
+            HAZARD_DC_LOAD_MISS: begin
                 if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
             end
             HAZARD_SB_TROUBLE: begin
                 if (!sb.trouble) fsm_nxt_state = TL_IDLE;
             end
             TL_IDLE: begin
-                if (cache_tag.miss)  fsm_nxt_state = HAZARD_DC_MISS;
-                else if (sb.trouble) fsm_nxt_state = HAZARD_SB_TROUBLE;
-                else                 fsm_nxt_state = TL_IDLE;
+                if (valid_tag_in_flight_next) begin
+                    if(sb.trouble) fsm_nxt_state = HAZARD_SB_TROUBLE; //Failing a store and SB can't store the data
+                    else fsm_nxt_state = MISS_IN_FLIGHT; //Failing a store and SB can store the data
+                end
+                else if (cache_tag.miss) fsm_nxt_state = HAZARD_DC_LOAD_MISS;
+                else if (sb.trouble)     fsm_nxt_state = HAZARD_SB_TROUBLE;
+                else                     fsm_nxt_state = TL_IDLE;
             end
             default:;
         endcase
+    end
+end
+
+always_comb begin : miss_in_fligt
+    tag_in_flight_next <= alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE];
+    valid_tag_in_flight_next <= memop_wr_i && cache_tag.miss;
+end
+
+always_ff @(posedge clk_i) begin : miss_in_fligt_latch
+    if(!rsn_i) begin
+        tag_in_flight_reg <= 0;
+        valid_tag_in_flight_reg <= 0;
+    end
+    else begin
+        if(fsm_state == TL_IDLE) begin
+            tag_in_flight_reg <= tag_in_flight_next;
+            valid_tag_in_flight_reg <= valid_tag_in_flight_next;
+        end
+        //Else don't update the reg
     end
 end
 
