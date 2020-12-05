@@ -79,7 +79,7 @@ assign pipeline_hazard_o  = pipeline_hazard;
 // STORE BUFFER
 assign sb.req_store         = memop_wr_i;
 assign sb.req_load          = memop_rd_i;
-assign sb.flush_chance      = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
+//assign sb.flush_chance      = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
 assign sb.addr_i            = alu_res_i;
 assign sb.data_i            = rf_st_data_i;
 assign sb.memop_data_type_i = memop_type_i;
@@ -116,16 +116,28 @@ segre_store_buffer store_buffer (
     .addr_o            (sb.addr_o)
 );
 
+always_comb begin : sb_flush_chance //Trying to mimic how it was calculated before, plus the case of MISS_IN_FLIGHT
+    unique case (fsm_state)
+        MISS_IN_FLIGHT: sb.flush_chance = 0;
+        TL_IDLE: sb.flush_chance = (!memop_wr_i & !memop_rd_i);
+        HAZARD_DC_MISS: sb.flush_chance = 0;
+        HAZARD_SB_TROUBLE: sb.flush_chance = 1;
+        default: sb.flush_chance = 0;
+    endcase
+end
+
 always_comb begin : pipeline_stop
     if (!rsn_i) begin
         pipeline_hazard = 0;
     end
     else begin
         unique case (fsm_state)
-            HAZARD_DC_STORE_MISS: pipeline_hazard = 1;
-            HAZARD_DC_LOAD_MISS: pipeline_hazard = 1;
+            HAZARD_DC_MISS: pipeline_hazard = 1;
             HAZARD_SB_TROUBLE: pipeline_hazard = 1;
-            MISS_IN_FLIGHT: pipeline_hazard = memop_wr_i && (cache_tag.miss & sb.miss) || (cache_tag.miss & sb.hit & sb.trouble);
+            MISS_IN_FLIGHT: pipeline_hazard = (memop_rd_i && (cache_tag.miss && ((valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE]))
+                                                     || (sb.miss || sb.trouble))))
+                                              || (memop_wr_i && ((cache_tag.hit) || (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE]))
+                                                     || ((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) && sb.trouble)));
             TL_IDLE: pipeline_hazard = sb.trouble | cache_tag.miss;
             default:;
         endcase
@@ -138,18 +150,28 @@ always_comb begin : tl_fsm
     end else begin
         unique case (fsm_state)
             MISS_IN_FLIGHT: begin
-                if(memop_wr_i) begin //We have an store pending an another one occurs
-                    if(cache_tag.miss & sb.miss) //The data itself it's not in cache or store buffer
-                        fsm_next_state = HAZARD_DC_STORE_MISS;
-                    else if(cache_tag.miss & sb.hit & sb.trouble) //The data its in the store buffer but it generates a troubling situation
-                        fsm_next_state = HAZARD_DC_STORE_MISS;
+                if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
+                    if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
+                        fsm_nxt_state = HAZARD_DC_MISS;
+                    else if(valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) begin
+                        fsm_nxt_state = HAZARD_DC_MISS;
+                    end //We must also take into account the SB problematic
+                    else if((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) && sb.trouble) begin
+                        fsm_nxt_state = HAZARD_DC_MISS;
+                    end
+                end
+                else if (memop_rd_o) begin //A new load arrives: In this case we won't issue a new request if the load has the same tag as the faulty store, or if it hits (obviously).
+                    if(cache_tag.miss) begin //In general, we want to stall in a miss, but if the store buffer can serve the load it's not necessary
+                        if (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) begin
+                            fsm_nxt_state = HAZARD_DC_MISS;
+                        end //Maybe the store buffer can provide the element
+                        else if(sb.miss || sb.trouble)
+                            fsm_next_state = HAZARD_DC_MISS;                       
+                    end
                 end
                 else if(mmu_data_rdy_i) fsm_next_state = TL_IDLE;
             end
-            HAZARD_DC_STORE_MISS: begin
-                if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
-            end
-            HAZARD_DC_LOAD_MISS: begin
+            HAZARD_DC_MISS: begin
                 if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
             end
             HAZARD_SB_TROUBLE: begin
@@ -157,10 +179,10 @@ always_comb begin : tl_fsm
             end
             TL_IDLE: begin
                 if (valid_tag_in_flight_next) begin
-                    if(sb.trouble) fsm_nxt_state = HAZARD_SB_TROUBLE; //Failing a store and SB can't store the data
+                    if(sb.trouble) fsm_nxt_state = HAZARD_SB_TROUBLE; //Miss on a store, but SB can't store the data
                     else fsm_nxt_state = MISS_IN_FLIGHT; //Failing a store and SB can store the data
                 end
-                else if (cache_tag.miss) fsm_nxt_state = HAZARD_DC_LOAD_MISS;
+                else if (cache_tag.miss) fsm_nxt_state = HAZARD_DC_MISS;
                 else if (sb.trouble)     fsm_nxt_state = HAZARD_SB_TROUBLE;
                 else                     fsm_nxt_state = TL_IDLE;
             end
