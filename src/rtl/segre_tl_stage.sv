@@ -63,7 +63,7 @@ logic valid_tag_in_flight_next;
 logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_reg;
 logic valid_tag_in_flight_reg;
 
-assign cache_tag.req        = fsm_state == TL_IDLE && (memop_rd_i | memop_wr_i) ? 1'b1 : 1'b0;
+assign cache_tag.req        = fsm_state == TL_IDLE ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
 assign cache_tag.tag        = alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE];
@@ -77,8 +77,8 @@ assign mmu_miss_o         = cache_tag.miss & sb.miss;
 assign pipeline_hazard_o  = pipeline_hazard;
 
 // STORE BUFFER
-assign sb.req_store         = memop_wr_i;
-assign sb.req_load          = memop_rd_i;
+assign sb.req_store         = fsm_state == TL_IDLE ? memop_wr_i : 1'b0;
+assign sb.req_load          = fsm_state == TL_IDLE ? memop_rd_i : 1'b0;
 //assign sb.flush_chance      = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
 assign sb.addr_i            = alu_res_i;
 assign sb.data_i            = rf_st_data_i;
@@ -166,10 +166,10 @@ always_comb begin : tl_fsm
                             fsm_nxt_state = HAZARD_DC_MISS;
                         end //Maybe the store buffer can provide the element
                         else if(sb.miss || sb.trouble)
-                            fsm_next_state = HAZARD_DC_MISS;                       
+                            fsm_nxt_state = HAZARD_DC_MISS;
                     end
                 end
-                else if(mmu_data_rdy_i) fsm_next_state = TL_IDLE;
+                else if(mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
             end
             HAZARD_DC_MISS: begin
                 if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
