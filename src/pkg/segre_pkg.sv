@@ -208,7 +208,8 @@ typedef struct packed {
     logic data_valid;
     logic trouble;
     memop_data_type_e memop_data_type_o;
-    logic [WORD_SIZE-1:0] data_o;
+    logic [WORD_SIZE-1:0] data_load_o;
+    logic [WORD_SIZE-1:0] data_flush_o;
     logic [ADDR_SIZE-1:0] addr_o;
 } store_buffer_t;
 
@@ -271,7 +272,8 @@ typedef struct packed {
     logic tkbr;
     logic [WORD_SIZE-1:0] new_pc;
     logic sb_hit;
-    logic [WORD_SIZE-1:0] sb_data;
+    logic [WORD_SIZE-1:0] sb_data_load;
+    logic [WORD_SIZE-1:0] sb_data_flush;
     logic [ADDR_SIZE-1:0] sb_addr;
     //logic [DCACHE_INDEX_SIZE-1:0] addr_index;
 } core_mem_t;

@@ -15,7 +15,8 @@ module segre_store_buffer (
     output logic trouble_o,
     output logic data_valid_o,
     output memop_data_type_e memop_data_type_o,
-    output logic [WORD_SIZE-1:0] data_o,
+    output logic [WORD_SIZE-1:0] data_load_o, //Support for load and flush at the same cycle
+    output logic [WORD_SIZE-1:0] data_flush_o,
     output logic [ADDR_SIZE-1:0] addr_o
 );
 
@@ -242,7 +243,9 @@ assign trouble_o = trouble;
 assign full_o = full & (!hit);
 assign hit_o = hit & (req_load_i | req_store_i);
 assign miss_o = !hit & (req_load_i | req_store_i);
-assign data_o = (req_load_i) ? data_load : data_flush;
+//assign data_o = (req_load_i) ? data_load : data_flush;
+assign data_load_o = data_load;
+assign data_flush_o = data_flush;
 assign addr_o = address;
 assign data_valid_o = data_valid;
 

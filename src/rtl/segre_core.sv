@@ -191,7 +191,8 @@ segre_tl_stage tl_stage(
     .new_pc_o           (core_mem.new_pc),
     // Store buffer
     .sb_hit_o           (core_mem.sb_hit),
-    .sb_data_o          (core_mem.sb_data),
+    .sb_data_load_o     (core_mem.sb_data_load),
+    .sb_data_flush_o    (core_mem.sb_data_flush),
     .sb_addr_o          (core_mem.sb_addr),
 
     // MMU interface
@@ -227,7 +228,8 @@ segre_mem_stage mem_stage (
     .new_pc_i          (core_mem.new_pc),
     // Store Buffer
     .sb_hit_i          (core_mem.sb_hit),
-    .sb_data_i         (core_mem.sb_data),
+    .sb_data_load_i    (core_mem.sb_data_load),
+    .sb_data_flush_i   (core_mem.sb_data_flush),
     .sb_addr_i         (core_mem.sb_addr),
     // MEM WB intereface
     .op_res_o          (core_rf.data_w),

@@ -36,7 +36,8 @@ module segre_tl_stage (
     output logic [WORD_SIZE-1:0] new_pc_o,
     // Store buffer
     output logic sb_hit_o,
-    output logic [WORD_SIZE-1:0] sb_data_o,
+    output logic [WORD_SIZE-1:0] sb_data_load_o,
+    output logic [WORD_SIZE-1:0] sb_data_flush_o,
     output logic [ADDR_SIZE-1:0] sb_addr_o,
 
     // MMU interface
@@ -66,7 +67,7 @@ logic valid_tag_in_flight_reg;
 assign cache_tag.req        = fsm_state == TL_IDLE ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
-assign cache_tag.tag        = alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE];
+assign cache_tag.tag        = alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
 assign cache_tag.invalidate = 0;
 
 // MMU
@@ -112,15 +113,16 @@ segre_store_buffer store_buffer (
     .trouble_o         (sb.trouble),
     .data_valid_o      (sb.data_valid),
     .memop_data_type_o (sb.memop_data_type_o),
-    .data_o            (sb.data_o),
+    .data_load_o       (sb.data_load_o),
+    .data_flush_o      (sb.data_flush_o),
     .addr_o            (sb.addr_o)
 );
 
 always_comb begin : sb_flush_chance //Trying to mimic how it was calculated before, plus the case of MISS_IN_FLIGHT
     unique case (fsm_state)
-        MISS_IN_FLIGHT: sb.flush_chance = 0;
+        MISS_IN_FLIGHT: sb.flush_chance = 1;
         TL_IDLE: sb.flush_chance = (!memop_wr_i & !memop_rd_i);
-        HAZARD_DC_MISS: sb.flush_chance = 0;
+        HAZARD_DC_MISS: sb.flush_chance = 1;
         HAZARD_SB_TROUBLE: sb.flush_chance = 1;
         default: sb.flush_chance = 0;
     endcase
@@ -223,14 +225,16 @@ always_ff @(posedge clk_i) begin : stage_latch
         tkbr_o           <= 0;
         new_pc_o         <= 0;
         sb_hit_o         <= 0;
-        sb_data_o        <= 0;
+        sb_data_flush_o  <= 0;
+        sb_data_flush_o  <= 0;
         sb_addr_o        <= 0;
     end else begin
         if (!pipeline_hazard) begin
             if(sb.flush_chance & sb.data_valid) begin
                 // Flush data from store buffer to the data cache
                 sb_addr_o        <= sb.addr_o;
-                sb_data_o        <= sb.data_o;
+                sb_data_load_o   <= sb.data_load_o;
+                sb_data_flush_o  <= sb.data_flush_o;
                 sb_hit_o         <= 1'b0;
                 memop_rd_o       <= 1'b0;
                 memop_wr_o       <= sb.data_valid;
@@ -238,7 +242,8 @@ always_ff @(posedge clk_i) begin : stage_latch
             end
             else if(sb.hit) begin
                 //Load or Store hit at store buffer, no need to access cache
-                sb_data_o        <= sb.data_o;
+                sb_data_load_o   <= sb.data_load_o;
+                sb_data_flush_o  <= sb.data_flush_o;
                 sb_hit_o         <= sb.hit;
                 memop_rd_o       <= 1'b0; //We have already read
                 memop_wr_o       <= 1'b0; //We have already write
