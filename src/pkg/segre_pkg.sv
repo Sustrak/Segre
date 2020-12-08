@@ -274,6 +274,7 @@ typedef struct packed {
     logic tkbr;
     logic [WORD_SIZE-1:0] new_pc;
     logic sb_hit;
+    logic sb_flush;
     logic [WORD_SIZE-1:0] sb_data_load;
     logic [WORD_SIZE-1:0] sb_data_flush;
     logic [ADDR_SIZE-1:0] sb_addr;

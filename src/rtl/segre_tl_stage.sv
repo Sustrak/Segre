@@ -37,6 +37,7 @@ module segre_tl_stage (
     output logic [WORD_SIZE-1:0] new_pc_o,
     // Store buffer
     output logic sb_hit_o,
+    output logic sb_flush_o,
     output logic [WORD_SIZE-1:0] sb_data_load_o,
     output logic [WORD_SIZE-1:0] sb_data_flush_o,
     output logic [ADDR_SIZE-1:0] sb_addr_o,
@@ -79,8 +80,8 @@ assign mmu_miss_o         = cache_tag.miss & sb.miss;
 assign pipeline_hazard_o  = pipeline_hazard;
 
 // STORE BUFFER
-assign sb.req_store         = fsm_state == TL_IDLE ? memop_wr_i : 1'b0;
-assign sb.req_load          = fsm_state == TL_IDLE ? memop_rd_i : 1'b0;
+assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i : 1'b0;
+assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_rd_i : 1'b0;
 //assign sb.flush_chance      = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
 assign sb.addr_i            = alu_res_i;
 assign sb.data_i            = rf_st_data_i;
@@ -110,7 +111,7 @@ segre_store_buffer store_buffer (
     .memop_data_type_i (sb.memop_data_type_i),
     .hit_o             (sb.hit),
     .miss_o            (sb.miss),
-    .full_o            (sb.full),
+    //.full_o            (sb.full),
     .trouble_o         (sb.trouble),
     .data_valid_o      (sb.data_valid),
     .memop_data_type_o (sb.memop_data_type_o), //Only for flushing purposes
@@ -121,9 +122,9 @@ segre_store_buffer store_buffer (
 
 always_comb begin : sb_flush_chance //Trying to mimic how it was calculated before, plus the case of MISS_IN_FLIGHT
     unique case (fsm_state)
-        MISS_IN_FLIGHT: sb.flush_chance = 1;
+        MISS_IN_FLIGHT: sb.flush_chance = 0;//1;
         TL_IDLE: sb.flush_chance = (!memop_wr_i & !memop_rd_i);
-        HAZARD_DC_MISS: sb.flush_chance = 1;
+        HAZARD_DC_MISS: sb.flush_chance = 0;//1;
         HAZARD_SB_TROUBLE: sb.flush_chance = 1;
         default: sb.flush_chance = 0;
     endcase
@@ -238,7 +239,9 @@ always_ff @(posedge clk_i) begin : stage_latch
         sb_data_flush_o    <= 0;
         sb_data_flush_o    <= 0;
         sb_addr_o          <= 0;
-    end else begin
+        sb_flush_o         <= 0;
+    end 
+    else begin
         if (!pipeline_hazard) begin
             if(sb.flush_chance & sb.data_valid) begin
                 // Flush data from store buffer to the data cache
@@ -274,14 +277,25 @@ always_ff @(posedge clk_i) begin : stage_latch
             addr_index_o       <= cache_tag.addr_index;
             memop_type_o       <= memop_type_i;
             memop_type_flush_o <= sb.memop_data_type_o;
+            sb_flush_o         <= sb.data_valid;
         end
         else begin
+            if(fsm_state == HAZARD_SB_TROUBLE) begin
+                sb_addr_o        <= sb.addr_o;
+                sb_data_load_o   <= sb.data_load_o;
+                sb_data_flush_o  <= sb.data_flush_o;
+                sb_hit_o         <= 1'b0;
+                memop_wr_o       <= sb.data_valid;
+                sb_flush_o       <= sb.data_valid;
+            end
+            else begin
+                memop_wr_o <= 0;
+                sb_flush_o <= 0;
+            end
             rf_we_o    <= 0;
             memop_rd_o <= 0;
-            memop_wr_o <= 0;
             tkbr_o     <= 0;
-        end
-        
+        end       
         fsm_state <= fsm_nxt_state;
     end
 end

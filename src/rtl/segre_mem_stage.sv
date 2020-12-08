@@ -23,6 +23,7 @@ module segre_mem_stage (
     input logic [WORD_SIZE-1:0] new_pc_i,
     // Store buffer
     input logic sb_hit_i,
+    input logic sb_flush_i,
     input logic [WORD_SIZE-1:0] sb_data_load_i,
     input logic [WORD_SIZE-1:0] sb_data_flush_i,
     input logic [ADDR_SIZE-1:0] sb_addr_i,
@@ -56,7 +57,7 @@ assign cache_data.rd_data               = memop_rd_i;
 assign cache_data.wr_data               = memop_wr_i;
 assign cache_data.mmu_wr_data           = mmu_data_rdy_i;
 assign cache_data.index                 = mmu_data_rdy_i ? mmu_lru_index_i : addr_index_i;
-assign cache_data.byte_i                = alu_res_i[DCACHE_BYTE_SIZE-1:0];
+assign cache_data.byte_i                = sb_flush_i ? sb_addr_i[DCACHE_BYTE_SIZE-1:0] : alu_res_i[DCACHE_BYTE_SIZE-1:0];
 assign cache_data.memop_data_load_type  = memop_type_i;
 assign cache_data.memop_data_store_type = memop_type_flush_i;
 assign cache_data.data_i                = sb_data_flush_i; //We only write from the SB

@@ -11,7 +11,7 @@ module segre_store_buffer (
     input memop_data_type_e memop_data_type_i,
     output logic hit_o,
     output logic miss_o,
-    output logic full_o,
+    //output logic full_o,
     output logic trouble_o,
     output logic data_valid_o,
     output memop_data_type_e memop_data_type_o,
@@ -39,8 +39,8 @@ logic [WORD_SIZE-1:0][NUM_ELEMS-1:0] buf_data;
 memop_data_type_e [NUM_ELEMS-1:0] buf_type;*/ 
 
 //Pointers of the circular buffer
-logic [NUM_ELEMS-1:0] head; //where to write NEXT element
-logic [NUM_ELEMS-1:0] tail; //oldest element in the buffer
+logic [NUM_ELEMS-2:0] head; //where to write NEXT element
+logic [NUM_ELEMS-2:0] tail; //oldest element in the buffer
 
 //Logic elements to manage data and output it
 memop_data_type_e memop_data_type;
@@ -65,18 +65,19 @@ function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
 endfunction
 
 always_comb begin : buffer_full
-    static logic aux = buffer[0].valid;
-    for(int i=0; i<NUM_ELEMS; i++) begin
+    /*static logic aux = buffer[0].valid;
+    for(int i=1; i<NUM_ELEMS; i++) begin
         aux &= buffer[i].valid;
     end
-    full = aux && req_store_i;
+    full = aux && req_store_i;*/
+    full = buffer[0].valid & buffer[1].valid; //& req_store_i;
     //full = &buf_position_valid && req_store_i; //If every position is full and the processor wants to perform a store, we must stall the pipeline
 end
 
 always_comb begin : buffer_hit
     for(int i=0; i<NUM_ELEMS; i++) begin
         //We save the exact hit because it will be useful
-        hit_vector[i] <= (buffer[i].valid && ((buffer[i].address & ~2'b11) == (addr_i & ~2'b11))); //We make the comparison mod 4
+        hit_vector[i] = (buffer[i].valid && ((buffer[i].address & ~2'b11) == (addr_i & ~2'b11))); //We make the comparison mod 4
     end
     hit = |hit_vector;
 end
@@ -247,8 +248,8 @@ always_ff @(posedge clk_i) begin : buffer_store
     end
 end
 
-assign trouble_o = trouble;
-assign full_o = full & (!hit);
+assign trouble_o = trouble || (full & (!hit) & req_store_i);
+//assign full_o = full & (!hit);
 assign hit_o = hit & (req_load_i | req_store_i);
 assign miss_o = !hit & (req_load_i | req_store_i);
 //assign data_o = (req_load_i) ? data_load : data_flush;
