@@ -177,7 +177,8 @@ typedef struct packed {
     logic rd_data;
     logic wr_data;
     logic mmu_wr_data;
-    memop_data_type_e memop_data_type;
+    memop_data_type_e memop_data_load_type;
+    memop_data_type_e memop_data_store_type;
     logic [WORD_SIZE-1:0] data_i;
     logic [DCACHE_INDEX_SIZE-1:0] index;
     logic [DCACHE_BYTE_SIZE-1:0] byte_i;
@@ -258,6 +259,7 @@ typedef struct packed {
 
 typedef struct packed {
     memop_data_type_e memop_type;
+    memop_data_type_e memop_flush_type;
     memop_data_type_e data_type;
     logic [WORD_SIZE-1:0] alu_res;
     logic [WORD_SIZE-1:0] addr;

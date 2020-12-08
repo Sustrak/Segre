@@ -26,7 +26,7 @@ localparam INDEX_SIZE = $clog2(NUM_ELEMS);
 typedef struct packed{
     logic valid;
     logic [ADDR_SIZE-1:0] address;
-    logic [1:0][7:0] data ;
+    logic [3:0][7:0] data ;
     memop_data_type_e data_type;
 } buf_elem;
 
@@ -43,6 +43,7 @@ logic [NUM_ELEMS-1:0] head; //where to write NEXT element
 logic [NUM_ELEMS-1:0] tail; //oldest element in the buffer
 
 //Logic elements to manage data and output it
+memop_data_type_e memop_data_type;
 logic [WORD_SIZE-1:0] data_load;
 logic [WORD_SIZE-1:0] data_flush;
 logic [ADDR_SIZE-1:0] address;
@@ -105,6 +106,12 @@ always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and r
     if (!rsn_i) begin
         for(int i=0; i<NUM_ELEMS; i++) begin
             buffer[i].valid <= 0;
+            buffer[i].address <= 0;
+            buffer[i].data[0] <= 0;
+            buffer[i].data[1] <= 0;
+            buffer[i].data[2] <= 0;
+            buffer[i].data[3] <= 0;
+            buffer[i].data_type <= WORD;
         end
         head <= 0;
         tail <= 0;
@@ -129,6 +136,7 @@ always_comb begin : buffer_flush_comb
         default: ;
     endcase
     address <= buffer[tail].address;
+    memop_data_type <= buffer[tail].data_type;
     data_valid <= (flush_chance_i && (tail != head || full) && buffer[tail].valid);
 end
 
@@ -244,6 +252,7 @@ assign full_o = full & (!hit);
 assign hit_o = hit & (req_load_i | req_store_i);
 assign miss_o = !hit & (req_load_i | req_store_i);
 //assign data_o = (req_load_i) ? data_load : data_flush;
+assign memop_data_type_o = memop_data_type;
 assign data_load_o = data_load;
 assign data_flush_o = data_flush;
 assign addr_o = address;

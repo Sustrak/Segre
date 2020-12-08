@@ -31,6 +31,7 @@ module segre_tl_stage (
     output logic memop_wr_o,
     output logic memop_sign_ext_o,
     output memop_data_type_e memop_type_o,
+    output memop_data_type_e memop_type_flush_o,
     // Tkbr
     output logic tkbr_o,
     output logic [WORD_SIZE-1:0] new_pc_o,
@@ -112,7 +113,7 @@ segre_store_buffer store_buffer (
     .full_o            (sb.full),
     .trouble_o         (sb.trouble),
     .data_valid_o      (sb.data_valid),
-    .memop_data_type_o (sb.memop_data_type_o),
+    .memop_data_type_o (sb.memop_data_type_o), //Only for flushing purposes
     .data_load_o       (sb.data_load_o),
     .data_flush_o      (sb.data_flush_o),
     .addr_o            (sb.addr_o)
@@ -128,6 +129,7 @@ always_comb begin : sb_flush_chance //Trying to mimic how it was calculated befo
     endcase
 end
 
+//12200 ns
 always_comb begin : pipeline_stop
     if (!rsn_i) begin
         pipeline_hazard = 0;
@@ -140,7 +142,14 @@ always_comb begin : pipeline_stop
                                                      || (sb.miss || sb.trouble))))
                                               || (memop_wr_i && ((cache_tag.hit) || (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE]))
                                                      || ((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) && sb.trouble)));
-            TL_IDLE: pipeline_hazard = sb.trouble | cache_tag.miss;
+            TL_IDLE: begin 
+                if(memop_wr_i) begin
+                    pipeline_hazard = sb.trouble; //All stores go through the SB, we don't have to check the cache.
+                end
+                else begin
+                    pipeline_hazard = sb.miss & cache_tag.miss; //Load cannot be served from the SB or the cache
+                end
+            end
             default:;
         endcase
     end
@@ -214,20 +223,21 @@ end
 
 always_ff @(posedge clk_i) begin : stage_latch
     if (!rsn_i) begin
-        alu_res_o        <= 0;
-        rf_we_o          <= 0;
-        rf_waddr_o       <= 0;
-        addr_index_o     <= 0;
-        memop_rd_o       <= 0;
-        memop_wr_o       <= 0;
-        memop_sign_ext_o <= 0;
-        memop_type_o     <= WORD;
-        tkbr_o           <= 0;
-        new_pc_o         <= 0;
-        sb_hit_o         <= 0;
-        sb_data_flush_o  <= 0;
-        sb_data_flush_o  <= 0;
-        sb_addr_o        <= 0;
+        alu_res_o          <= 0;
+        rf_we_o            <= 0;
+        rf_waddr_o         <= 0;
+        addr_index_o       <= 0;
+        memop_rd_o         <= 0;
+        memop_wr_o         <= 0;
+        memop_sign_ext_o   <= 0;
+        memop_type_o       <= WORD;
+        memop_type_flush_o <= WORD;
+        tkbr_o             <= 0;
+        new_pc_o           <= 0;
+        sb_hit_o           <= 0;
+        sb_data_flush_o    <= 0;
+        sb_data_flush_o    <= 0;
+        sb_addr_o          <= 0;
     end else begin
         if (!pipeline_hazard) begin
             if(sb.flush_chance & sb.data_valid) begin
@@ -238,7 +248,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_hit_o         <= 1'b0;
                 memop_rd_o       <= 1'b0;
                 memop_wr_o       <= sb.data_valid;
-                memop_type_o     <= sb.memop_data_type_o;
+                //memop_type_o     <= sb.memop_data_type_o;
             end
             else if(sb.hit) begin
                 //Load or Store hit at store buffer, no need to access cache
@@ -247,21 +257,23 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_hit_o         <= sb.hit;
                 memop_rd_o       <= 1'b0; //We have already read
                 memop_wr_o       <= 1'b0; //We have already write
-                memop_type_o     <= sb.memop_data_type_o;
+                //memop_type_o     <= sb.memop_data_type_o;
             end
             else begin
                 // Miss in store buffer or no memory operation and store buffer empty
                 memop_rd_o       <= memop_rd_i;
                 memop_wr_o       <= memop_wr_i;
-                memop_type_o     <= memop_type_i;
+                //memop_type_o     <= memop_type_i;
             end
-            alu_res_o        <= alu_res_i;
-            rf_we_o          <= rf_we_i;
-            rf_waddr_o       <= rf_waddr_i;
-            memop_sign_ext_o <= memop_sign_ext_i;
-            tkbr_o           <= tkbr_i;
-            new_pc_o         <= new_pc_i;
-            addr_index_o     <= cache_tag.addr_index;
+            alu_res_o          <= alu_res_i;
+            rf_we_o            <= rf_we_i;
+            rf_waddr_o         <= rf_waddr_i;
+            memop_sign_ext_o   <= memop_sign_ext_i;
+            tkbr_o             <= tkbr_i;
+            new_pc_o           <= new_pc_i;
+            addr_index_o       <= cache_tag.addr_index;
+            memop_type_o       <= memop_type_i;
+            memop_type_flush_o <= sb.memop_data_type_o;
         end
         else begin
             rf_we_o    <= 0;
