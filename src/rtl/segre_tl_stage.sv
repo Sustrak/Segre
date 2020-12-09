@@ -46,6 +46,7 @@ module segre_tl_stage (
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
     input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
+    input logic [ADDR_SIZE-1:0] mmu_addr_i,
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
@@ -69,11 +70,23 @@ logic valid_tag_in_flight_reg;
 assign cache_tag.req        = fsm_state == TL_IDLE ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
-assign cache_tag.tag        = alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
+//assign cache_tag.tag        = (sb.flush_chance & sb.data_valid) ? sb.addr_o[WORD_SIZE-1:DCACHE_BYTE_SIZE] : alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
+always_comb begin : cache_tag_selection
+    if (sb.flush_chance & sb.data_valid)
+        cache_tag.tag = sb.addr_o[WORD_SIZE-1:DCACHE_BYTE_SIZE];
+    else if (mmu_data_rdy_i) begin
+        cache_tag.tag = mmu_addr_o[WORD_SIZE-1:DCACHE_BYTE_SIZE];
+    end
+    else begin
+        cache_tag.tag = alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
+    end        
+end //Simplyfing the logic with this always comb, so the assignment it's not extra large
+
 assign cache_tag.invalidate = 0;
 
 // MMU
 assign mmu_cache_access_o = cache_tag.req;
+//TODO: FIX ADDRESS
 assign mmu_addr_o         = cache_tag.miss ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{0}}, cache_tag.addr_index};
 assign mmu_miss_o         = cache_tag.miss & sb.miss;
 
@@ -265,7 +278,8 @@ always_ff @(posedge clk_i) begin : stage_latch
             else begin
                 // Miss in store buffer or no memory operation and store buffer empty
                 memop_rd_o       <= memop_rd_i;
-                memop_wr_o       <= memop_wr_i;
+                memop_wr_o       <= 1'b0;
+                //memop_wr_o       <= memop_wr_i;
                 //memop_type_o     <= memop_type_i;
             end
             alu_res_o          <= alu_res_i;
@@ -287,6 +301,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_hit_o         <= 1'b0;
                 memop_wr_o       <= sb.data_valid;
                 sb_flush_o       <= sb.data_valid;
+                addr_index_o     <= cache_tag.addr_index;
             end
             else begin
                 memop_wr_o <= 0;

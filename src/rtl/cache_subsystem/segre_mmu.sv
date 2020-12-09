@@ -13,6 +13,7 @@ module segre_mmu (
     output logic dc_mmu_data_rdy_o,
     output logic [DCACHE_LANE_SIZE-1:0] dc_data_o,
     output logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index_o,
+    output logic [ADDR_SIZE-1:0] dc_mm_addr_o,
     // Instruction cache
     input  logic ic_miss_i,
     input  logic [ADDR_SIZE-1:0] ic_addr_i,
@@ -242,6 +243,7 @@ always_ff @(posedge clk_i) begin
         dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
         dc_data_o <= dc_mm_data;
         dc_lru_index_o <= dc_lru_index;
+        dc_mm_addr_o <= dc_mm_addr; 
         // Instruction cache
         ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
         ic_data_o <= ic_mm_data;

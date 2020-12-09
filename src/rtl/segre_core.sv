@@ -201,6 +201,7 @@ segre_tl_stage tl_stage(
     .mmu_data_rdy_i     (core_mmu.dc_mmu_data_rdy),
     .mmu_data_i         (core_mmu.dc_data_o),
     .mmu_lru_index_i    (core_mmu.dc_lru_index),
+    .mmu_addr_i         (core_mmu.dc_mm_addr_o),
     .mmu_miss_o         (core_mmu.dc_miss),
     .mmu_addr_o         (core_mmu.dc_addr_i),
     .mmu_cache_access_o (core_mmu.dc_access),
@@ -288,6 +289,7 @@ segre_mmu mmu (
     .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),
     .dc_data_o            (core_mmu.dc_data_o),
     .dc_lru_index_o       (core_mmu.dc_lru_index),
+    .dc_mm_addr_o         (core_mmu.dc_mm_addr_o),
     // Instruction cache
     .ic_miss_i            (core_mmu.ic_miss),
     .ic_addr_i            (core_mmu.ic_addr_i),
