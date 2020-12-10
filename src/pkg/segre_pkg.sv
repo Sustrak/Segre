@@ -31,6 +31,11 @@ parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE;
 /** STORE BUFFER **/
 parameter STORE_BUFFER_NUM_ELEMS = 2;
 
+/** TLB **/
+parameter VADDR_SIZE = 32;
+parameter PADDR_SIZE = 20;
+parameter TLB_NUM_ENTRYS = 4;
+
 /*****************
 *    OPCODES     *
 *****************/
