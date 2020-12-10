@@ -75,7 +75,7 @@ always_comb begin : cache_tag_selection
     if (sb.flush_chance & sb.data_valid)
         cache_tag.tag = sb.addr_o[WORD_SIZE-1:DCACHE_BYTE_SIZE];
     else if (mmu_data_rdy_i) begin
-        cache_tag.tag = mmu_addr_o[WORD_SIZE-1:DCACHE_BYTE_SIZE];
+        cache_tag.tag = mmu_addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
     end
     else begin
         cache_tag.tag = alu_res_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
@@ -86,9 +86,9 @@ assign cache_tag.invalidate = 0;
 
 // MMU
 assign mmu_cache_access_o = cache_tag.req;
-//TODO: FIX ADDRESS
+
 assign mmu_addr_o         = cache_tag.miss ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
-assign mmu_miss_o         = cache_tag.miss & sb.miss;
+assign mmu_miss_o         = cache_tag.miss & sb.miss & rsn_i;
 
 assign pipeline_hazard_o  = pipeline_hazard;
 

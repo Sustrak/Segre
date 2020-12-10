@@ -53,7 +53,7 @@ assign cache_data.mmu_data    = mmu_data_i;
 
 assign ic_access_o = cache_tag.req & rsn_i;
 assign ic_miss_o   = cache_tag.miss;
-//TODO: FIX ADDRESS
+
 assign ic_addr_o   = cache_tag.miss ? pc_o : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 
 assign hazard_o = pipeline_hazard;
