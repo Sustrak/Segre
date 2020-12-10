@@ -31,6 +31,9 @@ parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE;
 /** STORE BUFFER **/
 parameter STORE_BUFFER_NUM_ELEMS = 2;
 
+/** RVM **/
+parameter RVM_NUM_STAGES = 5;
+
 /*****************
 *    OPCODES     *
 *****************/
@@ -319,5 +322,10 @@ typedef struct packed {
     logic tl;
     logic mem;
 } core_stage_hazards_t;
+
+typedef struct packed {
+    logic a;
+    logic b;
+} bypass_src_reg_t;
 
 endpackage : segre_pkg

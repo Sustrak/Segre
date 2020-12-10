@@ -4,7 +4,7 @@ module segre_id_stage (
     // Clock and Reset
     input logic clk_i,
     input logic rsn_i,
-    
+
     // Hazard
     input logic hazard_i,
 
