@@ -205,6 +205,9 @@ segre_tl_stage tl_stage(
     .mmu_miss_o         (core_mmu.dc_miss),
     .mmu_addr_o         (core_mmu.dc_addr_i),
     .mmu_cache_access_o (core_mmu.dc_access),
+    .mmu_wr_o           (core_mmu.dc_store),
+    .mmu_wr_data_type_o (core_mmu.dc_store_data_type),
+    .mmu_data_o         (core_mmu.dc_data_i),
 
     // Hazard
     .pipeline_hazard_o  (core_hazards.tl)
@@ -247,9 +250,7 @@ segre_mem_stage mem_stage (
     //MMU
     .mmu_data_rdy_i     (core_mmu.dc_mmu_data_rdy),
     .mmu_data_i         (core_mmu.dc_data_o),
-    .mmu_lru_index_i    (core_mmu.dc_lru_index),
-    .data_o             (core_mmu.dc_data_i),
-    .store_data_type_o  (core_mmu.dc_store_data_type_i)
+    .mmu_lru_index_i    (core_mmu.dc_lru_index)
 );
 
 segre_register_file segre_rf (
@@ -283,7 +284,7 @@ segre_mmu mmu (
     .dc_miss_i            (core_mmu.dc_miss),
     .dc_addr_i            (core_mmu.dc_addr_i),
     .dc_store_i           (core_mmu.dc_store),
-    .dc_store_data_type_i (core_mmu.dc_store_data_type_i),
+    .dc_store_data_type_i (core_mmu.dc_store_data_type),
     .dc_data_i            (core_mmu.dc_data_i),
     .dc_access_i          (core_mmu.dc_access),
     .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),

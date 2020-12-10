@@ -295,7 +295,7 @@ typedef struct packed {
     logic dc_miss;
     logic [ADDR_SIZE-1:0] dc_addr_i;
     logic dc_store;
-    memop_data_type_e dc_store_data_type_i;
+    memop_data_type_e dc_store_data_type;
     logic [WORD_SIZE-1:0] dc_data_i;
     logic dc_access;
     logic dc_mmu_data_rdy;
@@ -325,5 +325,11 @@ typedef struct packed {
     logic tl;
     logic mem;
 } core_stage_hazards_t;
+
+/********************
+*      MACROS       *
+********************/
+
+`define ADDR_TAG ADDR_SIZE-1:DCACHE_BYTE_SIZE
 
 endpackage : segre_pkg

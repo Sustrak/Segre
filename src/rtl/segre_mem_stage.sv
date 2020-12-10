@@ -40,9 +40,7 @@ module segre_mem_stage (
     // MMU
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
-    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
-    output logic [WORD_SIZE-1:0] data_o,
-    output memop_data_type_e store_data_type_o
+    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i
 );
 
 dcache_data_t cache_data;
@@ -62,9 +60,6 @@ assign cache_data.memop_data_load_type  = memop_type_i;
 assign cache_data.memop_data_store_type = memop_type_flush_i;
 assign cache_data.data_i                = sb_data_flush_i; //We only write from the SB
 assign cache_data.mmu_data              = mmu_data_i;
-//MMU outputs
-assign data_o = cache_data.data_o;
-assign store_data_type_o = cache_data.store_data_type_o;
 
 segre_dcache_data dcache_data (
     .clk_i                   (clk_i),
