@@ -35,3 +35,6 @@ srl.S
 sra.S
 or.S
 and.S
+st_ld_w.S
+st_ld_stress.S
+sb_stress.S
