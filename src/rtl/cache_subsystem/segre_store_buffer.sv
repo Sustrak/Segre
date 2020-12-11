@@ -54,7 +54,7 @@ logic data_valid;
 logic trouble;
 
 // Help Functions
-function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
+/*function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
     logic [INDEX_SIZE-1:0] ret;
     foreach(one_hot[index]) begin
         if (one_hot[index] == 1'b1) begin
@@ -62,6 +62,15 @@ function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
         end
     end
     return ret;
+endfunction*/
+function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
+    unique case (one_hot)
+        1 : return 0;
+        2 : return 1;
+        4 : return 2;
+        8 : return 3;
+        default: return 0;
+    endcase
 endfunction
 
 always_comb begin : buffer_full
@@ -77,6 +86,7 @@ end
 always_comb begin : buffer_hit
     for(int i=0; i<NUM_ELEMS; i++) begin
         //We save the exact hit because it will be useful
+        //TODO: I THINK WE SHOULD PUT A UNIQUE CASE HERE, BASED ON THE MEMOP_DATA_TYPE
         hit_vector[i] = (buffer[i].valid && ((buffer[i].address & ~2'b11) == (addr_i & ~2'b11))); //We make the comparison mod 4
     end
     hit = |hit_vector;
@@ -157,7 +167,7 @@ always_comb begin : buffer_store_problematic
     if (hit) begin
         static int aux = one_hot_to_binary(hit_vector);
         unique case (buffer[aux].data_type) 
-            BYTE : trouble <= (memop_data_type_i != BYTE);
+            BYTE : trouble <= (memop_data_type_i != BYTE) | ((buffer[aux].address[1:0] != addr_i[1:0]));
             HALF : begin
                 unique case(memop_data_type_i)
                 BYTE: begin

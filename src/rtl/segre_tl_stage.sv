@@ -153,11 +153,13 @@ always_comb begin : pipeline_stop
             HAZARD_DC_MISS:    pipeline_hazard = 1;
             HAZARD_SB_TROUBLE: pipeline_hazard = 1;
             MISS_IN_FLIGHT: begin
-                static bit different_tag = valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG]);
-                static bit same_tag      = valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[`ADDR_TAG]);
+                //TODO:Josep, Mira aixo dels static bit
+                static bit different_tag = valid_tag_in_flight_reg & (tag_in_flight_reg != alu_res_i[`ADDR_TAG]);
+                static bit same_tag      = valid_tag_in_flight_reg & (tag_in_flight_reg == alu_res_i[`ADDR_TAG]);
                 pipeline_hazard = 
-                    (memop_rd_i && (cache_tag.miss && (different_tag || sb.miss || sb.trouble))) ||
-                    (memop_wr_i && (cache_tag.hit || different_tag || (same_tag && sb.trouble)));
+                    (memop_rd_i & (cache_tag.miss & (different_tag | sb.miss | sb.trouble))) |
+                    (memop_wr_i & (cache_tag.hit | different_tag | ( (valid_tag_in_flight_reg & (tag_in_flight_reg == alu_res_i[`ADDR_TAG]))& sb.trouble)));
+                    //(memop_wr_i & (cache_tag.hit | different_tag | (same_tag & sb.trouble)));
             end
             TL_IDLE: begin 
                 if(memop_wr_i) begin
