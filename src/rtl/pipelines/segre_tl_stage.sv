@@ -75,9 +75,6 @@ logic valid_tag_in_flight_reg;
 assign cache_tag.req        = fsm_state == TL_IDLE ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-assign cache_tag.tag        = addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
-=======
 
 always_comb begin : cache_tag_selection
     if (sb.flush_chance & sb.data_valid) cache_tag.tag = sb.addr_o [`ADDR_TAG];
@@ -85,19 +82,12 @@ always_comb begin : cache_tag_selection
     else                                 cache_tag.tag = alu_res_i [`ADDR_TAG];
 end
 
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
 assign cache_tag.invalidate = 0;
 
 // MMU
 assign mmu_cache_access_o = cache_tag.req;
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-assign mmu_addr_o         = cache_tag.miss ? addr_i : {{WORD_SIZE-1-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
-assign mmu_miss_o         = cache_tag.miss & sb.miss;
-
-=======
 assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 assign mmu_miss_o         = cache_tag.miss & sb.miss & rsn_i;
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
 assign pipeline_hazard_o  = pipeline_hazard;
 // Write through
 assign mmu_wr_o           = memop_wr_i;
@@ -105,16 +95,9 @@ assign mmu_wr_data_type_o = memop_type_i;
 assign mmu_data_o         = rf_st_data_i;
 
 // STORE BUFFER
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-assign sb.req_store         = fsm_state == TL_IDLE ? memop_wr_i : 1'b0;
-assign sb.req_load          = fsm_state == TL_IDLE ? memop_rd_i : 1'b0;
-//assign sb.flush_chance      = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
-assign sb.addr_i            = addr_i;
-=======
 assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i : 1'b0;
 assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_rd_i : 1'b0;
 assign sb.addr_i            = alu_res_i;
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
 assign sb.data_i            = rf_st_data_i;
 assign sb.memop_data_type_i = memop_type_i;
 
@@ -169,13 +152,6 @@ always_comb begin : pipeline_stop
         unique case (fsm_state)
             HAZARD_DC_MISS:    pipeline_hazard = 1;
             HAZARD_SB_TROUBLE: pipeline_hazard = 1;
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-            MISS_IN_FLIGHT: pipeline_hazard = (memop_rd_i && (cache_tag.miss && ((valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE]))
-                                                     || (sb.miss || sb.trouble))))
-                                              || (memop_wr_i && ((cache_tag.hit) || (valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE]))
-                                                     || ((valid_tag_in_flight_reg && (tag_in_flight_reg == addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) && sb.trouble)));
-            TL_IDLE: pipeline_hazard = sb.trouble | cache_tag.miss;
-=======
             MISS_IN_FLIGHT: begin
                 //TODO:Josep, Mira aixo dels static bit
                 static bit different_tag = valid_tag_in_flight_reg & (tag_in_flight_reg != alu_res_i[`ADDR_TAG]);
@@ -193,7 +169,6 @@ always_comb begin : pipeline_stop
                     pipeline_hazard = sb.miss & cache_tag.miss; //Load cannot be served from the SB or the cache
                 end
             end
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
             default:;
         endcase
     end
@@ -208,27 +183,16 @@ always_comb begin : tl_fsm
                 if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
                     if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
                         fsm_nxt_state = HAZARD_DC_MISS;
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-                    else if(valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) begin
-                        fsm_nxt_state = HAZARD_DC_MISS;
-                    end //We must also take into account the SB problematic
-                    else if((valid_tag_in_flight_reg && (tag_in_flight_reg == addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) && sb.trouble) begin
-=======
                     else if(valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end //We must also take into account the SB problematic
                     else if((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[`ADDR_TAG])) && sb.trouble) begin
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end
                 end
                 else if (memop_rd_o) begin //A new load arrives: In this case we won't issue a new request if the load has the same tag as the faulty store, or if it hits (obviously).
                     if(cache_tag.miss) begin //In general, we want to stall in a miss, but if the store buffer can serve the load it's not necessary
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-                        if (valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) begin
-=======
                         if (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) begin
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
                             fsm_nxt_state = HAZARD_DC_MISS;
                         end //Maybe the store buffer can provide the element
                         else if(sb.miss || sb.trouble)
@@ -258,11 +222,7 @@ always_comb begin : tl_fsm
 end
 
 always_comb begin : miss_in_fligt
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-    tag_in_flight_next <= addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
-=======
     tag_in_flight_next <= alu_res_i[`ADDR_TAG];
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
     valid_tag_in_flight_next <= memop_wr_i && cache_tag.miss;
 end
 
@@ -282,22 +242,6 @@ end
 
 always_ff @(posedge clk_i) begin : stage_latch
     if (!rsn_i) begin
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-        addr_o           <= 0;
-        rf_we_o          <= 0;
-        rf_waddr_o       <= 0;
-        addr_index_o     <= 0;
-        memop_rd_o       <= 0;
-        memop_wr_o       <= 0;
-        memop_sign_ext_o <= 0;
-        memop_type_o     <= WORD;
-        tkbr_o           <= 0;
-        new_pc_o         <= 0;
-        sb_hit_o         <= 0;
-        sb_data_o        <= 0;
-        sb_addr_o        <= 0;
-    end else begin
-=======
         alu_res_o          <= 0;
         rf_we_o            <= 0;
         rf_waddr_o         <= 0;
@@ -316,7 +260,6 @@ always_ff @(posedge clk_i) begin : stage_latch
         sb_flush_o         <= 0;
     end 
     else begin
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
         if (!pipeline_hazard) begin
             if(sb.flush_chance & sb.data_valid) begin
                 // Flush data from store buffer to the data cache
@@ -340,15 +283,6 @@ always_ff @(posedge clk_i) begin : stage_latch
                 memop_rd_o       <= memop_rd_i;
                 memop_wr_o       <= 1'b0;
             end
-<<<<<<< HEAD:src/rtl/pipelines/segre_tl_stage.sv
-            addr_o           <= addr_i;
-            rf_we_o          <= rf_we_i;
-            rf_waddr_o       <= rf_waddr_i;
-            memop_sign_ext_o <= memop_sign_ext_i;
-            tkbr_o           <= tkbr_i;
-            new_pc_o         <= new_pc_i;
-            addr_index_o     <= cache_tag.addr_index;
-=======
             alu_res_o          <= alu_res_i;
             rf_we_o            <= rf_we_i;
             rf_waddr_o         <= rf_waddr_i;
@@ -359,7 +293,6 @@ always_ff @(posedge clk_i) begin : stage_latch
             memop_type_o       <= memop_type_i;
             memop_type_flush_o <= sb.memop_data_type_o;
             sb_flush_o         <= sb.data_valid;
->>>>>>> cache-subsystem:src/rtl/segre_tl_stage.sv
         end
         else begin
             if(fsm_state == HAZARD_SB_TROUBLE) begin

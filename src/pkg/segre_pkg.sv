@@ -31,15 +31,12 @@ parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE;
 /** STORE BUFFER **/
 parameter STORE_BUFFER_NUM_ELEMS = 2;
 
-<<<<<<< HEAD
 /** RVM **/
 parameter RVM_NUM_STAGES = 5;
-=======
 /** TLB **/
 parameter VADDR_SIZE = 32;
 parameter PADDR_SIZE = 20;
 parameter TLB_NUM_ENTRYS = 4;
->>>>>>> cache-subsystem
 
 /*****************
 *    OPCODES     *
@@ -368,7 +365,6 @@ typedef struct packed {
     logic mem;
 } core_stage_hazards_t;
 
-<<<<<<< HEAD
 typedef struct packed {
     logic a;
     logic b;
@@ -385,12 +381,5 @@ typedef struct packed {
     logic [REG_SIZE-1:0] rvm_waddr;
     logic [WORD_SIZE-1:0] rvm_data;
 } rf_wdata_t;
-=======
-/********************
-*      MACROS       *
-********************/
-
-`define ADDR_TAG ADDR_SIZE-1:DCACHE_BYTE_SIZE
->>>>>>> cache-subsystem
 
 endpackage : segre_pkg

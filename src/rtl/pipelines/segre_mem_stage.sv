@@ -45,19 +45,6 @@ logic [WORD_SIZE-1:0] mem_data_aux;
 assign mem_data_aux = sb_hit_i ? sb_data_load_i : cache_data.data_o;
 
 // DCACHE_DATA
-<<<<<<< HEAD:src/rtl/pipelines/segre_mem_stage.sv
-assign cache_data.rd_data         = memop_rd_i;
-assign cache_data.wr_data         = memop_wr_i;
-assign cache_data.mmu_wr_data     = mmu_data_rdy_i;
-assign cache_data.index           = mmu_data_rdy_i ? mmu_lru_index_i : addr_index_i;
-assign cache_data.byte_i          = addr_i[DCACHE_BYTE_SIZE-1:0];
-assign cache_data.memop_data_type = memop_type_i;
-assign cache_data.data_i          = sb_data_i;
-assign cache_data.mmu_data        = mmu_data_i;
-//MMU outputs
-assign data_o = cache_data.data_o;
-assign store_data_type_o = cache_data.store_data_type_o;
-=======
 assign cache_data.rd_data               = memop_rd_i;
 assign cache_data.wr_data               = memop_wr_i;
 assign cache_data.mmu_wr_data           = mmu_data_rdy_i;
@@ -67,7 +54,6 @@ assign cache_data.memop_data_load_type  = memop_type_i;
 assign cache_data.memop_data_store_type = memop_type_flush_i;
 assign cache_data.data_i                = sb_data_flush_i; //We only write from the SB
 assign cache_data.mmu_data              = mmu_data_i;
->>>>>>> cache-subsystem:src/rtl/segre_mem_stage.sv
 
 segre_dcache_data dcache_data (
     .clk_i                   (clk_i),
