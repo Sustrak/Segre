@@ -71,8 +71,9 @@ logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_next;
 logic valid_tag_in_flight_next;
 logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_reg;
 logic valid_tag_in_flight_reg;
+logic miss_in_fligt_miss;
 
-assign cache_tag.req        = fsm_state == TL_IDLE ? (memop_rd_i | memop_wr_i) : 1'b0;
+assign cache_tag.req        = (fsm_state == TL_IDLE | fsm_state == MISS_IN_FLIGHT) ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
 
@@ -85,9 +86,10 @@ end
 assign cache_tag.invalidate = 0;
 
 // MMU
-assign mmu_cache_access_o = cache_tag.req;
+assign mmu_cache_access_o = cache_tag.req | sb.req_store | sb.req_load;
 assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
-assign mmu_miss_o         = cache_tag.miss & sb.miss & rsn_i;
+assign mmu_miss_o         = rsn_i & (cache_tag.miss & sb.miss); 
+//assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == alu_res_i[`ADDR_TAG])); 
 assign pipeline_hazard_o  = pipeline_hazard;
 // Write through
 assign mmu_wr_o           = memop_wr_i;
@@ -154,11 +156,11 @@ always_comb begin : pipeline_stop
             HAZARD_SB_TROUBLE: pipeline_hazard = 1;
             MISS_IN_FLIGHT: begin
                 //TODO:Josep, Mira aixo dels static bit
-                static bit different_tag = valid_tag_in_flight_reg & (tag_in_flight_reg != alu_res_i[`ADDR_TAG]);
-                static bit same_tag      = valid_tag_in_flight_reg & (tag_in_flight_reg == alu_res_i[`ADDR_TAG]);
+                //static bit different_tag = valid_tag_in_flight_reg & (tag_in_flight_reg != alu_res_i[`ADDR_TAG]);
+                //static bit same_tag      = valid_tag_in_flight_reg & (tag_in_flight_reg == alu_res_i[`ADDR_TAG]);
                 pipeline_hazard = 
-                    (memop_rd_i & (cache_tag.miss & (different_tag | sb.miss | sb.trouble))) |
-                    (memop_wr_i & (cache_tag.hit | different_tag | ( (valid_tag_in_flight_reg & (tag_in_flight_reg == alu_res_i[`ADDR_TAG]))& sb.trouble)));
+                    (memop_rd_i & (cache_tag.miss & ( (valid_tag_in_flight_reg & (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) | sb.miss | sb.trouble))) |
+                    (memop_wr_i & (cache_tag.hit | (valid_tag_in_flight_reg & (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) | ( (valid_tag_in_flight_reg & (tag_in_flight_reg == alu_res_i[`ADDR_TAG]))& sb.trouble)));
                     //(memop_wr_i & (cache_tag.hit | different_tag | (same_tag & sb.trouble)));
             end
             TL_IDLE: begin 
@@ -224,6 +226,7 @@ end
 always_comb begin : miss_in_fligt
     tag_in_flight_next <= alu_res_i[`ADDR_TAG];
     valid_tag_in_flight_next <= memop_wr_i && cache_tag.miss;
+    //miss_in_fligt_miss <= (memop_rd_i | memop_wr_i)
 end
 
 always_ff @(posedge clk_i) begin : miss_in_fligt_latch
@@ -275,7 +278,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_data_load_o   <= sb.data_load_o;
                 sb_data_flush_o  <= sb.data_flush_o;
                 sb_hit_o         <= sb.hit;
-                memop_rd_o       <= 1'b0; //We have already read
+                memop_rd_o       <= memop_rd_i; //We have already read
                 memop_wr_o       <= 1'b0; //We have already write
             end
             else begin

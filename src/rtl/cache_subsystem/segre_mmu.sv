@@ -55,7 +55,7 @@ logic [ICACHE_LANE_SIZE-1:0] ic_mm_data;
 logic [ICACHE_INDEX_SIZE-1:0] ic_lru_index;
 logic [DCACHE_INDEX_SIZE-1:0] ic_addr_index;
 
-// Data cache LRU
+// Instruction cache LRU
 logic [IC_LRU_WIDTH-1:0] ic_lru_current, ic_lru_updated;
 logic [ICACHE_NUM_LANES-1:0] ic_lru_access, ic_lru_pre, ic_lru_post;
 
@@ -118,9 +118,13 @@ always_comb begin : dc_lru
         dc_lru_access  = 0;
         dc_lru_current = 0;
     end
-    else if (dc_access_i && !dc_miss_i) begin
+    else if (dc_access_i & !dc_miss_i) begin
         dc_lru_current = dc_lru_updated;
         dc_lru_access = binary_to_one_hot(dc_addr_index);
+    end
+    else if (dc_mmu_data_rdy_o) begin
+        dc_lru_current = dc_lru_updated;
+        dc_lru_access = binary_to_one_hot(dc_lru_index_o);
     end
     else begin
         dc_lru_access  = 0;
