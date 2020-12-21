@@ -14,12 +14,15 @@ module segre_mem_stage (
     // Memop
     input logic [DCACHE_INDEX_SIZE-1:0] addr_index_i,
     input memop_data_type_e memop_type_i,
+    input memop_data_type_e memop_type_flush_i,
     input logic memop_sign_ext_i,
     input logic memop_rd_i,
     input logic memop_wr_i,
     // Store buffer
     input logic sb_hit_i,
-    input logic [WORD_SIZE-1:0] sb_data_i,
+    input logic sb_flush_i,
+    input logic [WORD_SIZE-1:0] sb_data_load_i,
+    input logic [WORD_SIZE-1:0] sb_data_flush_i,
     input logic [ADDR_SIZE-1:0] sb_addr_i,
 
     // MEM WB interface
@@ -31,9 +34,7 @@ module segre_mem_stage (
     // MMU
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
-    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
-    output logic [WORD_SIZE-1:0] data_o,
-    output memop_data_type_e store_data_type_o
+    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i
 );
 
 dcache_data_t cache_data;
@@ -41,9 +42,10 @@ dcache_data_t cache_data;
 logic [WORD_SIZE-1:0] mem_data;
 logic [WORD_SIZE-1:0] mem_data_aux;
 
-assign mem_data_aux = sb_hit_i ? sb_data_i : cache_data.data_o;
+assign mem_data_aux = sb_hit_i ? sb_data_load_i : cache_data.data_o;
 
 // DCACHE_DATA
+<<<<<<< HEAD:src/rtl/pipelines/segre_mem_stage.sv
 assign cache_data.rd_data         = memop_rd_i;
 assign cache_data.wr_data         = memop_wr_i;
 assign cache_data.mmu_wr_data     = mmu_data_rdy_i;
@@ -55,20 +57,32 @@ assign cache_data.mmu_data        = mmu_data_i;
 //MMU outputs
 assign data_o = cache_data.data_o;
 assign store_data_type_o = cache_data.store_data_type_o;
+=======
+assign cache_data.rd_data               = memop_rd_i;
+assign cache_data.wr_data               = memop_wr_i;
+assign cache_data.mmu_wr_data           = mmu_data_rdy_i;
+assign cache_data.index                 = mmu_data_rdy_i ? mmu_lru_index_i : addr_index_i;
+assign cache_data.byte_i                = sb_flush_i ? sb_addr_i[DCACHE_BYTE_SIZE-1:0] : alu_res_i[DCACHE_BYTE_SIZE-1:0];
+assign cache_data.memop_data_load_type  = memop_type_i;
+assign cache_data.memop_data_store_type = memop_type_flush_i;
+assign cache_data.data_i                = sb_data_flush_i; //We only write from the SB
+assign cache_data.mmu_data              = mmu_data_i;
+>>>>>>> cache-subsystem:src/rtl/segre_mem_stage.sv
 
 segre_dcache_data dcache_data (
-    .clk_i             (clk_i),
-    .rsn_i             (rsn_i),
-    .rd_data_i         (cache_data.rd_data),
-    .wr_data_i         (cache_data.wr_data),
-    .mmu_wr_data_i     (cache_data.mmu_wr_data),
-    .index_i           (cache_data.index),
-    .byte_i            (cache_data.byte_i),
-    .memop_data_type_i (cache_data.memop_data_type),
-    .data_i            (cache_data.data_i),
-    .mmu_data_i        (cache_data.mmu_data),
-    .data_o            (cache_data.data_o),
-    .store_data_type_o (cache_data.store_data_type_o)
+    .clk_i                   (clk_i),
+    .rsn_i                   (rsn_i),
+    .rd_data_i               (cache_data.rd_data),
+    .wr_data_i               (cache_data.wr_data),
+    .mmu_wr_data_i           (cache_data.mmu_wr_data),
+    .index_i                 (cache_data.index),
+    .byte_i                  (cache_data.byte_i),
+    .memop_data_type_load_i  (cache_data.memop_data_load_type),
+    .memop_data_type_store_i (cache_data.memop_data_store_type),
+    .data_i                  (cache_data.data_i),
+    .mmu_data_i              (cache_data.mmu_data),
+    .data_o                  (cache_data.data_o),
+    .store_data_type_o       (cache_data.store_data_type_o)
 );
 
 always_comb begin : sign_extension

@@ -11,11 +11,12 @@ module segre_store_buffer (
     input memop_data_type_e memop_data_type_i,
     output logic hit_o,
     output logic miss_o,
-    output logic full_o,
+    //output logic full_o,
     output logic trouble_o,
     output logic data_valid_o,
     output memop_data_type_e memop_data_type_o,
-    output logic [WORD_SIZE-1:0] data_o,
+    output logic [WORD_SIZE-1:0] data_load_o, //Support for load and flush at the same cycle
+    output logic [WORD_SIZE-1:0] data_flush_o,
     output logic [ADDR_SIZE-1:0] addr_o
 );
 
@@ -25,7 +26,7 @@ localparam INDEX_SIZE = $clog2(NUM_ELEMS);
 typedef struct packed{
     logic valid;
     logic [ADDR_SIZE-1:0] address;
-    logic [1:0][7:0] data ;
+    logic [3:0][7:0] data ;
     memop_data_type_e data_type;
 } buf_elem;
 
@@ -38,10 +39,11 @@ logic [WORD_SIZE-1:0][NUM_ELEMS-1:0] buf_data;
 memop_data_type_e [NUM_ELEMS-1:0] buf_type;*/ 
 
 //Pointers of the circular buffer
-logic [NUM_ELEMS-1:0] head; //where to write NEXT element
-logic [NUM_ELEMS-1:0] tail; //oldest element in the buffer
+logic [NUM_ELEMS-2:0] head; //where to write NEXT element
+logic [NUM_ELEMS-2:0] tail; //oldest element in the buffer
 
 //Logic elements to manage data and output it
+memop_data_type_e memop_data_type;
 logic [WORD_SIZE-1:0] data_load;
 logic [WORD_SIZE-1:0] data_flush;
 logic [ADDR_SIZE-1:0] address;
@@ -52,7 +54,7 @@ logic data_valid;
 logic trouble;
 
 // Help Functions
-function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
+/*function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
     logic [INDEX_SIZE-1:0] ret;
     foreach(one_hot[index]) begin
         if (one_hot[index] == 1'b1) begin
@@ -60,21 +62,32 @@ function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
         end
     end
     return ret;
+endfunction*/
+function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
+    unique case (one_hot)
+        1 : return 0;
+        2 : return 1;
+        4 : return 2;
+        8 : return 3;
+        default: return 0;
+    endcase
 endfunction
 
 always_comb begin : buffer_full
-    static logic aux = buffer[0].valid;
-    for(int i=0; i<NUM_ELEMS; i++) begin
+    /*static logic aux = buffer[0].valid;
+    for(int i=1; i<NUM_ELEMS; i++) begin
         aux &= buffer[i].valid;
     end
-    full = aux && req_store_i;
+    full = aux && req_store_i;*/
+    full = buffer[0].valid & buffer[1].valid; //& req_store_i;
     //full = &buf_position_valid && req_store_i; //If every position is full and the processor wants to perform a store, we must stall the pipeline
 end
 
 always_comb begin : buffer_hit
     for(int i=0; i<NUM_ELEMS; i++) begin
         //We save the exact hit because it will be useful
-        hit_vector[i] <= (buffer[i].valid && ((buffer[i].address & ~2'b11) == (addr_i & ~2'b11))); //We make the comparison mod 4
+        //TODO: I THINK WE SHOULD PUT A UNIQUE CASE HERE, BASED ON THE MEMOP_DATA_TYPE
+        hit_vector[i] = (buffer[i].valid && ((buffer[i].address & ~2'b11) == (addr_i & ~2'b11))); //We make the comparison mod 4
     end
     hit = |hit_vector;
 end
@@ -104,6 +117,12 @@ always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and r
     if (!rsn_i) begin
         for(int i=0; i<NUM_ELEMS; i++) begin
             buffer[i].valid <= 0;
+            buffer[i].address <= 0;
+            buffer[i].data[0] <= 0;
+            buffer[i].data[1] <= 0;
+            buffer[i].data[2] <= 0;
+            buffer[i].data[3] <= 0;
+            buffer[i].data_type <= WORD;
         end
         head <= 0;
         tail <= 0;
@@ -128,6 +147,7 @@ always_comb begin : buffer_flush_comb
         default: ;
     endcase
     address <= buffer[tail].address;
+    memop_data_type <= buffer[tail].data_type;
     data_valid <= (flush_chance_i && (tail != head || full) && buffer[tail].valid);
 end
 
@@ -147,7 +167,7 @@ always_comb begin : buffer_store_problematic
     if (hit) begin
         static int aux = one_hot_to_binary(hit_vector);
         unique case (buffer[aux].data_type) 
-            BYTE : trouble <= (memop_data_type_i != BYTE);
+            BYTE : trouble <= (memop_data_type_i != BYTE) | ((buffer[aux].address[1:0] != addr_i[1:0]));
             HALF : begin
                 unique case(memop_data_type_i)
                 BYTE: begin
@@ -238,11 +258,14 @@ always_ff @(posedge clk_i) begin : buffer_store
     end
 end
 
-assign trouble_o = trouble;
-assign full_o = full & (!hit);
+assign trouble_o = trouble || (full & (!hit) & req_store_i);
+//assign full_o = full & (!hit);
 assign hit_o = hit & (req_load_i | req_store_i);
 assign miss_o = !hit & (req_load_i | req_store_i);
-assign data_o = (req_load_i) ? data_load : data_flush;
+//assign data_o = (req_load_i) ? data_load : data_flush;
+assign memop_data_type_o = memop_data_type;
+assign data_load_o = data_load;
+assign data_flush_o = data_flush;
 assign addr_o = address;
 assign data_valid_o = data_valid;
 

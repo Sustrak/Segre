@@ -8,7 +8,8 @@ module segre_dcache_data (
     input logic mmu_wr_data_i,
     input logic [DCACHE_INDEX_SIZE-1:0] index_i,
     input logic [DCACHE_BYTE_SIZE-1:0] byte_i,
-    input memop_data_type_e memop_data_type_i,
+    input memop_data_type_e memop_data_type_load_i,
+    input memop_data_type_e memop_data_type_store_i,
     input logic [WORD_SIZE-1:0] data_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
     output logic [WORD_SIZE-1:0] data_o,
@@ -25,7 +26,7 @@ logic [NUM_LANES-1:0][LANE_SIZE/8-1:0][7:0] cache_data;
 
 logic [WORD_SIZE-1:0] data;
 
-assign store_data_type_o = memop_data_type_i;
+assign store_data_type_o = memop_data_type_store_i;
 
 always_ff @(posedge clk_i) begin : cache_reset
     if (!rsn_i) begin
@@ -37,7 +38,7 @@ end
 
 always_comb begin : cache_read
     if (rd_data_i) begin
-        unique case (memop_data_type_i)
+        unique case (memop_data_type_load_i)
             BYTE: data_o = {{24{1'b0}}, cache_data[index_i][byte_i]};
             HALF: data_o = {{16{1'b0}}, cache_data[index_i][byte_i+1], cache_data[index_i][byte_i]};
             WORD: data_o = {cache_data[index_i][byte_i+3], 
@@ -52,7 +53,7 @@ end
 
 always_ff @(posedge clk_i) begin : cache_write
     if (wr_data_i) begin
-        unique case (memop_data_type_i)
+        unique case (memop_data_type_store_i)
             BYTE: cache_data[index_i][byte_i]   <= data_i[7:0];
             HALF: begin
                     cache_data[index_i][byte_i+1] <= data_i[15:8];

@@ -13,6 +13,7 @@ module segre_mmu (
     output logic dc_mmu_data_rdy_o,
     output logic [DCACHE_LANE_SIZE-1:0] dc_data_o,
     output logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index_o,
+    output logic [ADDR_SIZE-1:0] dc_mm_addr_o,
     // Instruction cache
     input  logic ic_miss_i,
     input  logic [ADDR_SIZE-1:0] ic_addr_i,
@@ -118,11 +119,11 @@ always_comb begin : dc_lru
         dc_lru_current = 0;
     end
     else if (dc_access_i && !dc_miss_i) begin
+        dc_lru_current = dc_lru_updated;
         dc_lru_access = binary_to_one_hot(dc_addr_index);
     end
     else begin
         dc_lru_access  = 0;
-        dc_lru_current = dc_lru_updated;
         dc_lru_index   = one_hot_to_binary(dc_lru_post);
     end
 end
@@ -133,32 +134,42 @@ always_comb begin : ic_lru
         ic_lru_current = 0;
     end
     else if (ic_access_i && !ic_miss_i) begin
+        ic_lru_current = ic_lru_updated;
         ic_lru_access = binary_to_one_hot(ic_addr_index);
     end
     else begin
         ic_lru_access  = 0;
-        ic_lru_current = ic_lru_updated;
         ic_lru_index   = one_hot_to_binary(ic_lru_post);
     end
 end
 
 always_ff @(posedge clk_i) begin : dc_miss_block
-    if (dc_miss_i) begin
-        dc_miss <= dc_miss_i;
-        dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}};
-    end
-    if (dc_miss && fsm_state == DCACHE_WAIT && mm_data_rdy_i) begin
+    if (!rsn_i) begin
         dc_miss <= 0;
+        dc_mm_addr <= 0;
+    end else begin
+        if (dc_miss_i) begin
+            dc_miss <= dc_miss_i;
+            dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}};
+        end
+        if (dc_miss && fsm_state == DCACHE_WAIT && mm_data_rdy_i) begin
+            dc_miss <= 0;
+        end
     end
 end
 
 always_ff @(posedge clk_i) begin : ic_miss_block
-    if (ic_miss_i) begin
-        ic_miss <= ic_miss_i;
-        ic_mm_addr <= {ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE], {ICACHE_BYTE_SIZE{1'b0}}};
-    end
-    if (ic_miss && fsm_state == ICACHE_WAIT && mm_data_rdy_i) begin
+    if (!rsn_i) begin
         ic_miss <= 0;
+        ic_mm_addr <= 0;
+    end else begin
+        if (ic_miss_i) begin
+            ic_miss <= ic_miss_i;
+            ic_mm_addr <= {ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE], {ICACHE_BYTE_SIZE{1'b0}}};
+        end
+        if (ic_miss && fsm_state == ICACHE_WAIT && mm_data_rdy_i) begin
+            ic_miss <= 0;
+        end
     end
 end
 
@@ -242,6 +253,7 @@ always_ff @(posedge clk_i) begin
         dc_mmu_data_rdy_o <= dc_mmu_data_rdy;
         dc_data_o <= dc_mm_data;
         dc_lru_index_o <= dc_lru_index;
+        dc_mm_addr_o <= dc_mm_addr; 
         // Instruction cache
         ic_mmu_data_rdy_o <= ic_mmu_data_rdy;
         ic_data_o <= ic_mm_data;

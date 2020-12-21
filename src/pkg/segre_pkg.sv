@@ -31,8 +31,15 @@ parameter ICACHE_TAG_SIZE = ADDR_SIZE - ICACHE_BYTE_SIZE;
 /** STORE BUFFER **/
 parameter STORE_BUFFER_NUM_ELEMS = 2;
 
+<<<<<<< HEAD
 /** RVM **/
 parameter RVM_NUM_STAGES = 5;
+=======
+/** TLB **/
+parameter VADDR_SIZE = 32;
+parameter PADDR_SIZE = 20;
+parameter TLB_NUM_ENTRYS = 4;
+>>>>>>> cache-subsystem
 
 /*****************
 *    OPCODES     *
@@ -186,7 +193,8 @@ typedef struct packed {
     logic rd_data;
     logic wr_data;
     logic mmu_wr_data;
-    memop_data_type_e memop_data_type;
+    memop_data_type_e memop_data_load_type;
+    memop_data_type_e memop_data_store_type;
     logic [WORD_SIZE-1:0] data_i;
     logic [DCACHE_INDEX_SIZE-1:0] index;
     logic [DCACHE_BYTE_SIZE-1:0] byte_i;
@@ -213,11 +221,12 @@ typedef struct packed {
     memop_data_type_e memop_data_type_i;
     logic hit;
     logic miss;
-    logic full;
+    //logic full;
     logic data_valid;
     logic trouble;
     memop_data_type_e memop_data_type_o;
-    logic [WORD_SIZE-1:0] data_o;
+    logic [WORD_SIZE-1:0] data_load_o;
+    logic [WORD_SIZE-1:0] data_flush_o;
     logic [ADDR_SIZE-1:0] addr_o;
 } store_buffer_t;
 
@@ -296,6 +305,7 @@ typedef struct packed {
 
 typedef struct packed {
     memop_data_type_e memop_type;
+    memop_data_type_e memop_flush_type;
     memop_data_type_e data_type;
     logic [WORD_SIZE-1:0] addr;
     logic [WORD_SIZE-1:0] wr_data;
@@ -309,7 +319,9 @@ typedef struct packed {
     logic tkbr;
     logic [WORD_SIZE-1:0] new_pc;
     logic sb_hit;
-    logic [WORD_SIZE-1:0] sb_data;
+    logic sb_flush;
+    logic [WORD_SIZE-1:0] sb_data_load;
+    logic [WORD_SIZE-1:0] sb_data_flush;
     logic [ADDR_SIZE-1:0] sb_addr;
     logic [DCACHE_INDEX_SIZE-1:0] addr_index;
 } mem_stage_t;
@@ -325,12 +337,13 @@ typedef struct packed {
     logic dc_miss;
     logic [ADDR_SIZE-1:0] dc_addr_i;
     logic dc_store;
-    memop_data_type_e dc_store_data_type_i;
+    memop_data_type_e dc_store_data_type;
     logic [WORD_SIZE-1:0] dc_data_i;
     logic dc_access;
     logic dc_mmu_data_rdy;
     logic [DCACHE_LANE_SIZE-1:0] dc_data_o;
     logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
+    logic [ADDR_SIZE-1:0] dc_mm_addr_o;
     logic ic_miss;
     logic [ADDR_SIZE-1:0] ic_addr_i;
     logic ic_access;
@@ -355,6 +368,7 @@ typedef struct packed {
     logic mem;
 } core_stage_hazards_t;
 
+<<<<<<< HEAD
 typedef struct packed {
     logic a;
     logic b;
@@ -371,5 +385,12 @@ typedef struct packed {
     logic [REG_SIZE-1:0] rvm_waddr;
     logic [WORD_SIZE-1:0] rvm_data;
 } rf_wdata_t;
+=======
+/********************
+*      MACROS       *
+********************/
+
+`define ADDR_TAG ADDR_SIZE-1:DCACHE_BYTE_SIZE
+>>>>>>> cache-subsystem
 
 endpackage : segre_pkg
