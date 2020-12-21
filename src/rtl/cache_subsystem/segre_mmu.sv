@@ -122,6 +122,10 @@ always_comb begin : dc_lru
         dc_lru_current = dc_lru_updated;
         dc_lru_access = binary_to_one_hot(dc_addr_index);
     end
+    else if (dc_mmu_data_rdy_o) begin
+        dc_lru_current = dc_lru_updated;
+        dc_lru_access = binary_to_one_hot(dc_lru_index_o);
+    end
     else begin
         dc_lru_access  = 0;
         dc_lru_index   = one_hot_to_binary(dc_lru_post);
