@@ -151,6 +151,12 @@ typedef enum logic {
     IF_IDLE
 } if_fsm_state_e;
 
+typedef enum logic [1:0] {
+   EX_PIPELINE,
+   MEM_PIPELINE,
+   RVM_PIPELINE
+} pipeline_e;
+
 /********************
 * SEGRE  DATATYPES  *
 ********************/
@@ -228,6 +234,7 @@ typedef struct packed {
 } core_id_t;
 
 typedef struct packed {
+    pipeline_e pipeline;
     memop_data_type_e memop_type;
     logic [WORD_SIZE-1:0] alu_src_a;
     logic [WORD_SIZE-1:0] alu_src_b;
@@ -240,10 +247,11 @@ typedef struct packed {
     logic memop_sign_ext;
     logic [WORD_SIZE-1:0] br_src_a;
     logic [WORD_SIZE-1:0] br_src_b;
-} core_ex_t;
+} core_pipeline_t;
 
 typedef struct packed {
-    logic [WORD_SIZE-1:0] alu_res;
+    logic [WORD_SIZE-1:0] alu_src_a;
+    logic [WORD_SIZE-1:0] alu_src_b;
     logic rf_we;
     logic [REG_SIZE-1:0] rf_waddr;
     logic [WORD_SIZE-1:0] rf_st_data;
@@ -251,17 +259,44 @@ typedef struct packed {
     logic memop_wr;
     logic memop_sign_ext;
     memop_data_type_e memop_type;
-    logic tkbr;
-    logic [WORD_SIZE-1:0] new_pc;
-    logic sb_hit;
-    logic [WORD_SIZE-1:0] sb_data;
-    logic [DCACHE_INDEX_SIZE-1:0] addr_index;
-} core_tl_t;
+    logic [WORD_SIZE-1:0] data;
+    logic rf_we_o;
+    logic [REG_SIZE-1:0] rf_waddr_o;
+} mem_pipeline_t;
+
+typedef struct packed {
+    logic hazard;
+    alu_opcode_e alu_opcode;
+    logic [WORD_SIZE-1:0] alu_src_a;
+    logic [WORD_SIZE-1:0] alu_src_b;
+    logic rf_we;
+    logic [REG_SIZE-1:0] rf_waddr;
+    logic [WORD_SIZE-1:0] br_src_a;
+    logic [WORD_SIZE-1:0] br_src_b;
+} ex_pipeline_t;
+
+typedef struct packed {
+    alu_opcode_e alu_opcode;
+    logic [WORD_SIZE-1:0] alu_src_a;
+    logic [WORD_SIZE-1:0] alu_src_b;
+    logic rf_we;
+    logic [REG_SIZE-1:0]  rf_waddr;
+} rvm_pipeline_t;
+
+typedef struct packed {
+    logic [WORD_SIZE-1:0] addr;
+    logic rf_we;
+    logic [REG_SIZE-1:0] rf_waddr;
+    logic [WORD_SIZE-1:0] rf_st_data;
+    logic memop_rd;
+    logic memop_wr;
+    logic memop_sign_ext;
+    memop_data_type_e memop_type;
+} tl_stage_t;
 
 typedef struct packed {
     memop_data_type_e memop_type;
     memop_data_type_e data_type;
-    logic [WORD_SIZE-1:0] alu_res;
     logic [WORD_SIZE-1:0] addr;
     logic [WORD_SIZE-1:0] wr_data;
     logic [REG_SIZE-1:0]  rf_waddr;
@@ -276,18 +311,15 @@ typedef struct packed {
     logic sb_hit;
     logic [WORD_SIZE-1:0] sb_data;
     logic [ADDR_SIZE-1:0] sb_addr;
-    //logic [DCACHE_INDEX_SIZE-1:0] addr_index;
-} core_mem_t;
+    logic [DCACHE_INDEX_SIZE-1:0] addr_index;
+} mem_stage_t;
 
 typedef struct packed {
     logic [REG_SIZE-1:0] raddr_a;
     logic [REG_SIZE-1:0] raddr_b;
-    logic [REG_SIZE-1:0] waddr_w;
     logic [WORD_SIZE-1:0] data_a;
     logic [WORD_SIZE-1:0] data_b;
-    logic [WORD_SIZE-1:0] data_w;
-    logic we;
-} core_rf_t;
+} decode_rf_t;
 
 typedef struct packed {
     logic dc_miss;
@@ -327,5 +359,17 @@ typedef struct packed {
     logic a;
     logic b;
 } bypass_src_reg_t;
+
+typedef struct packed {
+    logic ex_we;
+    logic [REG_SIZE-1:0] ex_waddr;
+    logic [WORD_SIZE-1:0] ex_data;
+    logic mem_we;
+    logic [REG_SIZE-1:0] mem_waddr;
+    logic [WORD_SIZE-1:0] mem_data;
+    logic rvm_we;
+    logic [REG_SIZE-1:0] rvm_waddr;
+    logic [WORD_SIZE-1:0] rvm_data;
+} rf_wdata_t;
 
 endpackage : segre_pkg

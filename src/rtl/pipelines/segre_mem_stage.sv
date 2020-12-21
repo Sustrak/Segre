@@ -7,7 +7,7 @@ module segre_mem_stage (
 
     // TL MEM interface
     // ALU
-    input logic [WORD_SIZE-1:0] alu_res_i, // TODO: Change this name to memop_addr_i
+    input logic [ADDR_SIZE-1:0] addr_i, // TODO: Change this name to memop_addr_i
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
@@ -17,22 +17,16 @@ module segre_mem_stage (
     input logic memop_sign_ext_i,
     input logic memop_rd_i,
     input logic memop_wr_i,
-    // Branch | Jal
-    input logic tkbr_i,
-    input logic [WORD_SIZE-1:0] new_pc_i,
     // Store buffer
     input logic sb_hit_i,
     input logic [WORD_SIZE-1:0] sb_data_i,
     input logic [ADDR_SIZE-1:0] sb_addr_i,
 
     // MEM WB interface
-    output logic [WORD_SIZE-1:0] op_res_o,
+    output logic [WORD_SIZE-1:0] cache_data_o,
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
-    // Branch | Jal
-    output logic tkbr_o,
-    output logic [WORD_SIZE-1:0] new_pc_o,
 
     // MMU
     input logic mmu_data_rdy_i,
@@ -54,7 +48,7 @@ assign cache_data.rd_data         = memop_rd_i;
 assign cache_data.wr_data         = memop_wr_i;
 assign cache_data.mmu_wr_data     = mmu_data_rdy_i;
 assign cache_data.index           = mmu_data_rdy_i ? mmu_lru_index_i : addr_index_i;
-assign cache_data.byte_i          = alu_res_i[DCACHE_BYTE_SIZE-1:0];
+assign cache_data.byte_i          = addr_i[DCACHE_BYTE_SIZE-1:0];
 assign cache_data.memop_data_type = memop_type_i;
 assign cache_data.data_i          = sb_data_i;
 assign cache_data.mmu_data        = mmu_data_i;
@@ -96,13 +90,10 @@ always_comb begin : sign_extension
     end
 end
 
-
 always_ff @(posedge clk_i) begin
     // To WB
-    op_res_o   <= memop_rd_i ? mem_data : alu_res_i;
-    rf_we_o    <= rf_we_i;
-    rf_waddr_o <= rf_waddr_i;
-    tkbr_o     <= tkbr_i;
-    new_pc_o   <= new_pc_i;
+    cache_data_o <= mem_data;
+    rf_we_o      <= rf_we_i;
+    rf_waddr_o   <= rf_waddr_i;
 end
 endmodule

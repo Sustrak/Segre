@@ -25,14 +25,10 @@ vlog -sv -work $work_dir $rtl_dir/segre_controller.sv
 vlog -sv -work $work_dir $rtl_dir/segre_if_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_decode.sv
 vlog -sv -work $work_dir $rtl_dir/segre_id_stage.sv
-vlog -sv -work $work_dir $rtl_dir/segre_alu.sv
-vlog -sv -work $work_dir $rtl_dir/segre_tkbr.sv
-vlog -sv -work $work_dir $rtl_dir/segre_ex_stage.sv
-vlog -sv -work $work_dir $rtl_dir/segre_tl_stage.sv
-vlog -sv -work $work_dir $rtl_dir/segre_mem_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_register_file.sv
 vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 vlog -sv -work $work_dir -F $rtl_dir/cache_subsystem/filelist.f
+vlog -sv -work $work_dir -F $rtl_dir/pipelines/filelist.f
 
 # Compile tb
 vlog -sv -work $work_dir $tb_dir/interface.sv

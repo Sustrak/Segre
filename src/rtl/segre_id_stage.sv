@@ -37,7 +37,9 @@ module segre_id_stage (
     output logic [WORD_SIZE-1:0] memop_rf_data_o,
     // Branch | Jump
     output logic [WORD_SIZE-1:0] br_src_a_o,
-    output logic [WORD_SIZE-1:0] br_src_b_o
+    output logic [WORD_SIZE-1:0] br_src_b_o,
+    // Pipeline
+    output pipeline_e pipeline_o
 );
 
 logic [WORD_SIZE-1:0] imm_u_type;
@@ -66,6 +68,7 @@ logic memop_rd;
 logic memop_wr;
 logic memop_sign_ext;
 alu_opcode_e alu_opcode;
+pipeline_e pipeline;
 
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
@@ -103,7 +106,10 @@ segre_decode decode (
     .memop_type_o     (memop_type),
     .memop_rd_o       (memop_rd),
     .memop_wr_o       (memop_wr),
-    .memop_sign_ext_o (memop_sign_ext)
+    .memop_sign_ext_o (memop_sign_ext),
+
+    // Pipeline
+    .pipeline_o       (pipeline)
 );
 
 // For the moment imm_a will always be 0
@@ -166,6 +172,7 @@ always_ff @(posedge clk_i) begin
         br_src_b_o       <= br_src_b;
         alu_opcode_o     <= alu_opcode;
         memop_rf_data_o  <= rf_data_b_i;
+        pipeline_o       <= pipeline;
     end
 end
 

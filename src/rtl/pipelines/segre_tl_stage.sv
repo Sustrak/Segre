@@ -5,7 +5,7 @@ module segre_tl_stage (
     input logic rsn_i,
     // EX TL interface
     // ALU
-    input logic [WORD_SIZE-1:0] alu_res_i,
+    input logic [WORD_SIZE-1:0] addr_i,
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
@@ -21,7 +21,7 @@ module segre_tl_stage (
 
     // TL MEM interface
     // ALU
-    output logic [WORD_SIZE-1:0] alu_res_o,
+    output logic [WORD_SIZE-1:0] addr_o,
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
@@ -66,12 +66,12 @@ logic valid_tag_in_flight_reg;
 assign cache_tag.req        = fsm_state == TL_IDLE ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
-assign cache_tag.tag        = alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE];
+assign cache_tag.tag        = addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
 assign cache_tag.invalidate = 0;
 
 // MMU
 assign mmu_cache_access_o = cache_tag.req;
-assign mmu_addr_o         = cache_tag.miss ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{0}}, cache_tag.addr_index};
+assign mmu_addr_o         = cache_tag.miss ? addr_i : {{WORD_SIZE-1-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 assign mmu_miss_o         = cache_tag.miss & sb.miss;
 
 assign pipeline_hazard_o  = pipeline_hazard;
@@ -80,7 +80,7 @@ assign pipeline_hazard_o  = pipeline_hazard;
 assign sb.req_store         = fsm_state == TL_IDLE ? memop_wr_i : 1'b0;
 assign sb.req_load          = fsm_state == TL_IDLE ? memop_rd_i : 1'b0;
 //assign sb.flush_chance      = (!memop_wr_i & !memop_rd_i) | fsm_state != TL_IDLE;
-assign sb.addr_i            = alu_res_i;
+assign sb.addr_i            = addr_i;
 assign sb.data_i            = rf_st_data_i;
 assign sb.memop_data_type_i = memop_type_i;
 
@@ -134,10 +134,10 @@ always_comb begin : pipeline_stop
         unique case (fsm_state)
             HAZARD_DC_MISS: pipeline_hazard = 1;
             HAZARD_SB_TROUBLE: pipeline_hazard = 1;
-            MISS_IN_FLIGHT: pipeline_hazard = (memop_rd_i && (cache_tag.miss && ((valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE]))
+            MISS_IN_FLIGHT: pipeline_hazard = (memop_rd_i && (cache_tag.miss && ((valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE]))
                                                      || (sb.miss || sb.trouble))))
-                                              || (memop_wr_i && ((cache_tag.hit) || (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE]))
-                                                     || ((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) && sb.trouble)));
+                                              || (memop_wr_i && ((cache_tag.hit) || (valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE]))
+                                                     || ((valid_tag_in_flight_reg && (tag_in_flight_reg == addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) && sb.trouble)));
             TL_IDLE: pipeline_hazard = sb.trouble | cache_tag.miss;
             default:;
         endcase
@@ -153,16 +153,16 @@ always_comb begin : tl_fsm
                 if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
                     if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
                         fsm_nxt_state = HAZARD_DC_MISS;
-                    else if(valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) begin
+                    else if(valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end //We must also take into account the SB problematic
-                    else if((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) && sb.trouble) begin
+                    else if((valid_tag_in_flight_reg && (tag_in_flight_reg == addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) && sb.trouble) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end
                 end
                 else if (memop_rd_o) begin //A new load arrives: In this case we won't issue a new request if the load has the same tag as the faulty store, or if it hits (obviously).
                     if(cache_tag.miss) begin //In general, we want to stall in a miss, but if the store buffer can serve the load it's not necessary
-                        if (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE])) begin
+                        if (valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE])) begin
                             fsm_nxt_state = HAZARD_DC_MISS;
                         end //Maybe the store buffer can provide the element
                         else if(sb.miss || sb.trouble)
@@ -192,7 +192,7 @@ always_comb begin : tl_fsm
 end
 
 always_comb begin : miss_in_fligt
-    tag_in_flight_next <= alu_res_i[WORD_SIZE:DCACHE_BYTE_SIZE];
+    tag_in_flight_next <= addr_i[WORD_SIZE-1:DCACHE_BYTE_SIZE];
     valid_tag_in_flight_next <= memop_wr_i && cache_tag.miss;
 end
 
@@ -212,7 +212,7 @@ end
 
 always_ff @(posedge clk_i) begin : stage_latch
     if (!rsn_i) begin
-        alu_res_o        <= 0;
+        addr_o           <= 0;
         rf_we_o          <= 0;
         rf_waddr_o       <= 0;
         addr_index_o     <= 0;
@@ -250,7 +250,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 memop_wr_o       <= memop_wr_i;
                 memop_type_o     <= memop_type_i;
             end
-            alu_res_o        <= alu_res_i;
+            addr_o           <= addr_i;
             rf_we_o          <= rf_we_i;
             rf_waddr_o       <= rf_waddr_i;
             memop_sign_ext_o <= memop_sign_ext_i;

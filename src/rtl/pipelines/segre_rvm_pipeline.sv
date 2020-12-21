@@ -1,6 +1,6 @@
 import segre_pkg::*;
 
-module segre_rmv_stages (
+module segre_rvm_pipeline (
     input logic clk_i,
     input logic rsn_i,
     
@@ -11,24 +11,21 @@ module segre_rmv_stages (
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
-    input logic [WORD_SIZE-1:0] rf_st_data_i,
     
     // ALU
     output logic [WORD_SIZE-1:0] alu_res_o,
     // Register file
     output logic rf_we_o,
-    output logic [REG_SIZE-1:0] rf_waddr_o,
-    output logic [WORD_SIZE-1:0] rf_st_data_o,
+    output logic [REG_SIZE-1:0] rf_waddr_o
 );
 
 typedef struct packed {
     logic [WORD_SIZE-1:0] alu_res;
     logic rf_we;
     logic [REG_SIZE-1:0] rf_waddr;
-    logic [WORD_SIZE-1:0] rf_st_data;
 } rvm_data_t;
 
-rvm_data_t rmv_stage_1, rvm_stage_2, rvm_stage_3, rvm_stage_4, rvm_stage_5;
+rvm_data_t rvm_stage_1, rvm_stage_2, rvm_stage_3, rvm_stage_4, rvm_stage_5;
 
 logic [WORD_SIZE-1:0] alu_res;
 logic [WORD_SIZE*2-1:0] mul_res;
@@ -97,18 +94,16 @@ always_comb begin
     end
 end
 
-always_comb begin : output
-    alu_res_o    = rvm_stage_1.alu_res;
-    rf_we_o      = rvm_stage_1.rf_we;
-    rf_waddr_o   = rvm_stage_1.rf_waddr;
-    rf_st_data_o = rvm_stage_1.rf_st_data;
+always_comb begin : output_logic
+    alu_res_o    = rvm_stage_5.alu_res;
+    rf_we_o      = rvm_stage_5.rf_we;
+    rf_waddr_o   = rvm_stage_5.rf_waddr;
 end
 
-always_ff (@posedge clk_i) begin : latches
+always_ff @(posedge clk_i) begin : latches
     rvm_stage_1.alu_res    <= alu_res;
     rvm_stage_1.rf_we      <= rf_we_i;
-    rmv_stage_1.rf_waddr   <= rf_waddr_i;
-    rmv_stage_1.rf_st_data <= rf_st_data_i;
+    rvm_stage_1.rf_waddr   <= rf_waddr_i;
 
     rvm_stage_2 <= rvm_stage_1;
     rvm_stage_3 <= rvm_stage_2;
@@ -116,4 +111,4 @@ always_ff (@posedge clk_i) begin : latches
     rvm_stage_5 <= rvm_stage_4;
 end
 
-endmodule : segre_rmv_stages
+endmodule : segre_rvm_pipeline

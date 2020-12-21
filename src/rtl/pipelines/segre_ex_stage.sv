@@ -16,12 +16,6 @@ module segre_ex_stage (
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
-    input logic [WORD_SIZE-1:0] rf_st_data_i,
-    // Memop
-    input memop_data_type_e memop_type_i,
-    input logic memop_rd_i,
-    input logic memop_wr_i,
-    input logic memop_sign_ext_i,
     // Branch | Jal
     input logic [WORD_SIZE-1:0] br_src_a_i,
     input logic [WORD_SIZE-1:0] br_src_b_i,
@@ -32,12 +26,6 @@ module segre_ex_stage (
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
-    output logic [WORD_SIZE-1:0] rf_st_data_o,
-    // Memop
-    output memop_data_type_e memop_type_o,
-    output logic memop_rd_o,
-    output logic memop_wr_o,
-    output logic memop_sign_ext_o,
     // Tkbr
     output logic tkbr_o,
     output logic [WORD_SIZE-1:0] new_pc_o
@@ -70,11 +58,6 @@ always_ff @(posedge clk_i) begin
         alu_res_o        <= (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
         rf_we_o          <= rf_we_i;
         rf_waddr_o       <= rf_waddr_i;
-        rf_st_data_o     <= rf_st_data_i;
-        memop_type_o     <= memop_type_i;
-        memop_rd_o       <= memop_rd_i;
-        memop_wr_o       <= memop_wr_i;
-        memop_sign_ext_o <= memop_sign_ext_i;
         tkbr_o           <= tkbr;
         new_pc_o         <= alu_res;
     end

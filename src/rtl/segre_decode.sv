@@ -39,7 +39,10 @@ module segre_decode(
     output memop_data_type_e memop_type_o,
     output logic memop_sign_ext_o,
     output logic memop_rd_o,
-    output logic memop_wr_o
+    output logic memop_wr_o,
+
+    // Pipeline
+    output pipeline_e pipeline_o
 );
 
 opcode_e instr_opcode;
@@ -134,7 +137,8 @@ always_comb begin
     b_imm_mux_sel_o = IMM_B_U;
     br_b_mux_sel_o  = BR_B_REG;
     br_a_mux_sel_o  = BR_A_REG;
-    alu_instr_opcode      = opcode_e'(instr_i[6:0]);
+    alu_instr_opcode = opcode_e'(instr_i[6:0]);
+    pipeline_o      = EX_PIPELINE;
 
     unique case(alu_instr_opcode)
 
@@ -173,6 +177,10 @@ always_comb begin
         OPCODE_OP: begin
             src_a_mux_sel_o = ALU_A_REG;
             src_b_mux_sel_o = ALU_B_REG;
+
+            if (instr_i[`FUNC_7] == 7'b000_0001)
+                pipeline_o = RVM_PIPELINE;
+
             unique case ({instr_i[`FUNC_7], instr_i[`FUNC_3]})
                 {7'b000_0000, 3'b000}: alu_opcode_o = ALU_ADD;    // ADD
                 {7'b010_0000, 3'b000}: alu_opcode_o = ALU_SUB;    // SUB
@@ -200,12 +208,14 @@ always_comb begin
             src_b_mux_sel_o = ALU_B_IMM;
             b_imm_mux_sel_o = IMM_B_I;
             alu_opcode_o = ALU_ADD;
+            pipeline_o = MEM_PIPELINE;
         end
         OPCODE_STORE: begin
             src_a_mux_sel_o = ALU_A_REG;
             src_b_mux_sel_o = ALU_B_IMM;
             b_imm_mux_sel_o = IMM_B_S;
             alu_opcode_o = ALU_ADD;
+            pipeline_o = MEM_PIPELINE;
         end
         OPCODE_JAL: begin
             src_a_mux_sel_o = ALU_A_PC;
