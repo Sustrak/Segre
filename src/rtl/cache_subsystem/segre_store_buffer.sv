@@ -92,6 +92,7 @@ always_comb begin : buffer_hit
     hit = |hit_vector;
 end
 
+/*
 always_comb begin : buffer_load //The proc issued a load and maybe we are holding that value
     //for + if
     static int aux = one_hot_to_binary(hit_vector);
@@ -107,6 +108,23 @@ always_comb begin : buffer_load //The proc issued a load and maybe we are holdin
             data_load[15:8] <= buffer[aux].data[1];
             data_load[23:16] <= buffer[aux].data[2];
             data_load[31:24] <= buffer[aux].data[3];
+        end
+        default: ;
+    endcase
+    
+end*/
+always_comb begin : buffer_load //The proc issued a load and maybe we are holding that value
+    unique case (buffer[one_hot_to_binary(hit_vector)].data_type)
+        BYTE: data_load[7:0] <= buffer[one_hot_to_binary(hit_vector)].data[buffer[one_hot_to_binary(hit_vector)].address[1:0]];
+        HALF: begin
+            data_load[7:0] <= buffer[one_hot_to_binary(hit_vector)].data[{buffer[one_hot_to_binary(hit_vector)].address[1:1], 1'b0}];
+            data_load[15:8] <= buffer[one_hot_to_binary(hit_vector)].data[{buffer[one_hot_to_binary(hit_vector)].address[1:1], 1'b1}];
+        end
+        WORD: begin
+            data_load[7:0] <= buffer[one_hot_to_binary(hit_vector)].data[0];
+            data_load[15:8] <= buffer[one_hot_to_binary(hit_vector)].data[1];
+            data_load[23:16] <= buffer[one_hot_to_binary(hit_vector)].data[2];
+            data_load[31:24] <= buffer[one_hot_to_binary(hit_vector)].data[3];
         end
         default: ;
     endcase
