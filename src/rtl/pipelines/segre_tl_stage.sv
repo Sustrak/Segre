@@ -185,7 +185,7 @@ always_comb begin : tl_fsm
                 if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
                     /*if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
                         fsm_nxt_state = HAZARD_DC_MISS;*/
-                    if(valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) begin
+                    if(valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[`ADDR_TAG])) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end //We must also take into account the SB problematic
                     else if((valid_tag_in_flight_reg && (tag_in_flight_reg == addr_i[`ADDR_TAG])) && sb.trouble) begin
