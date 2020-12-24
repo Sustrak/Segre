@@ -183,13 +183,13 @@ end
 
 always_comb begin : buffer_store_problematic 
     if (hit) begin
-        static int aux = one_hot_to_binary(hit_vector);
-        unique case (buffer[aux].data_type) 
-            BYTE : trouble <= (memop_data_type_i != BYTE) | ((buffer[aux].address[1:0] != addr_i[1:0]));
+        //static int aux = one_hot_to_binary(hit_vector);
+        unique case (buffer[one_hot_to_binary(hit_vector)].data_type) 
+            BYTE : trouble <= (memop_data_type_i != BYTE) | ((buffer[one_hot_to_binary(hit_vector)].address[1:0] != addr_i[1:0]));
             HALF : begin
                 unique case(memop_data_type_i)
                 BYTE: begin
-                    if((buffer[aux].address & ~1'b1) != (addr_i & ~1'b1)) begin
+                    if((buffer[one_hot_to_binary(hit_vector)].address & ~1'b1) != (addr_i & ~1'b1)) begin
                         trouble <= 1;
                     end
                     else begin
@@ -213,31 +213,31 @@ always_ff @(posedge clk_i) begin : buffer_store
     if (req_store_i) begin
         if (hit) begin //
             if(!trouble) begin //If there's a problematic store we should flush the buffer content
-                static int aux = one_hot_to_binary(hit_vector);
-                unique case (buffer[aux].data_type) 
-                    BYTE: buffer[aux].data[addr_i[1:0]] <= data_i[7:0];
+                //static int aux = one_hot_to_binary(hit_vector);
+                unique case (buffer[one_hot_to_binary(hit_vector)].data_type) 
+                    BYTE: buffer[one_hot_to_binary(hit_vector)].data[addr_i[1:0]] <= data_i[7:0];
                     HALF: begin
                         unique case(memop_data_type_i) 
-                            BYTE: buffer[aux].data[addr_i[1:0]] <= data_i[7:0];
+                            BYTE: buffer[one_hot_to_binary(hit_vector)].data[addr_i[1:0]] <= data_i[7:0];
                             HALF: begin
-                                buffer[aux].data[{addr_i[1:1], 1'b0}] <= data_i[7:0];
-                                buffer[aux].data[{addr_i[1:1], 1'b1}] <= data_i[15:8];
+                                buffer[one_hot_to_binary(hit_vector)].data[{addr_i[1:1], 1'b0}] <= data_i[7:0];
+                                buffer[one_hot_to_binary(hit_vector)].data[{addr_i[1:1], 1'b1}] <= data_i[15:8];
                             end
                             default: ;
                         endcase
                     end
                     WORD: begin
                         unique case (memop_data_type_i) 
-                            BYTE: buffer[aux].data[0] <= data_i[7:0];
+                            BYTE: buffer[one_hot_to_binary(hit_vector)].data[0] <= data_i[7:0];
                             HALF: begin
-                                buffer[aux].data[0] <= data_i[7:0];
-                                buffer[aux].data[1] <= data_i[15:8];
+                                buffer[one_hot_to_binary(hit_vector)].data[0] <= data_i[7:0];
+                                buffer[one_hot_to_binary(hit_vector)].data[1] <= data_i[15:8];
                             end
                             WORD: begin
-                                buffer[aux].data[0] <= data_i[7:0];
-                                buffer[aux].data[1] <= data_i[15:8];
-                                buffer[aux].data[2] <= data_i[23:16];
-                                buffer[aux].data[3] <= data_i[31:24];
+                                buffer[one_hot_to_binary(hit_vector)].data[0] <= data_i[7:0];
+                                buffer[one_hot_to_binary(hit_vector)].data[1] <= data_i[15:8];
+                                buffer[one_hot_to_binary(hit_vector)].data[2] <= data_i[23:16];
+                                buffer[one_hot_to_binary(hit_vector)].data[3] <= data_i[31:24];
                             end
                             default: ;
                         endcase
