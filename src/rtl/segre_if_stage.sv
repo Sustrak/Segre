@@ -41,11 +41,11 @@ logic pipeline_hazard;
 
 assign cache_tag.index      = mmu_lru_index_i;
 assign cache_tag.tag        = pc_o[WORD_SIZE-1:ICACHE_BYTE_SIZE];
-assign cache_tag.req        = (if_fsm_state == IF_IDLE && fsm_state_i == IF_STATE) ? 1'b1 : 1'b0;
+assign cache_tag.req        = if_fsm_state == IF_IDLE ? 1'b1 : 1'b0;
 assign cache_tag.invalidate = 1'b0;
 assign cache_tag.mmu_data   = mmu_data_i;
 
-assign cache_data.rd_data     = (fsm_state_i == IF_STATE && if_fsm_state == IF_IDLE) ? 1'b1 : 1'b0;
+assign cache_data.rd_data     = if_fsm_state == IF_IDLE ? 1'b1 : 1'b0;
 assign cache_data.index       = mmu_data_i ? mmu_lru_index_i : cache_tag.addr_index;
 assign cache_data.byte_i      = pc_o[ICACHE_BYTE_SIZE-1:0];
 assign cache_data.mmu_wr_data = mmu_wr_data_i;
@@ -104,12 +104,12 @@ always_comb begin : pc_logic
     if (!rsn_i) begin
         nxt_pc = 0;
     end else begin
-        if (tkbr_i && fsm_state_i == WB_STATE) begin
+        if (tkbr_i) begin
             nxt_pc = new_pc_i;
-        end else if (fsm_state_i == WB_STATE) begin
-            nxt_pc = pc_o + 4;
-        end else begin
+        end else if (if_fsm_state == IF_IC_MISS) begin
             nxt_pc = pc_o;
+        end else begin
+            nxt_pc = pc_o + 4;
         end
     end
 end
@@ -121,7 +121,7 @@ always_comb begin : pipeline_stop
     else begin
         unique case (if_fsm_state)
             IF_IC_MISS: pipeline_hazard = 1;
-            IF_IDLE: pipeline_hazard = cache_tag.miss;
+            IF_IDLE:    pipeline_hazard = cache_tag.miss;
             default:;
         endcase
     end

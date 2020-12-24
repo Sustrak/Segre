@@ -161,9 +161,28 @@ typedef enum logic [1:0] {
    RVM_PIPELINE
 } pipeline_e;
 
+typedef enum logic [1:0] { 
+    BY_ID_RF,
+    BY_ID_EX,
+    BY_ID_MEM,
+    BY_ID_RVM5
+} bypass_id_e;
+
+typedef enum logic [1:0] { 
+    BY_EX_ID,
+    BY_EX_EX,
+    BY_EX_MEM,
+    BY_EX_RVM5
+} bypass_ex_e;
+
 /********************
 * SEGRE  DATATYPES  *
 ********************/
+typedef struct packed {
+    logic [REG_SIZE-1:0]  ex_wreg;
+    logic [WORD_SIZE-1:0] ex_data;
+} bypass_data_t;
+
 typedef struct packed {
     logic req;
     logic mmu_data;
@@ -237,6 +256,7 @@ typedef struct packed {
 typedef struct packed {
     logic [WORD_SIZE-1:0] instr;
     logic [ADDR_SIZE-1:0] pc;
+    bypass_data_t bypass_data;
 } core_id_t;
 
 typedef struct packed {
@@ -253,6 +273,8 @@ typedef struct packed {
     logic memop_sign_ext;
     logic [WORD_SIZE-1:0] br_src_a;
     logic [WORD_SIZE-1:0] br_src_b;
+    bypass_ex_e bypass_ex_a;
+    bypass_ex_e bypass_ex_b;
 } core_pipeline_t;
 
 typedef struct packed {
@@ -364,11 +386,6 @@ typedef struct packed {
     logic tl;
     logic mem;
 } core_stage_hazards_t;
-
-typedef struct packed {
-    logic a;
-    logic b;
-} bypass_src_reg_t;
 
 typedef struct packed {
     logic ex_we;

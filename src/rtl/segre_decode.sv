@@ -12,6 +12,7 @@ module segre_decode(
     input logic rsn_i,
 
     input logic [WORD_SIZE-1:0] instr_i,
+    output opcode_e opcode_o,
 
     // Immediates
     output logic [WORD_SIZE-1:0] imm_u_type_o,
@@ -62,6 +63,9 @@ assign raddr_b_o = instr_i[`REG_RS2];
 
 // Destination registers
 assign waddr_o = instr_i[`REG_RD];
+
+// Opcode
+assign opcode_o = opcode_e'(instr_i[6:0]);
 
 /*****************
 *    DECODER     *

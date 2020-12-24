@@ -22,6 +22,7 @@ vlog -sv -work $work_dir $pkg_dir/segre_pkg.sv
 
 # Compile rtl
 vlog -sv -work $work_dir $rtl_dir/segre_controller.sv
+vlog -sv -work $work_dir $rtl_dir/segre_bypass_controller.sv
 vlog -sv -work $work_dir $rtl_dir/segre_if_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_decode.sv
 vlog -sv -work $work_dir $rtl_dir/segre_id_stage.sv

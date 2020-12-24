@@ -30,9 +30,9 @@ logic controller_hazard;
 
 core_fsm_state_e fsm_state;
 
-assign controller_hazard = stage_hazards.ifs | stage_hazards.id |
-                           stage_hazards.ex  | stage_hazards.tl | 
-                           stage_hazards.mem;
+//assign controller_hazard = stage_hazards.ifs | stage_hazards.id |
+//                           stage_hazards.ex  | stage_hazards.tl | 
+//                           stage_hazards.mem;
 
 // HAZARD CONTROL
 /*
@@ -54,6 +54,11 @@ always_comb begin : hazard_control
     end
 end
 */
+assign stage_hazards.ifs = 0;
+assign stage_hazards.id  = 0;
+assign stage_hazards.ex  = 0;
+assign stage_hazards.tl  = 0;
+assign stage_hazards.mem = 0;
 
 segre_if_stage if_stage (
     // Clock and Reset
@@ -95,6 +100,8 @@ segre_id_stage id_stage (
     .rf_raddr_b_o     (decode_rf.raddr_b),
     .rf_data_a_i      (decode_rf.data_a),
     .rf_data_b_i      (decode_rf.data_b),
+    // Bypass
+    .bypass_data_i    (core_id.bypass_data),
     // ID EX interface
     // ALU
     .alu_opcode_o     (core_pipeline.alu_opcode),
@@ -113,7 +120,10 @@ segre_id_stage id_stage (
     .br_src_a_o        (core_pipeline.br_src_a),
     .br_src_b_o        (core_pipeline.br_src_b),
     // Pipeline
-    .pipeline_o        (core_pipeline.pipeline)
+    .pipeline_o        (core_pipeline.pipeline),
+    // Bypass
+    .bypass_ex_a_o     (core_pipeline.bypass_ex_a),
+    .bypass_ex_b_o     (core_pipeline.bypass_ex_b)
 );
 
 segre_pipeline_wrapper pipeline_wrapper (
@@ -135,8 +145,10 @@ segre_pipeline_wrapper pipeline_wrapper (
     .mmu_addr_o            (core_mmu.dc_addr_i),
     .mmu_cache_access_o    (core_mmu.dc_access),
     .mmu_data_o            (core_mmu.dc_data_i),
-    .mmu_store_data_type_o (core_mmu.dc_store_data_type_i),
-    .mmu_store_o           (core_mmu.dc_store)
+    .mmu_store_data_type_o (core_mmu.dc_store_data_type),
+    .mmu_store_o           (core_mmu.dc_store),
+    // Bypass
+    .bypass_data_o         (core_id.bypass_data)
 );
 
 segre_register_file segre_rf (
@@ -155,7 +167,7 @@ segre_controller controller (
     // Clock and Reset
     .clk_i (clk_i),
     .rsn_i (rsn_i),
-    .hazard_i (controller_hazard),
+    .hazard_i (1'b0),
 
     // State
     .state_o (fsm_state)

@@ -95,9 +95,16 @@ always_comb begin
 end
 
 always_comb begin : output_logic
-    alu_res_o    = rvm_stage_5.alu_res;
-    rf_we_o      = rvm_stage_5.rf_we;
-    rf_waddr_o   = rvm_stage_5.rf_waddr;
+    if (!rsn_i) begin
+        alu_res_o    = 0;
+        rf_we_o      = 0;
+        rf_waddr_o   = 0;
+    end
+    else begin
+        alu_res_o    = rvm_stage_5.alu_res;
+        rf_we_o      = rvm_stage_5.rf_we;
+        rf_waddr_o   = rvm_stage_5.rf_waddr;
+    end
 end
 
 always_ff @(posedge clk_i) begin : latches

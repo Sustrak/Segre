@@ -69,7 +69,8 @@ segre_tl_stage tl_stage(
     .memop_type_o       (mem_data.memop_type),
     // Store buffer
     .sb_hit_o           (mem_data.sb_hit),
-    .sb_data_o          (mem_data.sb_data),
+    .sb_data_load_o     (mem_data.sb_data_load),
+    .sb_data_flush_o    (mem_data.sb_data_flush),
     .sb_addr_o          (mem_data.sb_addr),
 
     // MMU interface
@@ -102,7 +103,8 @@ segre_mem_stage mem_stage (
     .memop_wr_i        (mem_data.memop_wr),
     // Store Buffer
     .sb_hit_i          (mem_data.sb_hit),
-    .sb_data_i         (mem_data.sb_data),
+    .sb_data_load_i    (mem_data.sb_data_load),
+    .sb_data_flush_i   (mem_data.sb_data_flush),
     .sb_addr_i         (mem_data.sb_addr),
     // MEM WB intereface
     .cache_data_o      (data_o),
@@ -112,9 +114,7 @@ segre_mem_stage mem_stage (
     //MMU
     .mmu_data_rdy_i    (mmu_data_rdy_i),
     .mmu_data_i        (mmu_data_i),
-    .mmu_lru_index_i   (mmu_lru_index_i),
-    .data_o            (mmu_data_o),
-    .store_data_type_o (mmu_store_data_type_o)
+    .mmu_lru_index_i   (mmu_lru_index_i)
 );
 
 always_comb begin : adder

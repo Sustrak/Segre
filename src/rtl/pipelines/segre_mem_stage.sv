@@ -49,7 +49,7 @@ assign cache_data.rd_data               = memop_rd_i;
 assign cache_data.wr_data               = memop_wr_i;
 assign cache_data.mmu_wr_data           = mmu_data_rdy_i;
 assign cache_data.index                 = mmu_data_rdy_i ? mmu_lru_index_i : addr_index_i;
-assign cache_data.byte_i                = sb_flush_i ? sb_addr_i[DCACHE_BYTE_SIZE-1:0] : alu_res_i[DCACHE_BYTE_SIZE-1:0];
+assign cache_data.byte_i                = sb_flush_i ? sb_addr_i[DCACHE_BYTE_SIZE-1:0] : addr_i[DCACHE_BYTE_SIZE-1:0];
 assign cache_data.memop_data_load_type  = memop_type_i;
 assign cache_data.memop_data_store_type = memop_type_flush_i;
 assign cache_data.data_i                = sb_data_flush_i; //We only write from the SB
@@ -91,9 +91,15 @@ always_comb begin : sign_extension
 end
 
 always_ff @(posedge clk_i) begin
-    // To WB
-    cache_data_o <= mem_data;
-    rf_we_o      <= rf_we_i;
-    rf_waddr_o   <= rf_waddr_i;
+    if (!rsn_i) begin
+        cache_data_o <= 0;
+        rf_we_o      <= 0;
+        rf_waddr_o   <= 0;
+    end
+    else begin
+        cache_data_o <= mem_data;
+        rf_we_o      <= rf_we_i;
+        rf_waddr_o   <= rf_waddr_i;
+    end
 end
 endmodule

@@ -137,10 +137,15 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) begin
-    if (rd_i) begin
-        repeat(9) @(posedge clk_i);
-        data_o <= rd_data;
-        data_rdy_o <= 1;
+    if (!rsn_i) begin
+        data_rdy_o <= 0;
+        data_o <= 0;
+    end else begin
+        if (rd_i) begin
+            repeat(9) @(posedge clk_i);
+            data_o <= rd_data;
+            data_rdy_o <= 1;
+        end
     end
 end
 

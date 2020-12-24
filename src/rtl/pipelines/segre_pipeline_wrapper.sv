@@ -23,7 +23,10 @@ module segre_pipeline_wrapper (
     output logic mmu_cache_access_o,
     output logic [WORD_SIZE-1:0] mmu_data_o,
     output memop_data_type_e mmu_store_data_type_o,
-    output logic mmu_store_o
+    output logic mmu_store_o,
+
+    // Bypass logic to decode
+    output bypass_data_t bypass_data_o
 );
 
 mem_pipeline_t mem_data;
@@ -32,6 +35,8 @@ rvm_pipeline_t rvm_data;
 
 // Hazard signals
 logic tl_hazard;
+
+assign ex_data.hazard = 1'b0;
 
 segre_ex_stage ex_stage (
     // Clock and Reset
@@ -112,20 +117,15 @@ segre_rvm_pipeline rvm_pipeline (
 
 always_comb begin : input_decoder
     // EX PIPELINE
-    ex_data.alu_src_a  = core_pipeline_i.alu_src_a;
-    ex_data.alu_src_b  = core_pipeline_i.alu_src_b;
-    ex_data.alu_opcode = core_pipeline_i.alu_opcode;
-    ex_data.br_src_a   = core_pipeline_i.br_src_a;
-    ex_data.br_src_b   = core_pipeline_i.br_src_b;
+    ex_data.alu_opcode      = core_pipeline_i.alu_opcode;
+    ex_data.br_src_a        = core_pipeline_i.br_src_a;
+    ex_data.br_src_b        = core_pipeline_i.br_src_b;
     // MEM PIPELINE
-    mem_data.alu_src_a      = core_pipeline_i.alu_src_a;
-    mem_data.alu_src_b      = core_pipeline_i.alu_src_b;
     mem_data.memop_sign_ext = core_pipeline_i.memop_sign_ext;
     mem_data.memop_type     = core_pipeline_i.memop_type;
+    mem_data.rf_st_data     = core_pipeline_i.rf_st_data;
     // RVM PIPELINE
-    rvm_data.alu_src_a  = core_pipeline_i.alu_src_a;
-    rvm_data.alu_src_b  = core_pipeline_i.alu_src_b;
-    rvm_data.alu_opcode = core_pipeline_i.alu_opcode;
+    rvm_data.alu_opcode     = core_pipeline_i.alu_opcode;
     
     if (core_pipeline_i.pipeline == EX_PIPELINE) begin
         ex_data.rf_we    = core_pipeline_i.rf_we;
@@ -158,6 +158,46 @@ always_comb begin : input_decoder
         rvm_data.rf_waddr = 0;
     end
 
+end
+
+always_comb begin : bypass
+    unique case (core_pipeline_i.bypass_ex_a)
+        BY_EX_ID: begin
+            ex_data.alu_src_a  = core_pipeline_i.alu_src_a;
+            mem_data.alu_src_a = core_pipeline_i.alu_src_a;
+            rvm_data.alu_src_a = core_pipeline_i.alu_src_a;
+        end
+        BY_EX_EX: begin
+            ex_data.alu_src_a  = rf_data_o.ex_data;
+            mem_data.alu_src_a = rf_data_o.ex_data;
+            rvm_data.alu_src_a = rf_data_o.ex_data;
+        end
+        default: if (rsn_i) $fatal("Other cases not implemented yet");
+    endcase
+
+    unique case (core_pipeline_i.bypass_ex_b)
+        BY_EX_ID: begin
+            ex_data.alu_src_b  = core_pipeline_i.alu_src_b;
+            mem_data.alu_src_b = core_pipeline_i.alu_src_b;
+            rvm_data.alu_src_b = core_pipeline_i.alu_src_b;
+        end
+        BY_EX_EX: begin
+            ex_data.alu_src_b  = rf_data_o.ex_data;
+            mem_data.alu_src_b = rf_data_o.ex_data;
+            rvm_data.alu_src_b = rf_data_o.ex_data;
+        end
+        default: if (rsn_i) $fatal("Other cases not implemented yet");
+    endcase
+end
+
+always_comb begin : bypass_output_data
+    if (rf_data_o.ex_we) begin
+        bypass_data_o.ex_wreg = rf_data_o.ex_waddr;
+        bypass_data_o.ex_data = rf_data_o.ex_data;
+    end else begin
+        bypass_data_o.ex_wreg = 0;
+        bypass_data_o.ex_data = 0;
+    end
 end
 
 // VERIFICATION
