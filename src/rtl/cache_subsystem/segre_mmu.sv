@@ -152,7 +152,7 @@ always_ff @(posedge clk_i) begin : dc_miss_block
         dc_miss <= 0;
         dc_mm_addr <= 0;
     end else begin
-        if (dc_miss_i) begin
+        if (dc_miss_i & !(dc_miss)) begin
             dc_miss <= dc_miss_i;
             dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}};
         end

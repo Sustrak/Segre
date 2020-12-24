@@ -183,16 +183,16 @@ always_comb begin : tl_fsm
         unique case (fsm_state)
             MISS_IN_FLIGHT: begin
                 if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
-                    if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
-                        fsm_nxt_state = HAZARD_DC_MISS;
-                    else if(valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) begin
+                    /*if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
+                        fsm_nxt_state = HAZARD_DC_MISS;*/
+                    if(valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end //We must also take into account the SB problematic
                     else if((valid_tag_in_flight_reg && (tag_in_flight_reg == alu_res_i[`ADDR_TAG])) && sb.trouble) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end
                 end
-                else if (memop_rd_o) begin //A new load arrives: In this case we won't issue a new request if the load has the same tag as the faulty store, or if it hits (obviously).
+                else if (memop_rd_i) begin //A new load arrives: In this case we won't issue a new request if the load has the same tag as the faulty store, or if it hits (obviously).
                     if(cache_tag.miss) begin //In general, we want to stall in a miss, but if the store buffer can serve the load it's not necessary
                         if (valid_tag_in_flight_reg && (tag_in_flight_reg != alu_res_i[`ADDR_TAG])) begin
                             fsm_nxt_state = HAZARD_DC_MISS;
