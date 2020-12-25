@@ -196,6 +196,14 @@ always_comb begin : buffer_store_problematic
                         trouble <= 0;
                     end
                 end
+                HALF: begin
+                    if((buffer[one_hot_to_binary(hit_vector)].address) == (addr_i)) begin
+                        trouble <= 0;
+                    end
+                    else begin
+                        trouble <= 1;
+                    end
+                end
                 WORD: trouble <= 1;
                 default: ;
                 endcase

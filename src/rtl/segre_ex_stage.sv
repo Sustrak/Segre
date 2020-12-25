@@ -66,7 +66,19 @@ segre_tkbr trbr (
 );
 
 always_ff @(posedge clk_i) begin
-    if (!hazard_i) begin
+    if (!rsn_i) begin
+        alu_res_o        <= 0;
+        rf_we_o          <= 0;
+        rf_waddr_o       <= 0;
+        rf_st_data_o     <= 0;
+        memop_type_o     <= WORD;
+        memop_rd_o       <= 0;
+        memop_wr_o       <= 0;
+        memop_sign_ext_o <= 0;
+        tkbr_o           <= 0;
+        new_pc_o         <= 0;
+    end
+    else if (!hazard_i) begin
         alu_res_o        <= (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
         rf_we_o          <= rf_we_i;
         rf_waddr_o       <= rf_waddr_i;
