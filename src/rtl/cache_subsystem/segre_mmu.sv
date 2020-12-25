@@ -38,6 +38,7 @@ localparam IC_LRU_WIDTH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
 // Data cache
 logic dc_miss;
 logic [ADDR_SIZE-1:0] dc_mm_addr;
+logic [ADDR_SIZE-1:0] dc_mm_addr_pending;
 logic dc_mmu_data_rdy;
 logic [DCACHE_LANE_SIZE-1:0] dc_mm_data;
 logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
@@ -151,13 +152,22 @@ always_ff @(posedge clk_i) begin : dc_miss_block
     if (!rsn_i) begin
         dc_miss <= 0;
         dc_mm_addr <= 0;
-    end else begin
-        if (dc_miss_i & !(dc_miss)) begin
+        dc_mm_addr_pending <= 0;
+    end 
+    else begin
+        if(fsm_state == DCACHE_PENDING & fsm_nxt_state == DCACHE_REQ) begin
+            dc_miss <= 1; //En teoria no seria necessari, but who knows
+            dc_mm_addr <= dc_mm_addr_pending;
+        end
+        else if (dc_miss_i & !(dc_miss)) begin
             dc_miss <= dc_miss_i;
             dc_mm_addr <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}};
         end
         if (dc_miss && fsm_state == DCACHE_WAIT && mm_data_rdy_i) begin
             dc_miss <= 0;
+        end
+        if (dc_miss_i & dc_miss) begin
+            dc_mm_addr_pending <= {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}};
         end
     end
 end
@@ -179,7 +189,7 @@ end
 
 always_comb begin : mm_data_ready
     if (mm_data_rdy_i) begin
-        if (fsm_state == DCACHE_WAIT) begin
+        if (fsm_state == DCACHE_WAIT | fsm_state == DCACHE_PENDING) begin
             dc_mmu_data_rdy = 1;
             dc_mm_data  = mm_data_i;
         end
@@ -203,6 +213,14 @@ always_comb begin : mmu_fsm
             if (mm_data_rdy_i) begin
                 if (ic_miss) fsm_nxt_state = ICACHE_REQ;
                 else fsm_nxt_state = MMU_IDLE;
+            end
+            else if (dc_miss_i & (dc_mm_addr != {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}})) begin
+                fsm_nxt_state = DCACHE_PENDING;
+            end
+        end
+        DCACHE_PENDING: begin
+            if (mm_data_rdy_i) begin
+                fsm_nxt_state = DCACHE_REQ;
             end
         end
         ICACHE_REQ  : begin
@@ -232,7 +250,7 @@ always_comb begin : main_memory_req
             mm_rd_req = 1;
             mm_addr = ic_mm_addr;
         end
-        DCACHE_WAIT, ICACHE_WAIT : begin
+        DCACHE_WAIT, ICACHE_WAIT, DCACHE_PENDING : begin
             mm_rd_req = 0;
         end
         MMU_IDLE: begin

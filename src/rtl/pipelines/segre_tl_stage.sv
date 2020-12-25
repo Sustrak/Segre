@@ -98,6 +98,7 @@ assign mmu_data_o         = rf_st_data_i;
 
 // STORE BUFFER
 assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i : 1'b0;
+//assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? (memop_wr_i & !pipeline_hazard_o) : 1'b0;
 assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_rd_i : 1'b0;
 assign sb.addr_i            = addr_i;
 assign sb.data_i            = rf_st_data_i;
@@ -135,6 +136,16 @@ segre_store_buffer store_buffer (
     .data_flush_o      (sb.data_flush_o),
     .addr_o            (sb.addr_o)
 );
+
+/*always_comb begin : sb_req_store
+    unique case (fsm_state)
+        TL_IDLE : sb.req_store <= memop_wr_i;
+        MISS_IN_FLIGHT : sb.req_store <= memop_wr_i & (!valid_tag_in_flight_reg | (tag_in_flight_reg != alu_res_i[`ADDR_TAG]));
+        HAZARD_DC_MISS : sb.req_store <= 0;
+        HAZARD_SB_TROUBLE : sb.req_store <= 0;
+        default: sb.req_store <= 0; 
+    endcase
+end*/
 
 always_comb begin : sb_flush_chance
     unique case (fsm_state)

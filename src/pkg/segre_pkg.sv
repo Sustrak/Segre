@@ -138,6 +138,7 @@ typedef enum logic [1:0] {
 typedef enum logic [2:0] {
     DCACHE_REQ,
     DCACHE_WAIT,
+    DCACHE_PENDING,
     ICACHE_REQ,
     ICACHE_WAIT,
     MMU_IDLE
