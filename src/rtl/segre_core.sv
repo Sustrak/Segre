@@ -92,7 +92,7 @@ segre_id_stage id_stage (
     .hazard_i         (stage_hazards.id),
     // FSM State
     .fsm_state_i      (fsm_state),
-    // IF ID interface
+    // IF ID interface   
     .instr_i          (core_id.instr),
     .pc_i             (core_id.pc),
     // Register file read operands
@@ -102,7 +102,7 @@ segre_id_stage id_stage (
     .rf_data_b_i      (decode_rf.data_b),
     // Bypass
     .bypass_data_i    (core_id.bypass_data),
-    // ID EX interface
+    // ID EX interface   
     // ALU
     .alu_opcode_o     (core_pipeline.alu_opcode),
     .alu_src_a_o      (core_pipeline.alu_src_a),
@@ -111,19 +111,19 @@ segre_id_stage id_stage (
     .rf_we_o          (core_pipeline.rf_we),
     .rf_waddr_o       (core_pipeline.rf_waddr),
     // Memop
-    .memop_type_o      (core_pipeline.memop_type),
-    .memop_rd_o        (core_pipeline.memop_rd),
-    .memop_wr_o        (core_pipeline.memop_wr),
-    .memop_sign_ext_o  (core_pipeline.memop_sign_ext),
-    .memop_rf_data_o   (core_pipeline.rf_st_data),
+    .memop_type_o     (core_pipeline.memop_type),
+    .memop_rd_o       (core_pipeline.memop_rd),
+    .memop_wr_o       (core_pipeline.memop_wr),
+    .memop_sign_ext_o (core_pipeline.memop_sign_ext),
+    .memop_rf_data_o  (core_pipeline.rf_st_data),
     // Branch | Jump
-    .br_src_a_o        (core_pipeline.br_src_a),
-    .br_src_b_o        (core_pipeline.br_src_b),
+    .br_src_a_o       (core_pipeline.br_src_a),
+    .br_src_b_o       (core_pipeline.br_src_b),
     // Pipeline
-    .pipeline_o        (core_pipeline.pipeline),
+    .pipeline_o       (core_pipeline.pipeline),
     // Bypass
-    .bypass_ex_a_o     (core_pipeline.bypass_ex_a),
-    .bypass_ex_b_o     (core_pipeline.bypass_ex_b)
+    .bypass_a_o       (core_pipeline.bypass_a),
+    .bypass_b_o       (core_pipeline.bypass_b)
 );
 
 segre_pipeline_wrapper pipeline_wrapper (

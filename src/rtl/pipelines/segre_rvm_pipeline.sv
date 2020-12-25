@@ -16,7 +16,17 @@ module segre_rvm_pipeline (
     output logic [WORD_SIZE-1:0] alu_res_o,
     // Register file
     output logic rf_we_o,
-    output logic [REG_SIZE-1:0] rf_waddr_o
+    output logic [REG_SIZE-1:0] rf_waddr_o,
+
+    // Bypass
+    output logic rvm1_we_o,
+    output logic [REG_SIZE-1:0] rvm1_waddr_o,
+    output logic rvm2_we_o,
+    output logic [REG_SIZE-1:0] rvm2_waddr_o,
+    output logic rvm3_we_o,
+    output logic [REG_SIZE-1:0] rvm3_waddr_o,
+    output logic rvm4_we_o,
+    output logic [REG_SIZE-1:0] rvm4_waddr_o
 );
 
 typedef struct packed {
@@ -105,6 +115,17 @@ always_comb begin : output_logic
         rf_we_o      = rvm_stage_5.rf_we;
         rf_waddr_o   = rvm_stage_5.rf_waddr;
     end
+end
+
+always_comb begin : bypass_data
+    rvm1_we_o    = rvm_stage_1.rf_we;
+    rvm1_waddr_o = rvm_stage_1.rf_waddr;
+    rvm2_we_o    = rvm_stage_2.rf_we;
+    rvm2_waddr_o = rvm_stage_2.rf_waddr;
+    rvm3_we_o    = rvm_stage_3.rf_we;
+    rvm3_waddr_o = rvm_stage_3.rf_waddr;
+    rvm4_we_o    = rvm_stage_4.rf_we;
+    rvm4_waddr_o = rvm_stage_4.rf_waddr;
 end
 
 always_ff @(posedge clk_i) begin : latches

@@ -161,19 +161,17 @@ typedef enum logic [1:0] {
    RVM_PIPELINE
 } pipeline_e;
 
-typedef enum logic [1:0] { 
-    BY_ID_RF,
-    BY_ID_EX,
-    BY_ID_MEM,
-    BY_ID_RVM5
-} bypass_id_e;
-
-typedef enum logic [1:0] { 
+typedef enum logic [3:0] { 
+    NO_BYPASS,
     BY_EX_ID,
-    BY_EX_EX,
-    BY_EX_MEM,
-    BY_EX_RVM5
-} bypass_ex_e;
+    BY_MEM_ID,
+    BY_RVM5_ID,
+    BY_EX_PIPE,
+    BY_MEM_PIPE,
+    BY_RVM5_PIPE,
+    BY_MEM_TL,
+    BY_RVM5_TL
+} bypass_e;
 
 /********************
 * SEGRE  DATATYPES  *
@@ -181,6 +179,16 @@ typedef enum logic [1:0] {
 typedef struct packed {
     logic [REG_SIZE-1:0]  ex_wreg;
     logic [WORD_SIZE-1:0] ex_data;
+    logic [REG_SIZE-1:0]  alu_mem_wreg;
+    logic [REG_SIZE-1:0]  tl_wreg;
+    logic [REG_SIZE-1:0]  mem_wreg;
+    logic [WORD_SIZE-1:0] mem_data;
+    logic [REG_SIZE-1:0]  rvm1_wreg;
+    logic [REG_SIZE-1:0]  rvm2_wreg;
+    logic [REG_SIZE-1:0]  rvm3_wreg;
+    logic [REG_SIZE-1:0]  rvm4_wreg;
+    logic [REG_SIZE-1:0]  rvm5_wreg;
+    logic [WORD_SIZE-1:0] rvm5_data;
 } bypass_data_t;
 
 typedef struct packed {
@@ -273,8 +281,8 @@ typedef struct packed {
     logic memop_sign_ext;
     logic [WORD_SIZE-1:0] br_src_a;
     logic [WORD_SIZE-1:0] br_src_b;
-    bypass_ex_e bypass_ex_a;
-    bypass_ex_e bypass_ex_b;
+    bypass_e bypass_a;
+    bypass_e bypass_b;
 } core_pipeline_t;
 
 typedef struct packed {
@@ -320,6 +328,7 @@ typedef struct packed {
     logic memop_wr;
     logic memop_sign_ext;
     memop_data_type_e memop_type;
+    bypass_e bypass_b;
 } tl_stage_t;
 
 typedef struct packed {

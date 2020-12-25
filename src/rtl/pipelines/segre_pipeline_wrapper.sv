@@ -36,6 +36,20 @@ rvm_pipeline_t rvm_data;
 // Hazard signals
 logic tl_hazard;
 
+// Bypass signals
+logic alu_mem_rf_we;
+logic [REG_SIZE-1:0] alu_mem_rf_waddr;
+logic tl_rf_we;
+logic [REG_SIZE-1:0] tl_rf_waddr;
+logic rvm1_we;
+logic [REG_SIZE-1:0] rvm1_waddr;
+logic rvm2_we;
+logic [REG_SIZE-1:0] rvm2_waddr;
+logic rvm3_we;
+logic [REG_SIZE-1:0] rvm3_waddr;
+logic rvm4_we;
+logic [REG_SIZE-1:0] rvm4_waddr;
+
 assign ex_data.hazard = 1'b0;
 
 segre_ex_stage ex_stage (
@@ -96,7 +110,15 @@ segre_mem_pipeline mem_pipeline (
     .mmu_store_o           (mmu_store_o),
 
     // Hazards
-    .tl_hazard_o           (tl_hazard)
+    .tl_hazard_o           (tl_hazard),
+
+    // Bypass
+    .bypass_b_i            (core_pipeline_i.bypass_b),
+    .bypass_rvm5_data_i    (rf_data_o.rvm_data),
+    .alu_mem_rf_we_o       (alu_mem_rf_we),
+    .alu_mem_rf_waddr_o    (alu_mem_rf_waddr),
+    .tl_rf_we_o            (tl_rf_we),
+    .tl_rf_waddr_o         (tl_rf_waddr)
 );
 
 segre_rvm_pipeline rvm_pipeline (
@@ -112,7 +134,18 @@ segre_rvm_pipeline rvm_pipeline (
 
     .alu_res_o    (rf_data_o.rvm_data),
     .rf_we_o      (rf_data_o.rvm_we),
-    .rf_waddr_o   (rf_data_o.rvm_waddr)
+    .rf_waddr_o   (rf_data_o.rvm_waddr),
+
+    // Bypass
+    .rvm1_we_o    (rvm1_we),
+    .rvm1_waddr_o (rvm1_waddr),
+    .rvm2_we_o    (rvm2_we),
+    .rvm2_waddr_o (rvm2_waddr),
+    .rvm3_we_o    (rvm3_we),
+    .rvm3_waddr_o (rvm3_waddr),
+    .rvm4_we_o    (rvm4_we),
+    .rvm4_waddr_o (rvm4_waddr)
+    
 );
 
 always_comb begin : input_decoder
@@ -161,42 +194,119 @@ always_comb begin : input_decoder
 end
 
 always_comb begin : bypass
-    unique case (core_pipeline_i.bypass_ex_a)
-        BY_EX_ID: begin
-            ex_data.alu_src_a  = core_pipeline_i.alu_src_a;
-            mem_data.alu_src_a = core_pipeline_i.alu_src_a;
-            rvm_data.alu_src_a = core_pipeline_i.alu_src_a;
+    unique case (core_pipeline_i.bypass_a)
+        NO_BYPASS: begin
+            ex_data.alu_src_a   = core_pipeline_i.alu_src_a;
+            mem_data.alu_src_a  = core_pipeline_i.alu_src_a;
+            rvm_data.alu_src_a  = core_pipeline_i.alu_src_a;
         end
-        BY_EX_EX: begin
-            ex_data.alu_src_a  = rf_data_o.ex_data;
-            mem_data.alu_src_a = rf_data_o.ex_data;
-            rvm_data.alu_src_a = rf_data_o.ex_data;
+        BY_EX_PIPE: begin
+            ex_data.alu_src_a   = rf_data_o.ex_data;
+            mem_data.alu_src_a  = rf_data_o.ex_data;
+            rvm_data.alu_src_a  = rf_data_o.ex_data;
         end
-        default: if (rsn_i) $fatal("Other cases not implemented yet");
+        BY_MEM_PIPE: begin
+            ex_data.alu_src_a   = rf_data_o.mem_data;
+            mem_data.alu_src_a  = rf_data_o.mem_data;
+            rvm_data.alu_src_a  = rf_data_o.mem_data;
+        end
+        BY_RVM5_PIPE: begin
+            ex_data.alu_src_a   = rf_data_o.rvm_data;
+            mem_data.alu_src_a  = rf_data_o.rvm_data;
+            rvm_data.alu_src_a  = rf_data_o.rvm_data;
+        end
+        default: begin
+            ex_data.alu_src_a   = core_pipeline_i.alu_src_a;
+            mem_data.alu_src_a  = core_pipeline_i.alu_src_a;
+            rvm_data.alu_src_a  = core_pipeline_i.alu_src_a;
+        end
     endcase
 
-    unique case (core_pipeline_i.bypass_ex_b)
-        BY_EX_ID: begin
-            ex_data.alu_src_b  = core_pipeline_i.alu_src_b;
-            mem_data.alu_src_b = core_pipeline_i.alu_src_b;
-            rvm_data.alu_src_b = core_pipeline_i.alu_src_b;
+    unique case (core_pipeline_i.bypass_b)
+        NO_BYPASS: begin
+            ex_data.alu_src_b   = core_pipeline_i.alu_src_b;
+            mem_data.alu_src_b  = core_pipeline_i.alu_src_b;
+            rvm_data.alu_src_b  = core_pipeline_i.alu_src_b;
         end
-        BY_EX_EX: begin
-            ex_data.alu_src_b  = rf_data_o.ex_data;
-            mem_data.alu_src_b = rf_data_o.ex_data;
-            rvm_data.alu_src_b = rf_data_o.ex_data;
+        BY_EX_PIPE: begin
+            ex_data.alu_src_b   = rf_data_o.ex_data;
+            mem_data.alu_src_b  = rf_data_o.ex_data;
+            rvm_data.alu_src_b  = rf_data_o.ex_data;
         end
-        default: if (rsn_i) $fatal("Other cases not implemented yet");
+        BY_MEM_PIPE: begin
+            ex_data.alu_src_b   = rf_data_o.mem_data;
+            mem_data.alu_src_b  = rf_data_o.mem_data;
+            rvm_data.alu_src_b  = rf_data_o.mem_data;
+        end
+        BY_RVM5_PIPE: begin
+            ex_data.alu_src_b   = rf_data_o.rvm_data;
+            mem_data.alu_src_b  = rf_data_o.rvm_data;
+            rvm_data.alu_src_b  = rf_data_o.rvm_data;
+        end
+        default: begin
+            ex_data.alu_src_b   = core_pipeline_i.alu_src_b;
+            mem_data.alu_src_b  = core_pipeline_i.alu_src_b;
+            rvm_data.alu_src_b  = core_pipeline_i.alu_src_b;
+        end
     endcase
 end
 
 always_comb begin : bypass_output_data
+    // EX STAGE
     if (rf_data_o.ex_we) begin
         bypass_data_o.ex_wreg = rf_data_o.ex_waddr;
         bypass_data_o.ex_data = rf_data_o.ex_data;
     end else begin
         bypass_data_o.ex_wreg = 0;
         bypass_data_o.ex_data = 0;
+    end
+    
+    // ALU MEM
+    if (alu_mem_rf_we) begin
+        bypass_data_o.alu_mem_wreg = alu_mem_rf_waddr;
+    end else begin
+        bypass_data_o.alu_mem_wreg = 0;
+    end
+    
+    // TL STAGE
+    if (tl_rf_we) begin
+        bypass_data_o.tl_wreg = tl_rf_waddr;
+    end else begin
+        bypass_data_o.tl_wreg = 0;
+    end
+
+    // MEM STAGE
+    if (rf_data_o.mem_we) begin
+        bypass_data_o.mem_wreg = rf_data_o.mem_waddr;
+        bypass_data_o.mem_data = rf_data_o.mem_data;
+    end else begin
+        bypass_data_o.mem_wreg = 0;
+        bypass_data_o.mem_data = 0;
+    end
+    
+    //RVM1
+    if (rvm1_we) begin
+        bypass_data_o.rvm1_wreg = rvm1_waddr;
+    end else begin
+        bypass_data_o.rvm1_wreg = 0;
+    end
+    //RVM2
+    if (rvm2_we) begin
+        bypass_data_o.rvm2_wreg = rvm2_waddr;
+    end else begin
+        bypass_data_o.rvm2_wreg = 0;
+    end
+    //RVM3
+    if (rvm3_we) begin
+        bypass_data_o.rvm3_wreg = rvm3_waddr;
+    end else begin
+        bypass_data_o.rvm3_wreg = 0;
+    end
+    //RVM4
+    if (rvm4_we) begin
+        bypass_data_o.rvm4_wreg = rvm4_waddr;
+    end else begin
+        bypass_data_o.rvm4_wreg = 0;
     end
 end
 

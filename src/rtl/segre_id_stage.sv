@@ -44,11 +44,12 @@ module segre_id_stage (
     // Pipeline
     output pipeline_e pipeline_o,
     // Bypass
-    output bypass_ex_e bypass_ex_a_o,
-    output bypass_ex_e bypass_ex_b_o
+    output bypass_e bypass_a_o,
+    output bypass_e bypass_b_o
 );
 
 opcode_e opcode;
+opcode_e id_opcode;
 logic [WORD_SIZE-1:0] imm_u_type;
 logic [WORD_SIZE-1:0] imm_i_type;
 logic [WORD_SIZE-1:0] imm_s_type;
@@ -80,10 +81,10 @@ logic [WORD_SIZE-1:0] data_a;
 logic [WORD_SIZE-1:0] data_b;
 
 // Bypass
-bypass_id_e bypass_id_a;
-bypass_id_e bypass_id_b;
-bypass_ex_e bypass_ex_a;
-bypass_ex_e bypass_ex_b;
+bypass_e bypass_a;
+bypass_e bypass_b;
+
+logic register_dependence;
 
 
 assign rf_raddr_a_o = rf_raddr_a;
@@ -141,17 +142,17 @@ segre_bypass_controller bypass_controller (
     
     // Destination register instruction from ID to PIPELINE
     .dst_id_i (rf_waddr_o),
+    .id_opcode_i (id_opcode),
     
     // Pipeline info
     .pipeline_data_i (bypass_data_i),
         
     // Output mux selection
-    // Decode
-    .bypass_id_a_o (bypass_id_a),
-    .bypass_id_b_o (bypass_id_b),
-    // Ex
-    .bypass_ex_a_o (bypass_ex_a),
-    .bypass_ex_b_o  (bypass_ex_b)
+    .bypass_a_o (bypass_a),
+    .bypass_b_o (bypass_b),
+    
+    // Dependence
+    .dependence_o (register_dependence)
 );
 
 // For the moment imm_a will always be 0
@@ -200,19 +201,21 @@ always_comb begin : br_src_b_mux
     endcase
 end
 
-always_comb begin : bypass_data_a
-    unique case (bypass_id_a)
-        BY_ID_RF: data_a = rf_data_a_i;
-        BY_ID_EX: data_a = bypass_data_i.ex_data;
-        default: if (rsn_i) $fatal("Other cases not implemented yet");
+always_comb begin : bypass_data
+    unique case (bypass_a)
+        NO_BYPASS   : data_a = rf_data_a_i;
+        BY_EX_ID    : data_a = bypass_data_i.ex_data;
+        BY_MEM_ID   : data_a = bypass_data_i.mem_data;
+        BY_RVM5_ID  : data_a = bypass_data_i.rvm5_data;
+        default: data_a = rf_data_a_i;
     endcase
-end
 
-always_comb begin : bypass_data_b
-    unique case (bypass_id_b)
-        BY_ID_RF: data_b = rf_data_b_i;
-        BY_ID_EX: data_b = bypass_data_i.ex_data;
-        default: if (rsn_i) $fatal("Other cases not implemented yet");
+    unique case (bypass_b)
+        NO_BYPASS   : data_b = rf_data_b_i;
+        BY_EX_ID    : data_b = bypass_data_i.ex_data;
+        BY_MEM_ID   : data_b = bypass_data_i.mem_data;
+        BY_RVM5_ID  : data_b = bypass_data_i.rvm5_data;
+        default: data_b = rf_data_b_i;
     endcase
 end
 
@@ -231,8 +234,9 @@ always_ff @(posedge clk_i) begin
         alu_opcode_o     <= alu_opcode;
         memop_rf_data_o  <= rf_data_b_i;
         pipeline_o       <= pipeline;
-        bypass_ex_a_o    <= bypass_ex_a;
-        bypass_ex_b_o    <= bypass_ex_b;
+        bypass_a_o       <= bypass_a;
+        bypass_b_o       <= bypass_b;
+        id_opcode        <= opcode;
     end
 end
 

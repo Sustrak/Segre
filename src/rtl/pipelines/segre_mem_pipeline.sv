@@ -29,15 +29,24 @@ module segre_mem_pipeline(
     output logic [WORD_SIZE-1:0] mmu_data_o,
     output memop_data_type_e mmu_store_data_type_o,
     output logic mmu_store_o,
-    
+
     // Hazards
-    output logic tl_hazard_o
+    output logic tl_hazard_o,
+
+    // Bypass
+    input bypass_e bypass_b_i,
+    input logic [WORD_SIZE-1:0] bypass_rvm5_data_i,
+    output logic alu_mem_rf_we_o,
+    output logic [REG_SIZE-1:0] alu_mem_rf_waddr_o,
+    output logic tl_rf_we_o,
+    output logic [REG_SIZE-1:0] tl_rf_waddr_o
 );
 
 mem_stage_t mem_data;
 tl_stage_t tl_data;
 
 logic [WORD_SIZE-1:0] add_result;
+logic [WORD_SIZE-1:0] tl_store_data;
 
 segre_tl_stage tl_stage(
     .clk_i             (clk_i),
@@ -48,7 +57,7 @@ segre_tl_stage tl_stage(
     // Register file
     .rf_we_i            (tl_data.rf_we),
     .rf_waddr_i         (tl_data.rf_waddr),
-    .rf_st_data_i       (tl_data.rf_st_data),
+    .rf_st_data_i       (tl_store_data),
     // Memop
     .memop_rd_i         (tl_data.memop_rd),
     .memop_wr_i         (tl_data.memop_wr),
@@ -121,6 +130,25 @@ always_comb begin : adder
     add_result = $signed(alu_src_a_i) + $signed(alu_src_b_i);
 end
 
+always_comb begin :  bypass_data
+    alu_mem_rf_we_o    = tl_data.rf_we;
+    alu_mem_rf_waddr_o = tl_data.rf_waddr;
+    tl_rf_we_o         = mem_data.rf_we;
+    tl_rf_waddr_o      = mem_data.rf_waddr;
+end
+
+always_comb begin : bypass
+    if (tl_data.bypass_b == BY_RVM5_TL) begin
+        tl_store_data = bypass_rvm5_data_i;
+    end
+    else if (tl_data.bypass_b == BY_MEM_TL) begin
+        tl_store_data = data_o;
+    end
+    else begin
+        tl_store_data = tl_data.rf_st_data;
+    end
+end
+
 always_ff @(posedge clk_i) begin : latch
     if (!rsn_i) begin
         tl_data.addr           <= 0;
@@ -131,6 +159,7 @@ always_ff @(posedge clk_i) begin : latch
         tl_data.memop_wr       <= 0;
         tl_data.memop_sign_ext <= 0;
         tl_data.memop_type     <= WORD;
+        tl_data.bypass_b       <= NO_BYPASS;
     end
     else begin
         tl_data.addr           <= add_result;
@@ -141,6 +170,7 @@ always_ff @(posedge clk_i) begin : latch
         tl_data.memop_wr       <= memop_wr_i;
         tl_data.memop_sign_ext <= memop_sign_ext_i;
         tl_data.memop_type     <= memop_type_i;
+        tl_data.bypass_b       <= bypass_b_i;
     end
 end
 
