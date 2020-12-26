@@ -308,6 +308,15 @@ always_comb begin : bypass_output_data
     end else begin
         bypass_data_o.rvm4_wreg = 0;
     end
+    //RVM5
+    if (rf_data_o.rvm_we) begin
+        bypass_data_o.rvm5_wreg = rf_data_o.rvm_waddr;
+        bypass_data_o.rvm5_data = rf_data_o.rvm_data;
+    end else begin
+        bypass_data_o.rvm5_wreg = 0;
+        bypass_data_o.rvm5_data = 0;
+    end
+
 end
 
 // VERIFICATION

@@ -20,7 +20,7 @@ module segre_ex_stage (
     input logic [WORD_SIZE-1:0] br_src_a_i,
     input logic [WORD_SIZE-1:0] br_src_b_i,
 
-    // EX TL interface
+    // EX RF interface
     // ALU
     output logic [WORD_SIZE-1:0] alu_res_o,
     // Register file
@@ -58,11 +58,6 @@ always_ff @(posedge clk_i) begin
         alu_res_o        <= 0;
         rf_we_o          <= 0;
         rf_waddr_o       <= 0;
-        rf_st_data_o     <= 0;
-        memop_type_o     <= WORD;
-        memop_rd_o       <= 0;
-        memop_wr_o       <= 0;
-        memop_sign_ext_o <= 0;
         tkbr_o           <= 0;
         new_pc_o         <= 0;
     end
