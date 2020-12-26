@@ -13,10 +13,10 @@ module memory (
     input logic rsn_i,
     input logic rd_i,
     input logic wr_i,
-    input memop_data_type_e data_type_i,
+    //input memop_data_type_e data_type_i,
     input logic [WORD_SIZE-1:0] addr_i,
     input logic [WORD_SIZE-1:0] wr_addr_i,
-    input logic [WORD_SIZE-1:0] data_i,
+    input logic [DCACHE_LANE_SIZE-1:0] data_i,
     output logic data_rdy_o,
     output logic [DCACHE_LANE_SIZE-1:0] data_o
 );
@@ -114,7 +114,23 @@ always @(posedge clk_i) begin
         };
     end
     if (wr_i) begin
-        case(data_type_i)
+        mem[wr_addr_i]    = data_i[7:0];
+        mem[wr_addr_i+1]  = data_i[15:8];
+        mem[wr_addr_i+2]  = data_i[23:16];
+        mem[wr_addr_i+3]  = data_i[31:24];
+        mem[wr_addr_i+4]  = data_i[39:32];
+        mem[wr_addr_i+5]  = data_i[47:40];
+        mem[wr_addr_i+6]  = data_i[55:48];
+        mem[wr_addr_i+7]  = data_i[63:56];
+        mem[wr_addr_i+8]  = data_i[71:64];
+        mem[wr_addr_i+9]  = data_i[79:72];
+        mem[wr_addr_i+10] = data_i[87:80];
+        mem[wr_addr_i+11] = data_i[95:88];
+        mem[wr_addr_i+12] = data_i[103:96];
+        mem[wr_addr_i+13] = data_i[111:104];
+        mem[wr_addr_i+14] = data_i[119:112];
+        mem[wr_addr_i+15] = data_i[127:120];
+        /*case(data_type_i)
             BYTE: begin
                 mem[wr_addr_i] = data_i[7:0];
             end
@@ -131,7 +147,7 @@ always @(posedge clk_i) begin
                 mem[wr_addr_i+3] = data_i[31:24];
             end
             default: ;
-        endcase
+        endcase*/
     end
     memory_verbose();
 end
@@ -155,7 +171,7 @@ task memory_verbose;
     end
 
     if (wr_i) begin
-        `uvm_info("memory", $sformatf("Writing %s: %h at %h", data_type_i.name(), data_i, addr_i), UVM_MEDIUM)
+        `uvm_info("memory", $sformatf("Writing: %h at %h", data_i, addr_i), UVM_MEDIUM)
     end
 endtask
 

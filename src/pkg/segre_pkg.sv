@@ -163,6 +163,7 @@ typedef struct packed {
     logic [DCACHE_INDEX_SIZE-1:0] index;
     logic [DCACHE_TAG_SIZE-1:0] tag;
     logic invalidate;
+    logic [ADDR_SIZE-1:0] addr;
     logic [DCACHE_INDEX_SIZE-1:0] addr_index;
     logic hit;
     logic miss;
@@ -188,7 +189,9 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] data_i;
     logic [DCACHE_INDEX_SIZE-1:0] index;
     logic [DCACHE_BYTE_SIZE-1:0] byte_i;
-    logic [DCACHE_LANE_SIZE-1:0] mmu_data;
+    logic [DCACHE_LANE_SIZE-1:0] mmu_data_i;
+    logic mmu_writeback;
+    logic [DCACHE_LANE_SIZE-1:0] mmu_data_o;
     logic [WORD_SIZE-1:0] data_o;
     memop_data_type_e store_data_type_o;
 } dcache_data_t;
@@ -300,12 +303,12 @@ typedef struct packed {
 typedef struct packed {
     logic dc_miss;
     logic [ADDR_SIZE-1:0] dc_addr_i;
-    logic dc_store;
-    memop_data_type_e dc_store_data_type;
-    logic [WORD_SIZE-1:0] dc_data_i;
+    logic dc_mmu_writeback;
+    //memop_data_type_e dc_store_data_type;
     logic dc_access;
     logic dc_mmu_data_rdy;
     logic [DCACHE_LANE_SIZE-1:0] dc_data_o;
+    logic [DCACHE_LANE_SIZE-1:0] dc_data_i;
     logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
     logic [ADDR_SIZE-1:0] dc_mm_addr_o;
     logic ic_miss;

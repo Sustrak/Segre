@@ -40,7 +40,9 @@ module segre_mem_stage (
     // MMU
     input logic mmu_data_rdy_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
-    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i
+    input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
+    output logic mmu_writeback_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mmu_data_o
 );
 
 dcache_data_t cache_data;
@@ -59,7 +61,7 @@ assign cache_data.byte_i                = sb_flush_i ? sb_addr_i[DCACHE_BYTE_SIZ
 assign cache_data.memop_data_load_type  = memop_type_i;
 assign cache_data.memop_data_store_type = memop_type_flush_i;
 assign cache_data.data_i                = sb_data_flush_i; //We only write from the SB
-assign cache_data.mmu_data              = mmu_data_i;
+assign cache_data.mmu_data_i              = mmu_data_i;
 
 segre_dcache_data dcache_data (
     .clk_i                   (clk_i),
@@ -72,7 +74,9 @@ segre_dcache_data dcache_data (
     .memop_data_type_load_i  (cache_data.memop_data_load_type),
     .memop_data_type_store_i (cache_data.memop_data_store_type),
     .data_i                  (cache_data.data_i),
-    .mmu_data_i              (cache_data.mmu_data),
+    .mmu_data_i              (cache_data.mmu_data_i),
+    .mmu_writeback_o         (cache_data.mmu_writeback),
+    .mmu_data_o              (cache_data.mmu_data_o),
     .data_o                  (cache_data.data_o),
     .store_data_type_o       (cache_data.store_data_type_o)
 );
@@ -105,4 +109,8 @@ always_ff @(posedge clk_i) begin
     tkbr_o     <= tkbr_i;
     new_pc_o   <= new_pc_i;
 end
+
+assign mmu_writeback_o = cache_data.mmu_writeback;
+assign mmu_data_o      = cache_data.mmu_data_o;
+
 endmodule
