@@ -141,14 +141,14 @@ segre_pipeline_wrapper pipeline_wrapper (
     .new_pc_o              (core_if.new_pc),
     // MMU
     .mmu_data_rdy_i        (core_mmu.dc_mmu_data_rdy),
+    .mmu_addr_i            (core_mmu.dc_mm_addr_o),
     .mmu_data_i            (core_mmu.dc_data_o),
     .mmu_lru_index_i       (core_mmu.dc_lru_index),
     .mmu_miss_o            (core_mmu.dc_miss),
     .mmu_addr_o            (core_mmu.dc_addr_i),
     .mmu_cache_access_o    (core_mmu.dc_access),
     .mmu_data_o            (core_mmu.dc_data_i),
-    .mmu_store_data_type_o (core_mmu.dc_store_data_type),
-    .mmu_store_o           (core_mmu.dc_store),
+    .mmu_writeback_o       (core_mmu.dc_mmu_writeback),
     // Bypass
     .bypass_data_o         (core_id.bypass_data)
 );
@@ -182,7 +182,6 @@ segre_mmu mmu (
     .dc_miss_i            (core_mmu.dc_miss),
     .dc_addr_i            (core_mmu.dc_addr_i),
     .dc_writeback_i       (core_mmu.dc_mmu_writeback),
-    //.dc_store_data_type_i (core_mmu.dc_store_data_type),
     .dc_data_i            (core_mmu.dc_data_i),
     .dc_access_i          (core_mmu.dc_access),
     .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),

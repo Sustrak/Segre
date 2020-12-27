@@ -17,14 +17,14 @@ module segre_pipeline_wrapper (
 
     // MMU
     input logic mmu_data_rdy_i,
+    input logic [ADDR_SIZE-1:0] mmu_addr_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
     input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
-    output logic [WORD_SIZE-1:0] mmu_data_o,
-    output memop_data_type_e mmu_store_data_type_o,
-    output logic mmu_store_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mmu_data_o,
+    output logic mmu_writeback_o,
 
     // Bypass logic to decode
     output bypass_data_t bypass_data_o
@@ -102,14 +102,14 @@ segre_mem_pipeline mem_pipeline (
 
     // MMU
     .mmu_data_rdy_i        (mmu_data_rdy_i),
+    .mmu_addr_i            (mmu_addr_i),
     .mmu_data_i            (mmu_data_i),
     .mmu_lru_index_i       (mmu_lru_index_i),
     .mmu_miss_o            (mmu_miss_o),
     .mmu_addr_o            (mmu_addr_o),
     .mmu_cache_access_o    (mmu_cache_access_o),
     .mmu_data_o            (mmu_data_o),
-    .mmu_store_data_type_o (mmu_store_data_type_o),
-    .mmu_store_o           (mmu_store_o),
+    .mmu_writeback_o       (mmu_writeback_o),
 
     // Hazards
     .tl_hazard_o           (tl_hazard),

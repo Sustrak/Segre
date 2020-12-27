@@ -343,7 +343,7 @@ typedef struct packed {
 
 typedef struct packed {
     memop_data_type_e memop_type;
-    memop_data_type_e memop_flush_type;
+    memop_data_type_e memop_type_flush;
     memop_data_type_e data_type;
     logic [WORD_SIZE-1:0] addr;
     logic [WORD_SIZE-1:0] wr_data;

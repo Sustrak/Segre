@@ -17,9 +17,6 @@ module segre_tl_stage (
     input logic memop_wr_i,
     input logic memop_sign_ext_i,
     input memop_data_type_e memop_type_i,
-    // Tkbr
-    input logic tkbr_i,
-    input logic [WORD_SIZE-1:0] new_pc_i,
 
     // TL MEM interface
     // ALU
@@ -34,9 +31,6 @@ module segre_tl_stage (
     output logic memop_sign_ext_o,
     output memop_data_type_e memop_type_o,
     output memop_data_type_e memop_type_flush_o,
-    // Tkbr
-    output logic tkbr_o,
-    output logic [WORD_SIZE-1:0] new_pc_o,
     // Store buffer
     output logic sb_hit_o,
     output logic sb_flush_o,
@@ -88,7 +82,7 @@ always_comb begin : mmu_addr_selection
         mmu_addr_o <= cache_tag.addr; //Possible writeback
     end
     else if (cache_tag.miss | memop_wr_i) begin
-        mmu_addr_o <= alu_res_i; //Requesting a line to cache
+        mmu_addr_o <= addr_i; //Requesting a line to cache
     end
     else begin
         mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
@@ -278,8 +272,6 @@ always_ff @(posedge clk_i) begin : stage_latch
         memop_sign_ext_o   <= 0;
         memop_type_o       <= WORD;
         memop_type_flush_o <= WORD;
-        tkbr_o             <= 0;
-        new_pc_o           <= 0;
         sb_hit_o           <= 0;
         sb_data_flush_o    <= 0;
         sb_data_flush_o    <= 0;
@@ -314,8 +306,6 @@ always_ff @(posedge clk_i) begin : stage_latch
             rf_we_o            <= rf_we_i;
             rf_waddr_o         <= rf_waddr_i;
             memop_sign_ext_o   <= memop_sign_ext_i;
-            tkbr_o             <= tkbr_i;
-            new_pc_o           <= new_pc_i;
             addr_index_o       <= cache_tag.addr_index;
             memop_type_o       <= memop_type_i;
             memop_type_flush_o <= sb.memop_data_type_o;
@@ -337,7 +327,6 @@ always_ff @(posedge clk_i) begin : stage_latch
             end
             rf_we_o    <= 0;
             memop_rd_o <= 0;
-            tkbr_o     <= 0;
         end       
         fsm_state <= fsm_nxt_state;
     end

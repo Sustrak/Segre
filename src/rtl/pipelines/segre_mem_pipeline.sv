@@ -21,14 +21,14 @@ module segre_mem_pipeline(
     
     // MMU
     input logic mmu_data_rdy_i,
+    input logic [ADDR_SIZE-1:0] mmu_addr_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
     input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
-    output logic [WORD_SIZE-1:0] mmu_data_o,
-    output memop_data_type_e mmu_store_data_type_o,
-    output logic mmu_store_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mmu_data_o,
+    output logic mmu_writeback_o,
 
     // Hazards
     output logic tl_hazard_o,
@@ -76,8 +76,10 @@ segre_tl_stage tl_stage(
     .memop_wr_o         (mem_data.memop_wr),
     .memop_sign_ext_o   (mem_data.memop_sign_ext),
     .memop_type_o       (mem_data.memop_type),
+    .memop_type_flush_o (mem_data.memop_type_flush),
     // Store buffer
     .sb_hit_o           (mem_data.sb_hit),
+    .sb_flush_o         (mem_data.sb_flush),
     .sb_data_load_o     (mem_data.sb_data_load),
     .sb_data_flush_o    (mem_data.sb_data_flush),
     .sb_addr_o          (mem_data.sb_addr),
@@ -86,6 +88,7 @@ segre_tl_stage tl_stage(
     .mmu_data_rdy_i     (mmu_data_rdy_i),
     .mmu_data_i         (mmu_data_i),
     .mmu_lru_index_i    (mmu_lru_index_i),
+    .mmu_addr_i         (mmu_addr_i),
     .mmu_miss_o         (mmu_miss_o),
     .mmu_addr_o         (mmu_addr_o),
     .mmu_cache_access_o (mmu_cache_access_o),
@@ -96,34 +99,38 @@ segre_tl_stage tl_stage(
 
 segre_mem_stage mem_stage (
     // Clock and Reset
-    .clk_i             (clk_i),
-    .rsn_i             (rsn_i),
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
     // TL MEM interface
     // ALU
-    .addr_i            (mem_data.addr),
+    .addr_i             (mem_data.addr),
     // Register file
-    .rf_we_i           (mem_data.rf_we),
-    .rf_waddr_i        (mem_data.rf_waddr),
+    .rf_we_i            (mem_data.rf_we),
+    .rf_waddr_i         (mem_data.rf_waddr),
     // Memop
-    .addr_index_i      (mem_data.addr_index),
-    .memop_type_i      (mem_data.memop_type),
-    .memop_sign_ext_i  (mem_data.memop_sign_ext),
-    .memop_rd_i        (mem_data.memop_rd),
-    .memop_wr_i        (mem_data.memop_wr),
+    .addr_index_i       (mem_data.addr_index),
+    .memop_type_i       (mem_data.memop_type),
+    .memop_type_flush_i (mem_data.memop_type_flush),
+    .memop_sign_ext_i   (mem_data.memop_sign_ext),
+    .memop_rd_i         (mem_data.memop_rd),
+    .memop_wr_i         (mem_data.memop_wr),
     // Store Buffer
-    .sb_hit_i          (mem_data.sb_hit),
-    .sb_data_load_i    (mem_data.sb_data_load),
-    .sb_data_flush_i   (mem_data.sb_data_flush),
-    .sb_addr_i         (mem_data.sb_addr),
+    .sb_hit_i           (mem_data.sb_hit),
+    .sb_flush_i         (mem_data.sb_flush),
+    .sb_data_load_i     (mem_data.sb_data_load),
+    .sb_data_flush_i    (mem_data.sb_data_flush),
+    .sb_addr_i          (mem_data.sb_addr),
     // MEM WB intereface
-    .cache_data_o      (data_o),
+    .cache_data_o       (data_o),
     //Register file
-    .rf_we_o           (rf_we_o),
-    .rf_waddr_o        (rf_waddr_o),
+    .rf_we_o            (rf_we_o),
+    .rf_waddr_o         (rf_waddr_o),
     //MMU
-    .mmu_data_rdy_i    (mmu_data_rdy_i),
-    .mmu_data_i        (mmu_data_i),
-    .mmu_lru_index_i   (mmu_lru_index_i)
+    .mmu_data_rdy_i     (mmu_data_rdy_i),
+    .mmu_data_i         (mmu_data_i),
+    .mmu_lru_index_i    (mmu_lru_index_i),
+    .mmu_writeback_o    (mmu_writeback_o),
+    .mmu_data_o         (mmu_data_o)
 );
 
 always_comb begin : adder
