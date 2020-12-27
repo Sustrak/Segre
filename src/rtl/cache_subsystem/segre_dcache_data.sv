@@ -46,8 +46,14 @@ always_ff @(posedge clk_i) begin : cache_reset
 end
 
 always_comb begin : cache_replacement
-    if(mmu_wr_data_i) begin //Cache_data values are updated at the end of the cycle, we take profit of that.
+    if (!rsn_i) begin
+        mmu_writeback_o <= 0;
+    end
+    else if(mmu_wr_data_i) begin //Cache_data values are updated at the end of the cycle, we take profit of that.
         mmu_writeback_o <= cache_data[index_i].dirty;
+    end
+    else begin
+        mmu_writeback_o <= 0;
     end
 end
 

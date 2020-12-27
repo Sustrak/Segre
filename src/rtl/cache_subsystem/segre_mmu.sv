@@ -32,6 +32,8 @@ module segre_mmu (
     output logic [DCACHE_LANE_SIZE-1:0] mm_data_o
 );
 
+`define ADDR_TAG ADDR_SIZE-1:DCACHE_BYTE_SIZE
+
 localparam DC_LRU_WIDTH = DCACHE_NUM_LANES*(DCACHE_NUM_LANES-1) >> 1;
 localparam IC_LRU_WIDTH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
 
@@ -211,11 +213,18 @@ always_comb begin : mmu_fsm
         end
         DCACHE_WAIT : begin
             if (mm_data_rdy_i) begin
-                if (ic_miss) fsm_nxt_state = ICACHE_REQ;
-                else fsm_nxt_state = MMU_IDLE;
+                if (ic_miss) begin
+                    fsm_nxt_state = ICACHE_REQ;
+                end
+                else begin
+                    fsm_nxt_state = MMU_IDLE;
+                end
             end
-            else if (dc_miss_i & (dc_mm_addr != {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}})) begin
+            else if (dc_miss_i & (dc_mm_addr[`ADDR_TAG] != dc_addr_i[`ADDR_TAG])) begin
                 fsm_nxt_state = DCACHE_PENDING;
+            end
+            else begin
+                fsm_nxt_state = DCACHE_WAIT;
             end
         end
         DCACHE_PENDING: begin
