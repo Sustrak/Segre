@@ -8,6 +8,7 @@ module segre_dcache_tag
       input logic [DCACHE_INDEX_SIZE-1:0] index_i,
       input logic [DCACHE_TAG_SIZE-1:0] tag_i,
       input logic invalidate_i,
+      output logic [ADDR_SIZE-1:0] addr_o,
       output logic [DCACHE_INDEX_SIZE-1:0] addr_index_o,
       output logic hit_o,
       output logic miss_o
@@ -71,6 +72,7 @@ always_comb begin : tag_rd
     tag_hit = |hit_vector;
 end
 
+assign addr_o = {cache_tags[index_i].tag, 4'b0000};
 assign addr_index_o = one_hot_to_binary(hit_vector);
 assign hit_o = tag_hit & req_i;
 assign miss_o = ~tag_hit & req_i;

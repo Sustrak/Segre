@@ -8,12 +8,12 @@ module segre_core (
     // Main memory signals
     input  logic mm_data_rdy_i,
     input  logic [DCACHE_LANE_SIZE-1:0] mm_rd_data_i,
-    output logic [WORD_SIZE-1:0] mm_wr_data_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mm_wr_data_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
     output logic [ADDR_SIZE-1:0] mm_wr_addr_o,
     output logic mm_rd_o,
-    output logic mm_wr_o,
-    output memop_data_type_e mm_wr_data_type_o
+    output logic mm_wr_o
+    //output memop_data_type_e mm_wr_data_type_o
 );
 
 core_if_t core_if;
@@ -181,8 +181,8 @@ segre_mmu mmu (
     // Data chache
     .dc_miss_i            (core_mmu.dc_miss),
     .dc_addr_i            (core_mmu.dc_addr_i),
-    .dc_store_i           (core_mmu.dc_store),
-    .dc_store_data_type_i (core_mmu.dc_store_data_type),
+    .dc_writeback_i       (core_mmu.dc_mmu_writeback),
+    //.dc_store_data_type_i (core_mmu.dc_store_data_type),
     .dc_data_i            (core_mmu.dc_data_i),
     .dc_access_i          (core_mmu.dc_access),
     .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),
@@ -201,7 +201,7 @@ segre_mmu mmu (
     .mm_data_i            (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this
     .mm_rd_req_o          (mm_rd_o),
     .mm_wr_req_o          (mm_wr_o),
-    .mm_wr_data_type_o    (mm_wr_data_type_o),
+    //.mm_wr_data_type_o    (mm_wr_data_type_o),
     .mm_addr_o            (mm_addr_o),
     .mm_wr_addr_o         (mm_wr_addr_o),
     .mm_data_o            (mm_wr_data_o)

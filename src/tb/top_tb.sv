@@ -45,8 +45,8 @@ module top_tb;
         .mm_addr_o          (segre_core_if.mm_addr),
         .mm_wr_addr_o       (segre_core_if.mm_wr_addr),
         .mm_rd_o            (segre_core_if.mm_rd),
-        .mm_wr_o            (segre_core_if.mm_wr),
-        .mm_wr_data_type_o  (segre_core_if.mm_data_type)
+        .mm_wr_o            (segre_core_if.mm_wr)
+        //.mm_wr_data_type_o  (segre_core_if.mm_data_type)
     );
 
     memory tb_mem (
@@ -58,8 +58,8 @@ module top_tb;
         .addr_i      (segre_core_if.mm_addr),
         .wr_addr_i   (segre_core_if.mm_wr_addr),
         .rd_i        (segre_core_if.mm_rd),
-        .wr_i        (segre_core_if.mm_wr),
-        .data_type_i (segre_core_if.mm_data_type)
+        .wr_i        (segre_core_if.mm_wr)
+        //.data_type_i (segre_core_if.mm_data_type)
     );
 
     initial begin
