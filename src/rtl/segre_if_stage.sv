@@ -17,6 +17,7 @@ module segre_if_stage (
     output logic [ADDR_SIZE-1:0] pc_o,
 
     // WB interface
+    input logic branch_completed_i,
     input logic tkbr_i,
     input logic [WORD_SIZE-1:0] new_pc_i,
 
@@ -93,7 +94,14 @@ always_comb begin : if_fsm
             end
             IF_IDLE: begin
                 if (cache_tag.miss) if_fsm_nxt_state = IF_IC_MISS;
+                else if (cache_data.data_o[6:0] == OPCODE_BRANCH || cache_data.data_o[6:0] == OPCODE_JAL || cache_data.data_o[6:0] == OPCODE_JALR) begin
+                    if_fsm_nxt_state = IF_BRANCH;
+                end
                 else if_fsm_nxt_state = IF_IDLE;
+            end
+            IF_BRANCH: begin
+                if (branch_completed_i) if_fsm_nxt_state = IF_IDLE;
+                else if_fsm_nxt_state = IF_BRANCH;
             end
             default: ;
         endcase
@@ -106,7 +114,7 @@ always_comb begin : pc_logic
     end else begin
         if (tkbr_i) begin
             nxt_pc = new_pc_i;
-        end else if (if_fsm_state == IF_IC_MISS) begin
+        end else if (if_fsm_state == IF_IC_MISS || if_fsm_state == IF_BRANCH) begin
             nxt_pc = pc_o;
         end else begin
             nxt_pc = pc_o + 4;

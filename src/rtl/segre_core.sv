@@ -62,26 +62,27 @@ assign stage_hazards.mem = 0;
 
 segre_if_stage if_stage (
     // Clock and Reset
-    .clk_i           (clk_i),
-    .rsn_i           (rsn_i),
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
     // Hazard
-    .hazard_i        (stage_hazards.ifs),
-    .hazard_o        (core_hazards.ifs),
+    .hazard_i           (stage_hazards.ifs),
+    .hazard_o           (core_hazards.ifs),
     // FSM state
-    .fsm_state_i     (fsm_state),
+    .fsm_state_i        (fsm_state),
     // IF ID interface
-    .instr_o         (core_id.instr),
-    .pc_o            (core_id.pc),
+    .instr_o            (core_id.instr),
+    .pc_o               (core_id.pc),
     // WB interface
-    .tkbr_i          (core_if.tkbr),
-    .new_pc_i        (core_if.new_pc),
+    .tkbr_i             (core_if.tkbr),
+    .new_pc_i           (core_if.new_pc),
+    .branch_completed_i (core_if.branch_completed),
     // MMU interface
-    .mmu_data_i      (core_mmu.ic_mmu_data_rdy),
-    .mmu_wr_data_i   (core_mmu.ic_data),
-    .mmu_lru_index_i (core_mmu.ic_lru_index),
-    .ic_miss_o       (core_mmu.ic_miss),
-    .ic_addr_o       (core_mmu.ic_addr_i),
-    .ic_access_o     (core_mmu.ic_access)
+    .mmu_data_i         (core_mmu.ic_mmu_data_rdy),
+    .mmu_wr_data_i      (core_mmu.ic_data),
+    .mmu_lru_index_i    (core_mmu.ic_lru_index),
+    .ic_miss_o          (core_mmu.ic_miss),
+    .ic_addr_o          (core_mmu.ic_addr_i),
+    .ic_access_o        (core_mmu.ic_access)
 );
 
 segre_id_stage id_stage (
@@ -135,6 +136,7 @@ segre_pipeline_wrapper pipeline_wrapper (
     // Register File
     .rf_data_o             (rf_wdata),
     // Branch & Jump
+    .branch_completed_o    (core_if.branch_completed),
     .tkbr_o                (core_if.tkbr),
     .new_pc_o              (core_if.new_pc),
     // MMU

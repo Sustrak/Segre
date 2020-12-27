@@ -33,10 +33,14 @@ parameter STORE_BUFFER_NUM_ELEMS = 2;
 
 /** RVM **/
 parameter RVM_NUM_STAGES = 5;
+
 /** TLB **/
 parameter VADDR_SIZE = 32;
 parameter PADDR_SIZE = 20;
 parameter TLB_NUM_ENTRYS = 4;
+
+/** HISTORY FILE **/
+parameter HF_SIZE = 8;
 
 /*****************
 *    OPCODES     *
@@ -151,9 +155,10 @@ typedef enum logic [1:0] {
     TL_IDLE
 } tl_fsm_state_e;
 
-typedef enum logic {
+typedef enum logic [1:0] {
+    IF_IDLE,
     IF_IC_MISS,
-    IF_IDLE
+    IF_BRANCH
 } if_fsm_state_e;
 
 typedef enum logic [1:0] {
@@ -260,6 +265,7 @@ typedef struct packed {
     logic mem_rd;
     logic [WORD_SIZE-1:0] new_pc;
     logic tkbr;
+    logic branch_completed;
 } core_if_t;
 
 typedef struct packed {
