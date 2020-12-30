@@ -17,9 +17,6 @@ module segre_tl_stage (
     input logic memop_wr_i,
     input logic memop_sign_ext_i,
     input memop_data_type_e memop_type_i,
-    // Tkbr
-    input logic tkbr_i,
-    input logic [WORD_SIZE-1:0] new_pc_i,
 
     // TL MEM interface
     // ALU
@@ -34,9 +31,6 @@ module segre_tl_stage (
     output logic memop_sign_ext_o,
     output memop_data_type_e memop_type_o,
     output memop_data_type_e memop_type_flush_o,
-    // Tkbr
-    output logic tkbr_o,
-    output logic [WORD_SIZE-1:0] new_pc_o,
     // Store buffer
     output logic sb_hit_o,
     output logic sb_flush_o,
@@ -52,9 +46,9 @@ module segre_tl_stage (
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
-    output logic mmu_wr_o,
-    output memop_data_type_e mmu_wr_data_type_o,
-    output logic [WORD_SIZE-1:0] mmu_data_o,
+    //output logic mmu_wr_o,
+    //output memop_data_type_e mmu_wr_data_type_o,
+    //output logic [WORD_SIZE-1:0] mmu_data_o,
 
     // Hazard
     output logic pipeline_hazard_o
@@ -83,18 +77,30 @@ always_comb begin : cache_tag_selection
     else                                 cache_tag.tag = addr_i [`ADDR_TAG];
 end
 
+always_comb begin : mmu_addr_selection
+    if(mmu_data_rdy_i) begin
+        mmu_addr_o <= cache_tag.addr; //Possible writeback
+    end
+    else if (cache_tag.miss | memop_wr_i) begin
+        mmu_addr_o <= addr_i; //Requesting a line to cache
+    end
+    else begin
+        mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+    end
+end
+
 assign cache_tag.invalidate = 0;
 
 // MMU
 assign mmu_cache_access_o = cache_tag.req | sb.req_store | sb.req_load;
-assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? addr_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+//assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 assign mmu_miss_o         = rsn_i & (cache_tag.miss & sb.miss); 
 //assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == addr_i[`ADDR_TAG])); 
 assign pipeline_hazard_o  = pipeline_hazard;
 // Write through
-assign mmu_wr_o           = memop_wr_i;
-assign mmu_wr_data_type_o = memop_type_i;
-assign mmu_data_o         = rf_st_data_i;
+//assign mmu_wr_o           = memop_wr_i;
+//assign mmu_wr_data_type_o = memop_type_i;
+//assign mmu_data_o         = rf_st_data_i;
 
 // STORE BUFFER
 assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i : 1'b0;
@@ -112,6 +118,7 @@ segre_dcache_tag dcache_tag (
     .index_i      (cache_tag.index),
     .tag_i        (cache_tag.tag),
     .invalidate_i (cache_tag.invalidate),
+    .addr_o       (cache_tag.addr),
     .addr_index_o (cache_tag.addr_index),
     .hit_o        (cache_tag.hit),
     .miss_o       (cache_tag.miss)
@@ -265,8 +272,6 @@ always_ff @(posedge clk_i) begin : stage_latch
         memop_sign_ext_o   <= 0;
         memop_type_o       <= WORD;
         memop_type_flush_o <= WORD;
-        tkbr_o             <= 0;
-        new_pc_o           <= 0;
         sb_hit_o           <= 0;
         sb_data_flush_o    <= 0;
         sb_data_flush_o    <= 0;
@@ -301,8 +306,6 @@ always_ff @(posedge clk_i) begin : stage_latch
             rf_we_o            <= rf_we_i;
             rf_waddr_o         <= rf_waddr_i;
             memop_sign_ext_o   <= memop_sign_ext_i;
-            tkbr_o             <= tkbr_i;
-            new_pc_o           <= new_pc_i;
             addr_index_o       <= cache_tag.addr_index;
             memop_type_o       <= memop_type_i;
             memop_type_flush_o <= sb.memop_data_type_o;
@@ -324,7 +327,6 @@ always_ff @(posedge clk_i) begin : stage_latch
             end
             rf_we_o    <= 0;
             memop_rd_o <= 0;
-            tkbr_o     <= 0;
         end       
         fsm_state <= fsm_nxt_state;
     end

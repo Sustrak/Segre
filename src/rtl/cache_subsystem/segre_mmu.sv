@@ -6,9 +6,9 @@ module segre_mmu (
     // Data chache
     input  logic dc_miss_i,
     input  logic [ADDR_SIZE-1:0] dc_addr_i,
-    input  logic dc_store_i,
-    input  memop_data_type_e dc_store_data_type_i,
-    input  logic [WORD_SIZE-1:0] dc_data_i, 
+    input  logic dc_writeback_i,
+    //input  memop_data_type_e dc_store_data_type_i,
+    input  logic [DCACHE_LANE_SIZE-1:0] dc_data_i, 
     input  logic dc_access_i,
     output logic dc_mmu_data_rdy_o,
     output logic [DCACHE_LANE_SIZE-1:0] dc_data_o,
@@ -26,11 +26,13 @@ module segre_mmu (
     input  logic [DCACHE_LANE_SIZE-1:0] mm_data_i, // If $D and $I have different LANE_SIZE we need to change this
     output logic mm_rd_req_o,
     output logic mm_wr_req_o,
-    output memop_data_type_e mm_wr_data_type_o,
+    //output memop_data_type_e mm_wr_data_type_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
     output logic [ADDR_SIZE-1:0] mm_wr_addr_o,
-    output logic [WORD_SIZE-1:0] mm_data_o
+    output logic [DCACHE_LANE_SIZE-1:0] mm_data_o
 );
+
+`define ADDR_TAG ADDR_SIZE-1:DCACHE_BYTE_SIZE
 
 localparam DC_LRU_WIDTH = DCACHE_NUM_LANES*(DCACHE_NUM_LANES-1) >> 1;
 localparam IC_LRU_WIDTH = ICACHE_NUM_LANES*(ICACHE_NUM_LANES-1) >> 1;
@@ -93,10 +95,10 @@ assign dc_addr_index = dc_addr_i[DCACHE_INDEX_SIZE-1:0];
 assign ic_addr_index = ic_addr_i[ICACHE_INDEX_SIZE-1:0];
 
 // Bypass store signals directly to main memory
-assign mm_wr_req_o = dc_store_i;
+assign mm_wr_req_o = dc_writeback_i;
 assign mm_wr_addr_o = dc_addr_i;
 assign mm_data_o = dc_data_i;
-assign mm_wr_data_type_o = dc_store_data_type_i;
+//assign mm_wr_data_type_o = dc_store_data_type_i;
 
 mor1kx_cache_lru #(.NUMWAYS(DCACHE_NUM_LANES)) dc_lru_mor1kx (
     .current  (dc_lru_current),
@@ -211,11 +213,18 @@ always_comb begin : mmu_fsm
         end
         DCACHE_WAIT : begin
             if (mm_data_rdy_i) begin
-                if (ic_miss) fsm_nxt_state = ICACHE_REQ;
-                else fsm_nxt_state = MMU_IDLE;
+                if (ic_miss) begin
+                    fsm_nxt_state = ICACHE_REQ;
+                end
+                else begin
+                    fsm_nxt_state = MMU_IDLE;
+                end
             end
-            else if (dc_miss_i & (dc_mm_addr != {dc_addr_i[ADDR_SIZE-1:DCACHE_BYTE_SIZE], {DCACHE_BYTE_SIZE{1'b0}}})) begin
+            else if (dc_miss_i & (dc_mm_addr[`ADDR_TAG] != dc_addr_i[`ADDR_TAG])) begin
                 fsm_nxt_state = DCACHE_PENDING;
+            end
+            else begin
+                fsm_nxt_state = DCACHE_WAIT;
             end
         end
         DCACHE_PENDING: begin

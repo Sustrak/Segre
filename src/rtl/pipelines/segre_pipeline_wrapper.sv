@@ -11,30 +11,31 @@ module segre_pipeline_wrapper (
     // Register File
     output rf_wdata_t rf_data_o,
     // Branch & Jump
+    output logic branch_completed_o,
     output logic tkbr_o,
     output logic [ADDR_SIZE-1:0] new_pc_o,
 
     // MMU
     input logic mmu_data_rdy_i,
+    input logic [ADDR_SIZE-1:0] mmu_addr_i,
     input logic [DCACHE_LANE_SIZE-1:0] mmu_data_i,
     input logic [DCACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
-    output logic [WORD_SIZE-1:0] mmu_data_o,
-    output memop_data_type_e mmu_store_data_type_o,
-    output logic mmu_store_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mmu_data_o,
+    output logic mmu_writeback_o,
 
     // Bypass logic to decode
-    output bypass_data_t bypass_data_o
+    output bypass_data_t bypass_data_o,
+
+    // Hazard signals
+    output logic tl_hazard_o
 );
 
 mem_pipeline_t mem_data;
 ex_pipeline_t  ex_data;
 rvm_pipeline_t rvm_data;
-
-// Hazard signals
-logic tl_hazard;
 
 // Bypass signals
 logic alu_mem_rf_we;
@@ -54,27 +55,28 @@ assign ex_data.hazard = 1'b0;
 
 segre_ex_stage ex_stage (
     // Clock and Reset
-    .clk_i            (clk_i),
-    .rsn_i            (rsn_i),
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
 
     // Hazards
-    .hazard_i         (ex_data.hazard),
+    .hazard_i           (ex_data.hazard),
 
     // Input
-    .alu_opcode_i     (ex_data.alu_opcode),
-    .alu_src_a_i      (ex_data.alu_src_a),
-    .alu_src_b_i      (ex_data.alu_src_b),
-    .rf_we_i          (ex_data.rf_we),
-    .rf_waddr_i       (ex_data.rf_waddr),
-    .br_src_a_i       (ex_data.br_src_a),
-    .br_src_b_i       (ex_data.br_src_b),
+    .alu_opcode_i       (ex_data.alu_opcode),
+    .alu_src_a_i        (ex_data.alu_src_a),
+    .alu_src_b_i        (ex_data.alu_src_b),
+    .rf_we_i            (ex_data.rf_we),
+    .rf_waddr_i         (ex_data.rf_waddr),
+    .br_src_a_i         (ex_data.br_src_a),
+    .br_src_b_i         (ex_data.br_src_b),
 
     // Output
-    .alu_res_o        (rf_data_o.ex_data),
-    .rf_we_o          (rf_data_o.ex_we),
-    .rf_waddr_o       (rf_data_o.ex_waddr),
-    .tkbr_o           (tkbr_o),
-    .new_pc_o         (new_pc_o)
+    .alu_res_o          (rf_data_o.ex_data),
+    .rf_we_o            (rf_data_o.ex_we),
+    .rf_waddr_o         (rf_data_o.ex_waddr),
+    .branch_completed_o (branch_completed_o),
+    .tkbr_o             (tkbr_o),
+    .new_pc_o           (new_pc_o)
 );
 
 segre_mem_pipeline mem_pipeline (
@@ -100,17 +102,17 @@ segre_mem_pipeline mem_pipeline (
 
     // MMU
     .mmu_data_rdy_i        (mmu_data_rdy_i),
+    .mmu_addr_i            (mmu_addr_i),
     .mmu_data_i            (mmu_data_i),
     .mmu_lru_index_i       (mmu_lru_index_i),
     .mmu_miss_o            (mmu_miss_o),
     .mmu_addr_o            (mmu_addr_o),
     .mmu_cache_access_o    (mmu_cache_access_o),
     .mmu_data_o            (mmu_data_o),
-    .mmu_store_data_type_o (mmu_store_data_type_o),
-    .mmu_store_o           (mmu_store_o),
+    .mmu_writeback_o       (mmu_writeback_o),
 
     // Hazards
-    .tl_hazard_o           (tl_hazard),
+    .tl_hazard_o           (tl_hazard_o),
 
     // Bypass
     .bypass_b_i            (core_pipeline_i.bypass_b),
@@ -253,70 +255,22 @@ end
 
 always_comb begin : bypass_output_data
     // EX STAGE
-    if (rf_data_o.ex_we) begin
-        bypass_data_o.ex_wreg = rf_data_o.ex_waddr;
-        bypass_data_o.ex_data = rf_data_o.ex_data;
-    end else begin
-        bypass_data_o.ex_wreg = 0;
-        bypass_data_o.ex_data = 0;
-    end
-    
+    bypass_data_o.ex_wreg = rf_data_o.ex_we ? rf_data_o.ex_waddr : 0;
+    bypass_data_o.ex_data = rf_data_o.ex_we ? rf_data_o.ex_data : 0;
     // ALU MEM
-    if (alu_mem_rf_we) begin
-        bypass_data_o.alu_mem_wreg = alu_mem_rf_waddr;
-    end else begin
-        bypass_data_o.alu_mem_wreg = 0;
-    end
-    
+    bypass_data_o.alu_mem_wreg = alu_mem_rf_we ? alu_mem_rf_waddr : 0;
     // TL STAGE
-    if (tl_rf_we) begin
-        bypass_data_o.tl_wreg = tl_rf_waddr;
-    end else begin
-        bypass_data_o.tl_wreg = 0;
-    end
-
+    bypass_data_o.tl_wreg = tl_rf_we ? tl_rf_waddr : 0;
     // MEM STAGE
-    if (rf_data_o.mem_we) begin
-        bypass_data_o.mem_wreg = rf_data_o.mem_waddr;
-        bypass_data_o.mem_data = rf_data_o.mem_data;
-    end else begin
-        bypass_data_o.mem_wreg = 0;
-        bypass_data_o.mem_data = 0;
-    end
-    
-    //RVM1
-    if (rvm1_we) begin
-        bypass_data_o.rvm1_wreg = rvm1_waddr;
-    end else begin
-        bypass_data_o.rvm1_wreg = 0;
-    end
-    //RVM2
-    if (rvm2_we) begin
-        bypass_data_o.rvm2_wreg = rvm2_waddr;
-    end else begin
-        bypass_data_o.rvm2_wreg = 0;
-    end
-    //RVM3
-    if (rvm3_we) begin
-        bypass_data_o.rvm3_wreg = rvm3_waddr;
-    end else begin
-        bypass_data_o.rvm3_wreg = 0;
-    end
-    //RVM4
-    if (rvm4_we) begin
-        bypass_data_o.rvm4_wreg = rvm4_waddr;
-    end else begin
-        bypass_data_o.rvm4_wreg = 0;
-    end
-    //RVM5
-    if (rf_data_o.rvm_we) begin
-        bypass_data_o.rvm5_wreg = rf_data_o.rvm_waddr;
-        bypass_data_o.rvm5_data = rf_data_o.rvm_data;
-    end else begin
-        bypass_data_o.rvm5_wreg = 0;
-        bypass_data_o.rvm5_data = 0;
-    end
-
+    bypass_data_o.mem_wreg = rf_data_o.mem_we ? rf_data_o.mem_waddr : 0;
+    bypass_data_o.mem_data = rf_data_o.mem_we ? rf_data_o.mem_data : 0;
+    // RVM
+    bypass_data_o.rvm1_wreg = rvm1_we ? rvm1_waddr : 0;
+    bypass_data_o.rvm2_wreg = rvm2_we ? rvm2_waddr : 0;
+    bypass_data_o.rvm3_wreg = rvm3_we ? rvm3_waddr : 0;
+    bypass_data_o.rvm4_wreg = rvm4_we ? rvm4_waddr : 0;
+    bypass_data_o.rvm5_wreg = rf_data_o.rvm_we ? rf_data_o.rvm_waddr : 0;
+    bypass_data_o.rvm5_data = rf_data_o.rvm_we ? rf_data_o.rvm_data : 0;
 end
 
 // VERIFICATION

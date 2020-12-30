@@ -8,12 +8,12 @@ module segre_core (
     // Main memory signals
     input  logic mm_data_rdy_i,
     input  logic [DCACHE_LANE_SIZE-1:0] mm_rd_data_i,
-    output logic [WORD_SIZE-1:0] mm_wr_data_o,
+    output logic [DCACHE_LANE_SIZE-1:0] mm_wr_data_o,
     output logic [ADDR_SIZE-1:0] mm_addr_o,
     output logic [ADDR_SIZE-1:0] mm_wr_addr_o,
     output logic mm_rd_o,
-    output logic mm_wr_o,
-    output memop_data_type_e mm_wr_data_type_o
+    output logic mm_wr_o
+    //output memop_data_type_e mm_wr_data_type_o
 );
 
 core_if_t core_if;
@@ -57,31 +57,33 @@ end
 assign stage_hazards.ifs = 0;
 assign stage_hazards.id  = 0;
 assign stage_hazards.ex  = 0;
-assign stage_hazards.tl  = 0;
 assign stage_hazards.mem = 0;
+
+logic tl_hazard;
 
 segre_if_stage if_stage (
     // Clock and Reset
-    .clk_i           (clk_i),
-    .rsn_i           (rsn_i),
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
     // Hazard
-    .hazard_i        (stage_hazards.ifs),
-    .hazard_o        (core_hazards.ifs),
+    .hazard_i           (tl_hazard),
+    .hazard_o           (core_hazards.ifs),
     // FSM state
-    .fsm_state_i     (fsm_state),
+    .fsm_state_i        (fsm_state),
     // IF ID interface
-    .instr_o         (core_id.instr),
-    .pc_o            (core_id.pc),
+    .instr_o            (core_id.instr),
+    .pc_o               (core_id.pc),
     // WB interface
-    .tkbr_i          (core_if.tkbr),
-    .new_pc_i        (core_if.new_pc),
+    .tkbr_i             (core_if.tkbr),
+    .new_pc_i           (core_if.new_pc),
+    .branch_completed_i (core_if.branch_completed),
     // MMU interface
-    .mmu_data_i      (core_mmu.ic_mmu_data_rdy),
-    .mmu_wr_data_i   (core_mmu.ic_data),
-    .mmu_lru_index_i (core_mmu.ic_lru_index),
-    .ic_miss_o       (core_mmu.ic_miss),
-    .ic_addr_o       (core_mmu.ic_addr_i),
-    .ic_access_o     (core_mmu.ic_access)
+    .mmu_data_i         (core_mmu.ic_mmu_data_rdy),
+    .mmu_wr_data_i      (core_mmu.ic_data),
+    .mmu_lru_index_i    (core_mmu.ic_lru_index),
+    .ic_miss_o          (core_mmu.ic_miss),
+    .ic_addr_o          (core_mmu.ic_addr_i),
+    .ic_access_o        (core_mmu.ic_access)
 );
 
 segre_id_stage id_stage (
@@ -89,7 +91,7 @@ segre_id_stage id_stage (
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
     // Hazard
-    .hazard_i         (stage_hazards.id),
+    .hazard_i         (tl_hazard),
     // FSM State
     .fsm_state_i      (fsm_state),
     // IF ID interface   
@@ -135,20 +137,23 @@ segre_pipeline_wrapper pipeline_wrapper (
     // Register File
     .rf_data_o             (rf_wdata),
     // Branch & Jump
+    .branch_completed_o    (core_if.branch_completed),
     .tkbr_o                (core_if.tkbr),
     .new_pc_o              (core_if.new_pc),
     // MMU
     .mmu_data_rdy_i        (core_mmu.dc_mmu_data_rdy),
+    .mmu_addr_i            (core_mmu.dc_mm_addr_o),
     .mmu_data_i            (core_mmu.dc_data_o),
     .mmu_lru_index_i       (core_mmu.dc_lru_index),
     .mmu_miss_o            (core_mmu.dc_miss),
     .mmu_addr_o            (core_mmu.dc_addr_i),
     .mmu_cache_access_o    (core_mmu.dc_access),
     .mmu_data_o            (core_mmu.dc_data_i),
-    .mmu_store_data_type_o (core_mmu.dc_store_data_type),
-    .mmu_store_o           (core_mmu.dc_store),
+    .mmu_writeback_o       (core_mmu.dc_mmu_writeback),
     // Bypass
-    .bypass_data_o         (core_id.bypass_data)
+    .bypass_data_o         (core_id.bypass_data),
+    // Hazard
+    .tl_hazard_o           (tl_hazard)
 );
 
 segre_register_file segre_rf (
@@ -179,8 +184,7 @@ segre_mmu mmu (
     // Data chache
     .dc_miss_i            (core_mmu.dc_miss),
     .dc_addr_i            (core_mmu.dc_addr_i),
-    .dc_store_i           (core_mmu.dc_store),
-    .dc_store_data_type_i (core_mmu.dc_store_data_type),
+    .dc_writeback_i       (core_mmu.dc_mmu_writeback),
     .dc_data_i            (core_mmu.dc_data_i),
     .dc_access_i          (core_mmu.dc_access),
     .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),
@@ -199,7 +203,7 @@ segre_mmu mmu (
     .mm_data_i            (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this
     .mm_rd_req_o          (mm_rd_o),
     .mm_wr_req_o          (mm_wr_o),
-    .mm_wr_data_type_o    (mm_wr_data_type_o),
+    //.mm_wr_data_type_o    (mm_wr_data_type_o),
     .mm_addr_o            (mm_addr_o),
     .mm_wr_addr_o         (mm_wr_addr_o),
     .mm_data_o            (mm_wr_data_o)

@@ -33,10 +33,14 @@ parameter STORE_BUFFER_NUM_ELEMS = 2;
 
 /** RVM **/
 parameter RVM_NUM_STAGES = 5;
+
 /** TLB **/
 parameter VADDR_SIZE = 32;
 parameter PADDR_SIZE = 20;
 parameter TLB_NUM_ENTRYS = 4;
+
+/** HISTORY FILE **/
+parameter HF_SIZE = 8;
 
 /*****************
 *    OPCODES     *
@@ -151,9 +155,10 @@ typedef enum logic [1:0] {
     TL_IDLE
 } tl_fsm_state_e;
 
-typedef enum logic {
+typedef enum logic [1:0] {
+    IF_IDLE,
     IF_IC_MISS,
-    IF_IDLE
+    IF_BRANCH
 } if_fsm_state_e;
 
 typedef enum logic [1:0] {
@@ -198,6 +203,7 @@ typedef struct packed {
     logic [DCACHE_INDEX_SIZE-1:0] index;
     logic [DCACHE_TAG_SIZE-1:0] tag;
     logic invalidate;
+    logic [ADDR_SIZE-1:0] addr;
     logic [DCACHE_INDEX_SIZE-1:0] addr_index;
     logic hit;
     logic miss;
@@ -223,7 +229,9 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] data_i;
     logic [DCACHE_INDEX_SIZE-1:0] index;
     logic [DCACHE_BYTE_SIZE-1:0] byte_i;
-    logic [DCACHE_LANE_SIZE-1:0] mmu_data;
+    logic [DCACHE_LANE_SIZE-1:0] mmu_data_i;
+    logic mmu_writeback;
+    logic [DCACHE_LANE_SIZE-1:0] mmu_data_o;
     logic [WORD_SIZE-1:0] data_o;
     memop_data_type_e store_data_type_o;
 } dcache_data_t;
@@ -260,6 +268,7 @@ typedef struct packed {
     logic mem_rd;
     logic [WORD_SIZE-1:0] new_pc;
     logic tkbr;
+    logic branch_completed;
 } core_if_t;
 
 typedef struct packed {
@@ -334,7 +343,7 @@ typedef struct packed {
 
 typedef struct packed {
     memop_data_type_e memop_type;
-    memop_data_type_e memop_flush_type;
+    memop_data_type_e memop_type_flush;
     memop_data_type_e data_type;
     logic [WORD_SIZE-1:0] addr;
     logic [WORD_SIZE-1:0] wr_data;
@@ -365,12 +374,12 @@ typedef struct packed {
 typedef struct packed {
     logic dc_miss;
     logic [ADDR_SIZE-1:0] dc_addr_i;
-    logic dc_store;
-    memop_data_type_e dc_store_data_type;
-    logic [WORD_SIZE-1:0] dc_data_i;
+    logic dc_mmu_writeback;
+    //memop_data_type_e dc_store_data_type;
     logic dc_access;
     logic dc_mmu_data_rdy;
     logic [DCACHE_LANE_SIZE-1:0] dc_data_o;
+    logic [DCACHE_LANE_SIZE-1:0] dc_data_i;
     logic [DCACHE_INDEX_SIZE-1:0] dc_lru_index;
     logic [ADDR_SIZE-1:0] dc_mm_addr_o;
     logic ic_miss;
