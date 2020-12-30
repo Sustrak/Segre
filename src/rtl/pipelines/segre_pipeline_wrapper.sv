@@ -27,15 +27,15 @@ module segre_pipeline_wrapper (
     output logic mmu_writeback_o,
 
     // Bypass logic to decode
-    output bypass_data_t bypass_data_o
+    output bypass_data_t bypass_data_o,
+
+    // Hazard signals
+    output logic tl_hazard_o
 );
 
 mem_pipeline_t mem_data;
 ex_pipeline_t  ex_data;
 rvm_pipeline_t rvm_data;
-
-// Hazard signals
-logic tl_hazard;
 
 // Bypass signals
 logic alu_mem_rf_we;
@@ -112,7 +112,7 @@ segre_mem_pipeline mem_pipeline (
     .mmu_writeback_o       (mmu_writeback_o),
 
     // Hazards
-    .tl_hazard_o           (tl_hazard),
+    .tl_hazard_o           (tl_hazard_o),
 
     // Bypass
     .bypass_b_i            (core_pipeline_i.bypass_b),

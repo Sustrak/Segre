@@ -57,15 +57,16 @@ end
 assign stage_hazards.ifs = 0;
 assign stage_hazards.id  = 0;
 assign stage_hazards.ex  = 0;
-assign stage_hazards.tl  = 0;
 assign stage_hazards.mem = 0;
+
+logic tl_hazard;
 
 segre_if_stage if_stage (
     // Clock and Reset
     .clk_i              (clk_i),
     .rsn_i              (rsn_i),
     // Hazard
-    .hazard_i           (stage_hazards.ifs),
+    .hazard_i           (tl_hazard),
     .hazard_o           (core_hazards.ifs),
     // FSM state
     .fsm_state_i        (fsm_state),
@@ -90,7 +91,7 @@ segre_id_stage id_stage (
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
     // Hazard
-    .hazard_i         (stage_hazards.id),
+    .hazard_i         (tl_hazard),
     // FSM State
     .fsm_state_i      (fsm_state),
     // IF ID interface   
@@ -150,7 +151,9 @@ segre_pipeline_wrapper pipeline_wrapper (
     .mmu_data_o            (core_mmu.dc_data_i),
     .mmu_writeback_o       (core_mmu.dc_mmu_writeback),
     // Bypass
-    .bypass_data_o         (core_id.bypass_data)
+    .bypass_data_o         (core_id.bypass_data),
+    // Hazard
+    .tl_hazard_o           (tl_hazard)
 );
 
 segre_register_file segre_rf (
