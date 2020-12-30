@@ -41,7 +41,8 @@ always_comb begin : data_a
 
         if (src_a_i != 0) begin
             if (src_a_i == dst_id_i) begin
-                if (id_opcode_i == OPCODE_OP || id_opcode_i == OPCODE_OP_IMM || id_opcode_i == OPCODE_LUI || id_opcode_i == OPCODE_AUIPC) begin
+                //if (id_opcode_i == OPCODE_OP || id_opcode_i == OPCODE_OP_IMM || id_opcode_i == OPCODE_LUI || id_opcode_i == OPCODE_AUIPC) begin
+                if (id_opcode_i == OPCODE_OP || id_opcode_i == OPCODE_OP_IMM || id_opcode_i == OPCODE_AUIPC) begin
                     bypass_a_o = BY_EX_PIPE;
                 end
                 else begin
