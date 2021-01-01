@@ -64,6 +64,7 @@ br_src_b_e br_b_mux_sel;
 logic [WORD_SIZE-1:0] imm_a;
 logic [WORD_SIZE-1:0] imm_b;
 logic [REG_SIZE-1:0] rf_src_a;
+logic [REG_SIZE-1:0] rf_src_b;
 logic [REG_SIZE-1:0] rf_raddr_a;
 logic [REG_SIZE-1:0] rf_raddr_b;
 logic [REG_SIZE-1:0] rf_waddr;
@@ -89,6 +90,7 @@ logic register_dependence;
 
 
 assign rf_src_a = (opcode == OPCODE_LUI) ? 0 : rf_raddr_a;
+assign rf_src_b = (id_opcode == OPCODE_LUI) ? 0 : rf_raddr_b;
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
 
@@ -139,7 +141,7 @@ segre_bypass_controller bypass_controller (
 
     // Source registers new instruction
     .src_a_i (rf_src_a),
-    .src_b_i (rf_raddr_b),
+    .src_b_i (rf_src_b),
     .instr_opcode_i (opcode),
     
     // Destination register instruction from ID to PIPELINE
