@@ -89,8 +89,10 @@ bypass_e bypass_b;
 logic register_dependence;
 
 
-assign rf_src_a = (opcode == OPCODE_LUI) ? 0 : rf_raddr_a;
-assign rf_src_b = (id_opcode == OPCODE_LUI) ? 0 : rf_raddr_b;
+assign rf_src_a = (opcode == OPCODE_LUI | opcode == OPCODE_AUIPC) ? 0 : rf_raddr_a;
+assign rf_src_b = (id_opcode == OPCODE_LUI | id_opcode == OPCODE_AUIPC) ? 0 : rf_raddr_b;
+//assign rf_src_a = (opcode == OPCODE_LUI) ? 0 : rf_raddr_a;
+//assign rf_src_b = (id_opcode == OPCODE_LUI) ? 0 : rf_raddr_b;
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
 
