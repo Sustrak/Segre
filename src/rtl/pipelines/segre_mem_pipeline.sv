@@ -168,7 +168,7 @@ always_ff @(posedge clk_i) begin : latch
         tl_data.memop_type     <= WORD;
         tl_data.bypass_b       <= NO_BYPASS;
     end
-    else begin
+    else if (!tl_hazard_o) begin
         tl_data.addr           <= add_result;
         tl_data.rf_we          <= rf_we_i;
         tl_data.rf_waddr       <= rf_waddr_i;
