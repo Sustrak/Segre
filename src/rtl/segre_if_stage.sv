@@ -31,6 +31,7 @@ module segre_if_stage (
 );
 
 logic [ADDR_SIZE-1:0] nxt_pc;
+logic [ADDR_SIZE-1:0] pc;
 
 if_fsm_state_e if_fsm_state;
 if_fsm_state_e if_fsm_nxt_state;
@@ -41,23 +42,24 @@ icache_data_t cache_data;
 logic pipeline_hazard;
 
 assign cache_tag.index      = mmu_lru_index_i;
-assign cache_tag.tag        = pc_o[WORD_SIZE-1:ICACHE_BYTE_SIZE];
+assign cache_tag.tag        = pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
 assign cache_tag.req        = if_fsm_state == IF_IDLE ? 1'b1 : 1'b0;
 assign cache_tag.invalidate = 1'b0;
 assign cache_tag.mmu_data   = mmu_data_i;
 
 assign cache_data.rd_data     = if_fsm_state == IF_IDLE ? 1'b1 : 1'b0;
 assign cache_data.index       = mmu_data_i ? mmu_lru_index_i : cache_tag.addr_index;
-assign cache_data.byte_i      = pc_o[ICACHE_BYTE_SIZE-1:0];
+assign cache_data.byte_i      = pc[ICACHE_BYTE_SIZE-1:0];
 assign cache_data.mmu_wr_data = mmu_wr_data_i;
 assign cache_data.mmu_data    = mmu_data_i;
 
 assign ic_access_o = cache_tag.req & rsn_i;
 assign ic_miss_o   = cache_tag.miss;
 
-assign ic_addr_o   = cache_tag.miss ? pc_o : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 
 assign hazard_o = pipeline_hazard;
+assign pc_o = (pc - 4);
 
 segre_icache_tag icache_tag (
     .clk_i        (clk_i),
@@ -115,9 +117,9 @@ always_comb begin : pc_logic
         if (tkbr_i) begin
             nxt_pc = new_pc_i;
         end else if (if_fsm_state == IF_IC_MISS || if_fsm_state == IF_BRANCH) begin
-            nxt_pc = pc_o;
+            nxt_pc = pc;
         end else begin
-            nxt_pc = pc_o + 4;
+            nxt_pc = pc + 4;
         end
     end
 end
@@ -136,12 +138,16 @@ always_comb begin : pipeline_stop
 end
 
 always_ff @(posedge clk_i) begin
-    if (pipeline_hazard) begin
+    if(!rsn_i) begin
+        instr_o <= NOP;
+        pc <= 0;
+    end
+    else if (pipeline_hazard) begin
         instr_o <= NOP;
     end
     else if (!hazard_i) begin
         instr_o <= cache_data.data_o;
-        pc_o    <= nxt_pc;
+        pc    <= nxt_pc;
     end
     if_fsm_state <= if_fsm_nxt_state;
 end
