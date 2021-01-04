@@ -43,7 +43,7 @@ logic pipeline_hazard;
 
 assign cache_tag.index      = mmu_lru_index_i;
 assign cache_tag.tag        = pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
-assign cache_tag.req        = if_fsm_state == IF_IDLE ? 1'b1 : 1'b0;
+assign cache_tag.req        = (if_fsm_state == IF_IDLE && !hazard_i) ? 1'b1 : 1'b0;
 assign cache_tag.invalidate = 1'b0;
 assign cache_tag.mmu_data   = mmu_data_i;
 

@@ -18,19 +18,19 @@ segre_test:
     li x14, 0xdeadbeef
     li x15, 0x5a5a5a5a
     li x16, 0xcacacaca
-    li x17, 0xcacacaca
-    li x18, 0xdeadbeef
-    li x19, 0x5a5a5a5a
-    li x20, 0xcacacaca
-    li x21, 0xdeadbeef
-    li x22, 0x5a5a5a5a
-    li x23, 0xcacacaca
-    li x24, 0xdeadbeef
-    li x25, 0x5a5a5a5a
-    li x26, 0xcacacaca
-    li x27, 0xdeadbeef
-    li x28, 0x5a5a5a5a
-    li x29, 0xcacacaca
+    li x17, 0xdeadbeef
+    li x18, 0x5a5a5a5a
+    li x19, 0xcacacaca
+    li x20, 0xdeadbeef
+    li x21, 0x5a5a5a5a
+    li x22, 0xcacacaca
+    li x23, 0xdeadbeef
+    li x24, 0x5a5a5a5a
+    li x25, 0xcacacaca
+    li x26, 0xdeadbeef
+    li x27, 0x5a5a5a5a
+    li x28, 0xcacacaca
+    li x29, 0xdeadbeef
     la x30, user_stack_start
     sb x0, 0(x30)
     sb x1, 1(x30)
