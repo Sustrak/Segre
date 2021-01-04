@@ -3,6 +3,14 @@
 _start:
 main:
     .include "segre_test.S"
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
 
 test_done:
     csrw 0xfff, x0
