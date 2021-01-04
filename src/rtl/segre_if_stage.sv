@@ -9,9 +9,6 @@ module segre_if_stage (
     input logic hazard_i,
     output logic hazard_o,
 
-    // FSM state
-    input core_fsm_state_e fsm_state_i,
-
     // IF ID interface
     output logic [WORD_SIZE-1:0] instr_o,
     output logic [ADDR_SIZE-1:0] pc_o,

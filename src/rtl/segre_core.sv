@@ -22,54 +22,19 @@ core_pipeline_t core_pipeline;
 rf_wdata_t rf_wdata;
 decode_rf_t decode_rf;
 core_mmu_t core_mmu;
-core_hazards_t core_hazards;
-core_stage_hazards_t stage_hazards;
+core_hazards_t input_hazards;
+core_hazards_t output_hazards;
 
-
-logic controller_hazard;
-
-core_fsm_state_e fsm_state;
-
-//assign controller_hazard = stage_hazards.ifs | stage_hazards.id |
-//                           stage_hazards.ex  | stage_hazards.tl | 
-//                           stage_hazards.mem;
-
-// HAZARD CONTROL
-/*
-always_comb begin : hazard_control
-    if (core_hazards.tl) begin
-        stage_hazards.ifs = 1;
-        stage_hazards.id  = 1;
-        stage_hazards.ex  = 1;
-    end
-    else if(core_hazards.ifs) begin
-        stage_hazards.ifs = 1;
-    end
-    else begin
-        stage_hazards.ifs = 0;
-        stage_hazards.id  = 0;
-        stage_hazards.ex  = 0;
-        stage_hazards.tl  = 0;
-        stage_hazards.mem = 0;
-    end
-end
-*/
-assign stage_hazards.ifs = 0;
-assign stage_hazards.id  = 0;
-assign stage_hazards.ex  = 0;
-assign stage_hazards.mem = 0;
-
-logic tl_hazard;
+assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
+assign input_hazards.id  = output_hazards.pipeline;
 
 segre_if_stage if_stage (
     // Clock and Reset
     .clk_i              (clk_i),
     .rsn_i              (rsn_i),
     // Hazard
-    .hazard_i           (tl_hazard),
-    .hazard_o           (core_hazards.ifs),
-    // FSM state
-    .fsm_state_i        (fsm_state),
+    .hazard_i           (input_hazards.ifs),
+    .hazard_o           (output_hazards.ifs),
     // IF ID interface
     .instr_o            (core_id.instr),
     .pc_o               (core_id.pc),
@@ -91,9 +56,8 @@ segre_id_stage id_stage (
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
     // Hazard
-    .hazard_i         (tl_hazard),
-    // FSM State
-    .fsm_state_i      (fsm_state),
+    .hazard_i         (input_hazards.id),
+    .hazard_o         (output_hazards.id),
     // IF ID interface   
     .instr_i          (core_id.instr),
     .pc_i             (core_id.pc),
@@ -153,7 +117,7 @@ segre_pipeline_wrapper pipeline_wrapper (
     // Bypass
     .bypass_data_o         (core_id.bypass_data),
     // Hazard
-    .tl_hazard_o           (tl_hazard)
+    .tl_hazard_o           (output_hazards.pipeline)
 );
 
 segre_register_file segre_rf (
@@ -166,16 +130,6 @@ segre_register_file segre_rf (
     .raddr_b_i   (decode_rf.raddr_b),
     .data_b_o    (decode_rf.data_b),
     .wdata_i     (rf_wdata)
-);
-
-segre_controller controller (
-    // Clock and Reset
-    .clk_i (clk_i),
-    .rsn_i (rsn_i),
-    .hazard_i (1'b0),
-
-    // State
-    .state_o (fsm_state)
 );
 
 segre_mmu mmu (

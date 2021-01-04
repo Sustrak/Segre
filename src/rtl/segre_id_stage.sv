@@ -7,9 +7,7 @@ module segre_id_stage (
 
     // Hazard
     input logic hazard_i,
-
-    // FSM State
-    input core_fsm_state_e fsm_state_i,
+    output logic hazard_o,
 
     // IF and ID stage
     input logic [WORD_SIZE-1:0] instr_i,
@@ -86,15 +84,14 @@ logic [WORD_SIZE-1:0] data_b;
 bypass_e bypass_a;
 bypass_e bypass_b;
 
-logic register_dependence;
-
+logic instr_dependence, war_dependence, waw_dependence;
 
 assign rf_src_a = (opcode == OPCODE_LUI | opcode == OPCODE_AUIPC) ? 0 : rf_raddr_a;
 assign rf_src_b = (id_opcode == OPCODE_LUI | id_opcode == OPCODE_AUIPC) ? 0 : rf_raddr_b;
-//assign rf_src_a = (opcode == OPCODE_LUI) ? 0 : rf_raddr_a;
-//assign rf_src_b = (id_opcode == OPCODE_LUI) ? 0 : rf_raddr_b;
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
+assign instr_dependence = war_dependence | waw_dependence;
+assign hazard_o = instr_dependence;
 
 segre_decode decode (
     // Clock and Reset
@@ -138,27 +135,31 @@ segre_decode decode (
 
 segre_bypass_controller bypass_controller (
     // Clock and Reset
-    .clk_i (clk_i),
-    .rsn_i (rsn_i),
+    .clk_i            (clk_i),
+    .rsn_i            (rsn_i),
 
     // Source registers new instruction
-    .src_a_i (rf_src_a),
-    .src_b_i (rf_src_b),
-    .instr_opcode_i (opcode),
+    .src_a_i          (rf_src_a),
+    .src_b_i          (rf_src_b),
+    .src_dest_i       (rf_waddr),
+    .instr_opcode_i   (opcode),
+    .pipeline_i       (pipeline),
     
     // Destination register instruction from ID to PIPELINE
-    .dst_id_i (rf_waddr_o),
-    .id_opcode_i (id_opcode),
+    .dst_id_i         (rf_waddr_o),
+    .id_opcode_i      (id_opcode),
+    .id_pipeline_i    (pipeline_o),
     
     // Pipeline info
-    .pipeline_data_i (bypass_data_i),
+    .pipeline_data_i  (bypass_data_i),
         
     // Output mux selection
-    .bypass_a_o (bypass_a),
-    .bypass_b_o (bypass_b),
+    .bypass_a_o       (bypass_a),
+    .bypass_b_o       (bypass_b),
     
     // Dependence
-    .dependence_o (register_dependence)
+    .war_dependence_o (war_dependence),
+    .waw_dependence_o (waw_dependence)
 );
 
 // For the moment imm_a will always be 0
@@ -226,7 +227,12 @@ always_comb begin : bypass_data
 end
 
 always_ff @(posedge clk_i) begin
-    if (!hazard_i) begin
+    if (instr_dependence) begin
+        rf_we_o <= 0;
+        memop_wr_o <= 0;
+        memop_rd_o <= 0;
+    end
+    else if (!hazard_i) begin
         alu_src_a_o      <= alu_src_a;
         alu_src_b_o      <= alu_src_b;
         rf_we_o          <= instr_i == NOP ? 1'b0 : rf_we;

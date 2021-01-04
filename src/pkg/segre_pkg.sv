@@ -124,15 +124,6 @@ typedef enum logic {
     IMM_A_ZERO
 } alu_imm_a_e;
 
-typedef enum logic [2:0] {
-    IF_STATE = 0,
-    ID_STATE,
-    EX_STATE,
-    TL_STATE,
-    MEM_STATE,
-    WB_STATE
-} core_fsm_state_e;
-
 typedef enum logic [1:0] {
     BYTE,
     HALF,
@@ -375,7 +366,6 @@ typedef struct packed {
     logic dc_miss;
     logic [ADDR_SIZE-1:0] dc_addr_i;
     logic dc_mmu_writeback;
-    //memop_data_type_e dc_store_data_type;
     logic dc_access;
     logic dc_mmu_data_rdy;
     logic [DCACHE_LANE_SIZE-1:0] dc_data_o;
@@ -393,18 +383,8 @@ typedef struct packed {
 typedef struct packed {
     logic ifs;
     logic id;
-    logic ex;
-    logic tl;
-    logic mem;
+    logic pipeline;
 } core_hazards_t;
-
-typedef struct packed {
-    logic ifs;
-    logic id;
-    logic ex;
-    logic tl;
-    logic mem;
-} core_stage_hazards_t;
 
 typedef struct packed {
     logic ex_we;
