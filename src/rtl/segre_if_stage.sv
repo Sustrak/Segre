@@ -131,6 +131,7 @@ always_comb begin : pipeline_stop
     else begin
         unique case (if_fsm_state)
             IF_IC_MISS: pipeline_hazard = 1;
+            IF_BRANCH : pipeline_hazard = 1;
             IF_IDLE:    pipeline_hazard = cache_tag.miss;
             default:;
         endcase
@@ -144,10 +145,13 @@ always_ff @(posedge clk_i) begin
     end
     else if (pipeline_hazard) begin
         instr_o <= NOP;
+        if (tkbr_i) begin
+            pc <= nxt_pc;
+        end
     end
     else if (!hazard_i) begin
         instr_o <= cache_data.data_o;
-        pc    <= nxt_pc;
+        pc      <= nxt_pc;
     end
     if_fsm_state <= if_fsm_nxt_state;
 end
