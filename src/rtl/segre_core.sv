@@ -5,201 +5,119 @@ module segre_core (
     input logic clk_i,
     input logic rsn_i,
 
-    // Memory signals
-    input  logic [WORD_SIZE-1:0] mem_rd_data_i,
-    output logic [WORD_SIZE-1:0] mem_wr_data_o,
-    output logic [ADDR_SIZE-1:0] addr_o,
-    output logic mem_rd_o,
-    output logic mem_wr_o,
-    output memop_data_type_e mem_data_type_o
+    // Main memory signals
+    input  logic mm_data_rdy_i,
+    input  logic [DCACHE_LANE_SIZE-1:0] mm_rd_data_i,
+    output logic [DCACHE_LANE_SIZE-1:0] mm_wr_data_o,
+    output logic [ADDR_SIZE-1:0] mm_addr_o,
+    output logic [ADDR_SIZE-1:0] mm_wr_addr_o,
+    output logic mm_rd_o,
+    output logic mm_wr_o
+    //output memop_data_type_e mm_wr_data_type_o
 );
-//IF STAGE
-logic [WORD_SIZE-1:0] if_addr;
-logic if_mem_rd;
-// ID STAGE
-logic [WORD_SIZE-1:0] id_instr;
-// REGISTER FILE
-logic [REG_SIZE-1:0] rf_raddr_a;
-logic [REG_SIZE-1:0] rf_raddr_b;
-logic [WORD_SIZE-1:0] rf_data_a;
-logic [WORD_SIZE-1:0] rf_data_b;
-// FSM
-fsm_state_e fsm_state;
-// EX STAGE
-memop_data_type_e ex_memop_type;
-logic [WORD_SIZE-1:0] ex_alu_src_a;
-logic [WORD_SIZE-1:0] ex_alu_src_b;
-logic [WORD_SIZE-1:0] ex_rf_st_data;
-logic ex_rf_we;
-logic [REG_SIZE-1:0] ex_rf_waddr;
-alu_opcode_e ex_alu_opcode;
-logic ex_memop_rd;
-logic ex_memop_wr;
-logic ex_memop_sign_ext;
-logic [WORD_SIZE-1:0] ex_br_src_a;
-logic [WORD_SIZE-1:0] ex_br_src_b;
-// MEM STAGE
-memop_data_type_e mem_memop_type;
-memop_data_type_e mem_data_type;
-logic [WORD_SIZE-1:0] mem_alu_res;
-logic [WORD_SIZE-1:0] mem_addr;
-logic [WORD_SIZE-1:0] mem_wr_data;
-logic [WORD_SIZE-1:0] mem_rf_st_data;
-logic [REG_SIZE-1:0]  mem_rf_waddr;
-logic mem_memop_rd;
-logic mem_memop_wr;
-logic mem_memop_sign_ext;
-logic mem_rf_we;
-logic mem_rd;
-logic mem_wr;
-logic mem_tkbr;
-logic [WORD_SIZE-1:0] mem_new_pc;
-// WB STAGE
-logic [WORD_SIZE-1:0] wb_res;
-logic [REG_SIZE-1:0] wb_rf_waddr;
-logic wb_rf_we;
-logic [WORD_SIZE-1:0] wb_new_pc;
-logic wb_tkbr;
 
-assign addr_o          = fsm_state == MEM_STATE ? mem_addr       : if_addr;
-assign mem_rd_o        = fsm_state == MEM_STATE ? mem_rd         : if_mem_rd;
-assign mem_wr_o        = fsm_state == MEM_STATE ? mem_wr         : 1'b0;
-assign mem_data_type_o = fsm_state == MEM_STATE ? mem_data_type  : WORD;
-assign mem_wr_data_o   = mem_wr_data;
+core_if_t core_if;
+core_id_t core_id;
+core_pipeline_t core_pipeline;
+rf_wdata_t rf_wdata;
+decode_rf_t decode_rf;
+core_mmu_t core_mmu;
+core_hazards_t input_hazards;
+core_hazards_t output_hazards;
+
+assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
+assign input_hazards.id  = output_hazards.pipeline;
 
 segre_if_stage if_stage (
     // Clock and Reset
-    .clk_i (clk_i),
-    .rsn_i (rsn_i),
-
-    // Memory
-    .instr_i     (mem_rd_data_i),
-    .pc_o        (if_addr),
-    .mem_rd_o    (if_mem_rd),
-
-    // FSM state
-    .fsm_state_i (fsm_state),
-
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
+    // Hazard
+    .hazard_i           (input_hazards.ifs),
+    .hazard_o           (output_hazards.ifs),
     // IF ID interface
-    .instr_o     (id_instr),
-
+    .instr_o            (core_id.instr),
+    .pc_o               (core_id.pc),
     // WB interface
-    .tkbr_i      (wb_tkbr),
-    .new_pc_i    (wb_new_pc)
+    .tkbr_i             (core_if.tkbr),
+    .new_pc_i           (core_if.new_pc),
+    .branch_completed_i (core_if.branch_completed),
+    // MMU interface
+    .mmu_data_i         (core_mmu.ic_mmu_data_rdy),
+    .mmu_wr_data_i      (core_mmu.ic_data),
+    .mmu_lru_index_i    (core_mmu.ic_lru_index),
+    .ic_miss_o          (core_mmu.ic_miss),
+    .ic_addr_o          (core_mmu.ic_addr_i),
+    .ic_access_o        (core_mmu.ic_access)
 );
 
 segre_id_stage id_stage (
     // Clock and Reset
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
-
-    // FSM State
-    .fsm_state_i      (fsm_state),
-
-    // IF ID interface
-    .instr_i          (id_instr),
-    .pc_i             (if_addr),
-
+    // Hazard
+    .hazard_i         (input_hazards.id),
+    .hazard_o         (output_hazards.id),
+    // IF ID interface   
+    .instr_i          (core_id.instr),
+    .pc_i             (core_id.pc),
     // Register file read operands
-    .rf_raddr_a_o     (rf_raddr_a),
-    .rf_raddr_b_o     (rf_raddr_b),
-    .rf_data_a_i      (rf_data_a),
-    .rf_data_b_i      (rf_data_b),
-
-    // ID EX interface
+    .rf_raddr_a_o     (decode_rf.raddr_a),
+    .rf_raddr_b_o     (decode_rf.raddr_b),
+    .rf_data_a_i      (decode_rf.data_a),
+    .rf_data_b_i      (decode_rf.data_b),
+    // Bypass
+    .bypass_data_i    (core_id.bypass_data),
+    // ID EX interface   
     // ALU
-    .alu_opcode_o     (ex_alu_opcode),
-    .alu_src_a_o      (ex_alu_src_a),
-    .alu_src_b_o      (ex_alu_src_b),
+    .alu_opcode_o     (core_pipeline.alu_opcode),
+    .alu_src_a_o      (core_pipeline.alu_src_a),
+    .alu_src_b_o      (core_pipeline.alu_src_b),
     // Register file
-    .rf_we_o          (ex_rf_we),
-    .rf_waddr_o       (ex_rf_waddr),
+    .rf_we_o          (core_pipeline.rf_we),
+    .rf_waddr_o       (core_pipeline.rf_waddr),
     // Memop
-    .memop_type_o      (ex_memop_type),
-    .memop_rd_o        (ex_memop_rd),
-    .memop_wr_o        (ex_memop_wr),
-    .memop_sign_ext_o  (ex_memop_sign_ext),
-    .memop_rf_data_o   (ex_rf_st_data),
+    .memop_type_o     (core_pipeline.memop_type),
+    .memop_rd_o       (core_pipeline.memop_rd),
+    .memop_wr_o       (core_pipeline.memop_wr),
+    .memop_sign_ext_o (core_pipeline.memop_sign_ext),
+    .memop_rf_data_o  (core_pipeline.rf_st_data),
     // Branch | Jump
-    .br_src_a_o        (ex_br_src_a),
-    .br_src_b_o        (ex_br_src_b)
+    .br_src_a_o       (core_pipeline.br_src_a),
+    .br_src_b_o       (core_pipeline.br_src_b),
+    // Pipeline
+    .pipeline_o       (core_pipeline.pipeline),
+    // Bypass
+    .bypass_a_o       (core_pipeline.bypass_a),
+    .bypass_b_o       (core_pipeline.bypass_b)
 );
 
-segre_ex_stage ex_stage (
-    // Clock and Reset
-    .clk_i            (clk_i),
-    .rsn_i            (rsn_i),
-
-    // ID EX interface
-    // ALU
-    .alu_opcode_i     (ex_alu_opcode),
-    .alu_src_a_i      (ex_alu_src_a),
-    .alu_src_b_i      (ex_alu_src_b),
-    // Register file
-    .rf_we_i          (ex_rf_we),
-    .rf_waddr_i       (ex_rf_waddr),
-    .rf_st_data_i     (ex_rf_st_data),
-    // Memop
-    .memop_type_i      (ex_memop_type),
-    .memop_rd_i        (ex_memop_rd),
-    .memop_wr_i        (ex_memop_wr),
-    .memop_sign_ext_i  (ex_memop_sign_ext),
-    // Branch | Jump
-    .br_src_a_i        (ex_br_src_a),
-    .br_src_b_i        (ex_br_src_b),
-
-    // EX MEM interface
-    // ALU
-    .alu_res_o        (mem_alu_res),
-    // Register file
-    .rf_we_o          (mem_rf_we),
-    .rf_waddr_o       (mem_rf_waddr),
-    .rf_st_data_o     (mem_rf_st_data),
-    // Memop
-    .memop_type_o     (mem_memop_type),
-    .memop_rd_o       (mem_memop_rd),
-    .memop_wr_o       (mem_memop_wr),
-    .memop_sign_ext_o (mem_memop_sign_ext),
-    // Branch | Jal
-    .tkbr_o           (mem_tkbr),
-    .new_pc_o         (mem_new_pc)
-);
-
-segre_mem_stage mem_stage (
-    // Clock and Reset
-    .clk_i            (clk_i),
-    .rsn_i            (rsn_i),
-
-    // Memory
-    .data_i           (mem_rd_data_i),
-    .data_o           (mem_wr_data),
-    .addr_o           (mem_addr),
-    .memop_rd_o       (mem_rd),
-    .memop_wr_o       (mem_wr),
-    .memop_type_o     (mem_data_type),
-
-    // EX MEM interface
-    // ALU
-    .alu_res_i        (mem_alu_res),
-    // Register file
-    .rf_we_i          (mem_rf_we),
-    .rf_waddr_i       (mem_rf_waddr),
-    .rf_st_data_i     (mem_rf_st_data),
-    // Memop
-    .memop_type_i     (mem_memop_type),
-    .memop_rd_i       (mem_memop_rd),
-    .memop_wr_i       (mem_memop_wr),
-    .memop_sign_ext_i (mem_memop_sign_ext),
-    // Branch | Jal
-    .tkbr_i           (mem_tkbr),
-    .new_pc_i         (mem_new_pc),
-
-    // MEM WB intereface
-    .op_res_o         (wb_res),
-    .rf_we_o          (wb_rf_we),
-    .rf_waddr_o       (wb_rf_waddr),
-    .tkbr_o           (wb_tkbr),
-    .new_pc_o         (wb_new_pc)
+segre_pipeline_wrapper pipeline_wrapper (
+    // Clock & Reset
+    .clk_i                 (clk_i),
+    .rsn_i                 (rsn_i),
+    // Decode information
+    .core_pipeline_i       (core_pipeline),
+    // Register File
+    .rf_data_o             (rf_wdata),
+    // Branch & Jump
+    .branch_completed_o    (core_if.branch_completed),
+    .tkbr_o                (core_if.tkbr),
+    .new_pc_o              (core_if.new_pc),
+    // MMU
+    .mmu_data_rdy_i        (core_mmu.dc_mmu_data_rdy),
+    .mmu_addr_i            (core_mmu.dc_mm_addr_o),
+    .mmu_data_i            (core_mmu.dc_data_o),
+    .mmu_lru_index_i       (core_mmu.dc_lru_index),
+    .mmu_miss_o            (core_mmu.dc_miss),
+    .mmu_addr_o            (core_mmu.dc_addr_i),
+    .mmu_cache_access_o    (core_mmu.dc_access),
+    .mmu_data_o            (core_mmu.dc_data_i),
+    .mmu_writeback_o       (core_mmu.dc_mmu_writeback),
+    // Bypass
+    .bypass_data_o         (core_id.bypass_data),
+    // Hazard
+    .tl_hazard_o           (output_hazards.pipeline)
 );
 
 segre_register_file segre_rf (
@@ -207,22 +125,42 @@ segre_register_file segre_rf (
     .clk_i       (clk_i),
     .rsn_i       (rsn_i),
 
-    .we_i        (wb_rf_we),
-    .raddr_a_i   (rf_raddr_a),
-    .data_a_o    (rf_data_a),
-    .raddr_b_i   (rf_raddr_b),
-    .data_b_o    (rf_data_b),
-    .waddr_i     (wb_rf_waddr),
-    .data_w_i    (wb_res)
+    .raddr_a_i   (decode_rf.raddr_a),
+    .data_a_o    (decode_rf.data_a),
+    .raddr_b_i   (decode_rf.raddr_b),
+    .data_b_o    (decode_rf.data_b),
+    .wdata_i     (rf_wdata)
 );
 
-segre_controller controller (
-    // Clock and Reset
-    .clk_i (clk_i),
-    .rsn_i (rsn_i),
-
-    // State
-    .state_o (fsm_state)
+segre_mmu mmu (
+    .clk_i                (clk_i),
+    .rsn_i                (rsn_i),
+    // Data chache
+    .dc_miss_i            (core_mmu.dc_miss),
+    .dc_addr_i            (core_mmu.dc_addr_i),
+    .dc_writeback_i       (core_mmu.dc_mmu_writeback),
+    .dc_data_i            (core_mmu.dc_data_i),
+    .dc_access_i          (core_mmu.dc_access),
+    .dc_mmu_data_rdy_o    (core_mmu.dc_mmu_data_rdy),
+    .dc_data_o            (core_mmu.dc_data_o),
+    .dc_lru_index_o       (core_mmu.dc_lru_index),
+    .dc_mm_addr_o         (core_mmu.dc_mm_addr_o),
+    // Instruction cache
+    .ic_miss_i            (core_mmu.ic_miss),
+    .ic_addr_i            (core_mmu.ic_addr_i),
+    .ic_access_i          (core_mmu.ic_access),
+    .ic_mmu_data_rdy_o    (core_mmu.ic_mmu_data_rdy),
+    .ic_data_o            (core_mmu.ic_data),
+    .ic_lru_index_o       (core_mmu.ic_lru_index),
+    // Main memory
+    .mm_data_rdy_i        (mm_data_rdy_i),
+    .mm_data_i            (mm_rd_data_i), // If $D and $I have different LANE_SIZE we need to change this
+    .mm_rd_req_o          (mm_rd_o),
+    .mm_wr_req_o          (mm_wr_o),
+    //.mm_wr_data_type_o    (mm_wr_data_type_o),
+    .mm_addr_o            (mm_addr_o),
+    .mm_wr_addr_o         (mm_wr_addr_o),
+    .mm_data_o            (mm_wr_data_o)
 );
 
 endmodule : segre_core

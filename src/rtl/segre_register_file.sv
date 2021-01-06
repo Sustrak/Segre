@@ -5,24 +5,27 @@ module segre_register_file (
     input  logic clk_i,
     input  logic rsn_i,
 
-    input  logic we_i,
     input  logic [REG_SIZE-1:0]  raddr_a_i,
     output logic [WORD_SIZE-1:0] data_a_o,
     input  logic [REG_SIZE-1:0]  raddr_b_i,
     output logic [WORD_SIZE-1:0] data_b_o,
-    input  logic [REG_SIZE-1:0]  waddr_i,
-    input logic [WORD_SIZE-1:0] data_w_i
+
+    input rf_wdata_t wdata_i
 );
 
 localparam NUM_REGS = 2**REG_SIZE;
 
 logic [WORD_SIZE-1:0][NUM_REGS-1:0] rf_reg;
 logic [WORD_SIZE-1:0][NUM_REGS-1:0] rf_reg_aux;
-logic [NUM_REGS-1:0] write_enable;
+logic [NUM_REGS-1:0] ex_write_enable;
+logic [NUM_REGS-1:0] mem_write_enable;
+logic [NUM_REGS-1:0] rvm_write_enable;
 
 always_comb begin
     for (int i = 0; i < NUM_REGS; i++) begin
-        write_enable[i] = (waddr_i == 5'(i)) ? we_i : 1'b0;
+        ex_write_enable[i]  = (wdata_i.ex_waddr == 5'(i)) ? wdata_i.ex_we : 1'b0;
+        mem_write_enable[i] = (wdata_i.mem_waddr == 5'(i)) ? wdata_i.mem_we : 1'b0;
+        rvm_write_enable[i] = (wdata_i.rvm_waddr == 5'(i)) ? wdata_i.rvm_we : 1'b0;
     end
 end
 
@@ -32,8 +35,12 @@ always_ff @(posedge clk_i) begin
     end
     else begin
         for (int j = 1; j < NUM_REGS; j++) begin
-            if (write_enable[j])
-                rf_reg_aux[j] <= data_w_i;
+            if (ex_write_enable[j])
+                rf_reg_aux[j] <= wdata_i.ex_data;
+            else if (mem_write_enable[j])
+                rf_reg_aux[j] <= wdata_i.mem_data;
+            else if (rvm_write_enable[j])
+                rf_reg_aux[j] <= wdata_i.rvm_data;
         end
     end
 end

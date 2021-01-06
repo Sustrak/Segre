@@ -1,6 +1,6 @@
 segre_test:
     jal x1, jmp_1
-    li x0, 0xcacacaca
+    li x1, 0xcacacaca
 jmp_1:
     jal x2, jmp_2
     li x2, 0xcacacaca

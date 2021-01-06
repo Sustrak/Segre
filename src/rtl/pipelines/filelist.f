@@ -1,0 +1,8 @@
+segre_alu.sv
+segre_tkbr.sv
+segre_ex_stage.sv
+segre_tl_stage.sv
+segre_mem_stage.sv
+segre_mem_pipeline.sv
+segre_rvm_pipeline.sv
+segre_pipeline_wrapper.sv

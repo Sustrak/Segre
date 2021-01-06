@@ -37,25 +37,29 @@ module top_tb;
     assign segre_core_if.rsn = rsn;
 
     segre_core dut(
-        .clk_i           (segre_core_if.clk),
-        .rsn_i           (segre_core_if.rsn),
-        .mem_rd_data_i   (segre_core_if.mem_rd_data),
-        .mem_wr_data_o   (segre_core_if.mem_wr_data),
-        .addr_o          (segre_core_if.addr),
-        .mem_rd_o        (segre_core_if.mem_rd),
-        .mem_wr_o        (segre_core_if.mem_wr),
-        .mem_data_type_o (segre_core_if.mem_data_type)
+        .clk_i              (segre_core_if.clk),
+        .rsn_i              (segre_core_if.rsn),
+        .mm_data_rdy_i      (segre_core_if.mm_data_rdy),
+        .mm_rd_data_i       (segre_core_if.mm_rd_data),
+        .mm_wr_data_o       (segre_core_if.mm_wr_data),
+        .mm_addr_o          (segre_core_if.mm_addr),
+        .mm_wr_addr_o       (segre_core_if.mm_wr_addr),
+        .mm_rd_o            (segre_core_if.mm_rd),
+        .mm_wr_o            (segre_core_if.mm_wr)
+        //.mm_wr_data_type_o  (segre_core_if.mm_data_type)
     );
 
     memory tb_mem (
         .clk_i       (clk_mem),
         .rsn_i       (rsn),
-        .data_i      (segre_core_if.mem_wr_data),
-        .data_o      (segre_core_if.mem_rd_data),
-        .addr_i      (segre_core_if.addr),
-        .rd_i        (segre_core_if.mem_rd),
-        .wr_i        (segre_core_if.mem_wr),
-        .data_type_i (segre_core_if.mem_data_type)
+        .data_rdy_o  (segre_core_if.mm_data_rdy),
+        .data_i      (segre_core_if.mm_wr_data),
+        .data_o      (segre_core_if.mm_rd_data),
+        .addr_i      (segre_core_if.mm_addr),
+        .wr_addr_i   (segre_core_if.mm_wr_addr),
+        .rd_i        (segre_core_if.mm_rd),
+        .wr_i        (segre_core_if.mm_wr)
+        //.data_type_i (segre_core_if.mm_data_type)
     );
 
     initial begin
@@ -76,7 +80,7 @@ module top_tb;
     end
 
     always #10 clk = ~clk;
-    always #5  clk_mem = ~clk_mem;
+    always #10 clk_mem = ~clk_mem;
 
     initial begin
         repeat(2) @(posedge clk);
@@ -101,7 +105,7 @@ module top_tb;
     endtask
 
     function bit keep_running_tb();
-        if (segre_core_if.addr < tb_mem.DATA_REGION && segre_core_if.mem_rd_data == 32'hfff01073) begin
+        if (dut.if_stage.cache_data.data_o == 32'hfff01073) begin
             return 0;
         end
 
@@ -156,14 +160,11 @@ module top_tb;
         forever begin
             static string instr_decoded;
             @(posedge clk);
-            if (segre_core_if.mem_rd) begin
-                if (segre_core_if.addr < tb_mem.DATA_REGION) begin
-                    $display("DATA TO SEND LIBDECODER: %0d", segre_core_if.mem_rd_data);
+            if (dut.if_stage.cache_tag.hit) begin
 `ifndef USE_MODELSIM
-                    instr_decoded = decode_instruction(int'(segre_core_if.mem_rd_data));
+                instr_decoded = decode_instruction(int'(dut.if_stage.cache_data.data_o));
 `endif
-                    `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", segre_core_if.addr, instr_decoded, segre_core_if.mem_rd_data), UVM_LOW)
-                end
+                `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", dut.if_stage.pc_o, instr_decoded, dut.if_stage.cache_data.data_o), UVM_LOW)
             end
         end
         `uvm_fatal("top_tb", "Shouldn't have reach this part of the monitor_tb")
