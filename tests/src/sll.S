@@ -31,7 +31,6 @@ segre_test:
     li x30, 0xbeefbeef
     li x31, 0xbeefbeef
     sll x0, x1, x1
-    sll x2, x2, x2
     sll x3, x3, x1
     sll x4, x4, x2
     sll x5, x5, x1
