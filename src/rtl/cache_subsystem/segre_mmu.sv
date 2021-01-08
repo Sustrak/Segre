@@ -62,6 +62,9 @@ logic [DCACHE_INDEX_SIZE-1:0] ic_addr_index;
 logic [IC_LRU_WIDTH-1:0] ic_lru_current, ic_lru_updated;
 logic [ICACHE_NUM_LANES-1:0] ic_lru_access, ic_lru_pre, ic_lru_post;
 
+//Virtual Memory
+logic [31:0] satp; //[19:0]->Displacement for VA to PA translation
+
 // Main memory
 logic mm_rd_req;
 logic [ADDR_SIZE-1:0] mm_addr;
@@ -115,6 +118,12 @@ mor1kx_cache_lru #(.NUMWAYS(ICACHE_NUM_LANES)) ic_lru_mor1kx (
     .lru_pre  (ic_lru_pre),
     .lru_post (ic_lru_post)
 );
+
+always_ff @(posedge clk_i) begin : vmem_latch
+    if (!rsn_i) begin
+        satp <= 32'h00008000;
+    end
+end
 
 always_comb begin : dc_lru
     if (!rsn_i) begin

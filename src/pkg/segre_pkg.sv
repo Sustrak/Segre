@@ -130,6 +130,13 @@ typedef enum logic [1:0] {
     WORD
 } memop_data_type_e;
 
+typedef enum logic [1:0] {
+    R, //READ
+    W, //WRITE
+    RW, //READWRITE
+    EX //EXECUTION
+} page_protection_e;
+
 typedef enum logic [2:0] {
     DCACHE_REQ,
     DCACHE_WAIT,
