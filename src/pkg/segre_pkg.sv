@@ -196,6 +196,19 @@ typedef struct packed {
 } bypass_data_t;
 
 typedef struct packed {
+    logic invalidate, 
+    logic req,
+    logic new_entry,
+    page_protection_e access_type, 
+    logic [VADDR_SIZE-1:0] virtual_addr,
+    logic [PADDR_SIZE-1:0] physical_addr_i, 
+    logic pp_exception, 
+    logic hit,
+    logic miss,
+    logic [PADDR_SIZE-1:0] physical_addr_o
+} tlb_st_t;
+
+typedef struct packed {
     logic req;
     logic mmu_data;
     logic [DCACHE_INDEX_SIZE-1:0] index;

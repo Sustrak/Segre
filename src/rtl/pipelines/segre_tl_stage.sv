@@ -51,11 +51,15 @@ module segre_tl_stage (
     //output logic [WORD_SIZE-1:0] mmu_data_o,
 
     // Hazard
-    output logic pipeline_hazard_o
+    output logic pipeline_hazard_o,
+
+    //Privilege mode
+    input logic rm4_i
 );
 
 dcache_tag_t cache_tag;
 store_buffer_t sb;
+tlb_st_t tlb_st;
 
 tl_fsm_state_e fsm_state;
 tl_fsm_state_e fsm_nxt_state;
@@ -66,6 +70,29 @@ logic valid_tag_in_flight_next;
 logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_reg;
 logic valid_tag_in_flight_reg;
 logic miss_in_fligt_miss;
+
+//TLB
+assign tlb_st.access_type = memop_wr_i ? W : R;
+
+always_comb begin : tlb_vaddr_selection
+    if (sb.flush_chance & sb.data_valid) tlb_st.virtual_addr = sb.addr_o [WORD_SIZE-1:12];
+    else if (mmu_data_rdy_i)             tlb_st.virtual_addr = mmu_addr_i[WORD_SIZE-1:12];
+    else                                 tlb_st.virtual_addr = addr_i [WORD_SIZE-1:12];
+end
+
+always_comb begin : tlb_request
+    if(rm4_i) begin
+        tlb_st.req <= 0;
+    end
+    else begin
+        if (fsm_state == TL_IDLE | fsm_state == MISS_IN_FLIGHT)) begin
+            tlb_st.req <= (memop_rd_i | memop_wr_i);
+        end
+        else begin
+            tlb_st.req <= 0;
+        end
+    end
+end
 
 assign cache_tag.req        = (fsm_state == TL_IDLE | fsm_state == MISS_IN_FLIGHT) ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
@@ -109,6 +136,21 @@ assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIG
 assign sb.addr_i            = addr_i;
 assign sb.data_i            = rf_st_data_i;
 assign sb.memop_data_type_i = memop_type_i;
+
+segre_tlb dtlb (
+    .clk_i           (clk_i),
+    .rsn_i           (rsn_i),
+    .invalidate_i    (tlb_st.invalidate),
+    .req_i           (tlb_st.req),
+    .new_entry_i     (tlb_st.new_entry),
+    .access_type_i   (tlb_st.access_type),
+    .vitual_addr_i   (tlb_st.virtual_addr),
+    .physical_addr_i (tlb_st.physical_addr_i),
+    .pp_exception_o  (tlb_st.pp_exception),
+    .hit_o           (tlb_st.hit),
+    .miss_o          (tlb_st.miss),
+    .physical_addr_o (tlb_st.physical_addr_o)
+);
 
 segre_dcache_tag dcache_tag (
     .clk_i        (clk_i),

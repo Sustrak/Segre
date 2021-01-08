@@ -25,8 +25,18 @@ core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
 
+//Exceptions / Privilege
+logic rm4; //0->User, 1->Supervisor
+
 assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
 assign input_hazards.id  = output_hazards.pipeline;
+
+always_ff @(posedge clk_i) begin : ex_priv_latch
+    if(!rsn_i) begin
+        //TODO: we should boot in supervisor mode, change it later
+        rm4 <= 0;
+    end
+end
 
 segre_if_stage if_stage (
     // Clock and Reset
@@ -48,7 +58,8 @@ segre_if_stage if_stage (
     .mmu_lru_index_i    (core_mmu.ic_lru_index),
     .ic_miss_o          (core_mmu.ic_miss),
     .ic_addr_o          (core_mmu.ic_addr_i),
-    .ic_access_o        (core_mmu.ic_access)
+    .ic_access_o        (core_mmu.ic_access),
+    .rm4_i              (rm4)
 );
 
 segre_id_stage id_stage (
@@ -117,7 +128,9 @@ segre_pipeline_wrapper pipeline_wrapper (
     // Bypass
     .bypass_data_o         (core_id.bypass_data),
     // Hazard
-    .tl_hazard_o           (output_hazards.pipeline)
+    .tl_hazard_o           (output_hazards.pipeline),
+    //Privilege mode
+    .rm4_i                 (rm4)
 );
 
 segre_register_file segre_rf (
