@@ -53,8 +53,10 @@ module segre_tl_stage (
     // Hazard
     output logic pipeline_hazard_o,
 
-    //Privilege mode
-    input logic rm4_i
+    //Privilege mode / Virual mem
+    input logic rm4_i,
+    input logic [ADDR_SIZE-1:0] satp_i,
+    output logic dtlb_exception_o
 );
 
 dcache_tag_t cache_tag;
@@ -73,6 +75,10 @@ logic miss_in_fligt_miss;
 
 //TLB
 assign tlb_st.access_type = memop_wr_i ? W : R;
+assign dtlb_exception_o = tlb_st.miss;
+assign tlb_st.physical_addr_i = 8'h00; //TODO: Entenc que sera una senyal manejada per les excepcions, ho deixo a 0s de moment
+assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
+assign tlb_st.new_entry = 1'b0; //TODO: Actualitzar quan afegim excepcions
 
 always_comb begin : tlb_vaddr_selection
     if (sb.flush_chance & sb.data_valid) tlb_st.virtual_addr = sb.addr_o [WORD_SIZE-1:12];
@@ -85,7 +91,7 @@ always_comb begin : tlb_request
         tlb_st.req <= 0;
     end
     else begin
-        if (fsm_state == TL_IDLE | fsm_state == MISS_IN_FLIGHT)) begin
+        if (fsm_state == TL_IDLE | fsm_state == MISS_IN_FLIGHT) begin
             tlb_st.req <= (memop_rd_i | memop_wr_i);
         end
         else begin
@@ -94,15 +100,29 @@ always_comb begin : tlb_request
     end
 end
 
+always_comb begin : cache_tag_selection
+    if(rm4_i) begin
+        if (sb.flush_chance & sb.data_valid) cache_tag.tag = sb.addr_o [`ADDR_TAG];
+        else if (mmu_data_rdy_i)             cache_tag.tag = mmu_addr_i[`ADDR_TAG];
+        else                                 cache_tag.tag = addr_i [`ADDR_TAG];
+    end
+    else begin
+        //TODO: Revisar aixo
+        if (sb.flush_chance & sb.data_valid) cache_tag.tag = {12'h000,tlb_st.physical_addr_o,sb.addr_o[11:DCACHE_BYTE_SIZE]};
+        else if (mmu_data_rdy_i)             cache_tag.tag = {12'h000,tlb_st.physical_addr_o,mmu_addr_i[11:DCACHE_BYTE_SIZE]};
+        else                                 cache_tag.tag = {12'h000,tlb_st.physical_addr_o,addr_i[11:DCACHE_BYTE_SIZE]};
+    end
+end
+
 assign cache_tag.req        = (fsm_state == TL_IDLE | fsm_state == MISS_IN_FLIGHT) ? (memop_rd_i | memop_wr_i) : 1'b0;
 assign cache_tag.mmu_data   = mmu_data_rdy_i;
 assign cache_tag.index      = mmu_lru_index_i;
 
-always_comb begin : cache_tag_selection
+/*always_comb begin : cache_tag_selection
     if (sb.flush_chance & sb.data_valid) cache_tag.tag = sb.addr_o [`ADDR_TAG];
     else if (mmu_data_rdy_i)             cache_tag.tag = mmu_addr_i[`ADDR_TAG];
     else                                 cache_tag.tag = addr_i [`ADDR_TAG];
-end
+end*/
 
 always_comb begin : mmu_addr_selection
     if(mmu_data_rdy_i) begin
@@ -144,7 +164,7 @@ segre_tlb dtlb (
     .req_i           (tlb_st.req),
     .new_entry_i     (tlb_st.new_entry),
     .access_type_i   (tlb_st.access_type),
-    .vitual_addr_i   (tlb_st.virtual_addr),
+    .virtual_addr_i   (tlb_st.virtual_addr),
     .physical_addr_i (tlb_st.physical_addr_i),
     .pp_exception_o  (tlb_st.pp_exception),
     .hit_o           (tlb_st.hit),

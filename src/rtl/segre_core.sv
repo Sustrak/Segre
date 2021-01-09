@@ -25,6 +25,8 @@ core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
 
+//Virtual Memory
+logic [ADDR_SIZE-1:0] satp; //[19:0]->Displacement for VA to PA translation
 //Exceptions / Privilege
 logic rm4; //0->User, 1->Supervisor
 
@@ -33,6 +35,7 @@ assign input_hazards.id  = output_hazards.pipeline;
 
 always_ff @(posedge clk_i) begin : ex_priv_latch
     if(!rsn_i) begin
+        satp <= 32'h00008000;
         //TODO: we should boot in supervisor mode, change it later
         rm4 <= 0;
     end
@@ -59,7 +62,8 @@ segre_if_stage if_stage (
     .ic_miss_o          (core_mmu.ic_miss),
     .ic_addr_o          (core_mmu.ic_addr_i),
     .ic_access_o        (core_mmu.ic_access),
-    .rm4_i              (rm4)
+    .rm4_i              (rm4),
+    .satp_i             (satp)  
 );
 
 segre_id_stage id_stage (
@@ -130,7 +134,9 @@ segre_pipeline_wrapper pipeline_wrapper (
     // Hazard
     .tl_hazard_o           (output_hazards.pipeline),
     //Privilege mode
-    .rm4_i                 (rm4)
+    .rm4_i                 (rm4),
+    //Virtual mem
+    .satp_i                (satp)
 );
 
 segre_register_file segre_rf (

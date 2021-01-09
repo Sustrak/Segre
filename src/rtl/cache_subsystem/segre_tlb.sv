@@ -94,7 +94,15 @@ end
 
 always_ff @(posedge clk_i) begin : tlb_reset
     if (!rsn_i) begin
-        for(int i=0; i<TLB_NUM_ENTRYS; i++) begin
+        tlb[0].valid <= 1;
+        tlb[0].vaddr <= 0;
+        tlb[0].paddr <= 0;
+        tlb[0].page_protection <= EX;
+        tlb[1].valid <= 1;
+        tlb[1].vaddr <= 32'hA000;
+        tlb[1].paddr <= 32'hA000;
+        tlb[1].page_protection <= RW;
+        for(int i=2; i<TLB_NUM_ENTRYS; i++) begin
             tlb[i].valid <= 0;
             tlb[i].vaddr <= 0;
             tlb[i].paddr <= 0;
