@@ -14,6 +14,8 @@ module segre_pipeline_wrapper (
     output logic [HF_PTR-1:0] ex_instr_id_o,
     output logic [HF_PTR-1:0] mem_instr_id_o,
     output logic [HF_PTR-1:0] rvm_instr_id_o,
+    // Store completed
+    output logic mem_wr_done_o,
     // Branch & Jump
     output logic branch_completed_o,
     output logic tkbr_o,
@@ -101,12 +103,14 @@ segre_mem_pipeline mem_pipeline (
     .memop_sign_ext_i      (mem_data.memop_sign_ext),
     .memop_type_i          (mem_data.memop_type),
     .instr_id_i            (mem_data.instr_id),
+    .store_permission_i    (mem_data.store_permission),
 
     // Output
     .data_o                (rf_data_o.mem_data),
     .rf_we_o               (rf_data_o.mem_we),
     .rf_waddr_o            (rf_data_o.mem_waddr),
     .instr_id_o            (mem_instr_id_o),
+    .mem_wr_done_o         (mem_wr_done_o),
 
     // MMU
     .mmu_data_rdy_i        (mmu_data_rdy_i),
@@ -164,18 +168,19 @@ segre_rvm_pipeline rvm_pipeline (
 
 always_comb begin : input_decoder
     // EX PIPELINE
-    ex_data.alu_opcode      = core_pipeline_i.alu_opcode;
-    ex_data.br_src_a        = core_pipeline_i.br_src_a;
-    ex_data.br_src_b        = core_pipeline_i.br_src_b;
-    ex_data.instr_id        = core_pipeline_i.instr_id;
+    ex_data.alu_opcode        = core_pipeline_i.alu_opcode;
+    ex_data.br_src_a          = core_pipeline_i.br_src_a;
+    ex_data.br_src_b          = core_pipeline_i.br_src_b;
+    ex_data.instr_id          = core_pipeline_i.instr_id;
     // MEM PIPELINE
-    mem_data.memop_sign_ext = core_pipeline_i.memop_sign_ext;
-    mem_data.memop_type     = core_pipeline_i.memop_type;
-    mem_data.rf_st_data     = core_pipeline_i.rf_st_data;
-    mem_data.instr_id       = core_pipeline_i.instr_id;
+    mem_data.memop_sign_ext   = core_pipeline_i.memop_sign_ext;
+    mem_data.memop_type       = core_pipeline_i.memop_type;
+    mem_data.rf_st_data       = core_pipeline_i.rf_st_data;
+    mem_data.instr_id         = core_pipeline_i.instr_id;
+    mem_data.store_permission = core_pipeline_i.store_permission;
     // RVM PIPELINE
-    rvm_data.alu_opcode     = core_pipeline_i.alu_opcode;
-    rvm_data.instr_id       = core_pipeline_i.instr_id;
+    rvm_data.alu_opcode       = core_pipeline_i.alu_opcode;
+    rvm_data.instr_id         = core_pipeline_i.instr_id;
     
     if (core_pipeline_i.pipeline == EX_PIPELINE) begin
         ex_data.rf_we    = core_pipeline_i.rf_we;

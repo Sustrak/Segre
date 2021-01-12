@@ -286,6 +286,7 @@ typedef struct packed {
     bypass_e bypass_a;
     bypass_e bypass_b;
     logic [HF_PTR-1:0] instr_id;
+    logic store_permission;
 } core_pipeline_t;
 
 typedef struct packed {
@@ -302,6 +303,7 @@ typedef struct packed {
     logic rf_we_o;
     logic [REG_SIZE-1:0] rf_waddr_o;
     logic [HF_PTR-1:0] instr_id;
+    logic store_permission;
 } mem_pipeline_t;
 
 typedef struct packed {

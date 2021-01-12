@@ -7,9 +7,10 @@ module segre_history_file (
 
     // Input data from id
     input logic req_i,
+    input logic store_i,
     input logic [REG_SIZE-1:0] dest_reg_i,
     input logic [WORD_SIZE-1:0] current_value_i,
-    
+
     input logic exc_i,
     input logic [HF_PTR-1:0] exc_id_i,
     input logic complete_ex_i,
@@ -18,9 +19,11 @@ module segre_history_file (
     input logic [HF_PTR-1:0] complete_mem_id_i,
     input logic complete_rvm_i,
     input logic [HF_PTR-1:0] complete_rvm_id_i,
-    
+
     output logic full_o,
     output logic empty_o,
+
+    output logic store_permission_o,
 
     output logic recovering_o,
     output logic [REG_SIZE-1:0] dest_reg_o,
@@ -32,9 +35,10 @@ typedef enum logic {
     RECOVERING
 } hf_status_e;
 
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
     EMPTY,
     EXECUTNG,
+    EXECUTING_STORE,
     EXEC_OK,
     EXCEPTION
 } entry_status_e;
@@ -52,6 +56,7 @@ hf_status_e hf_status, nxt_hf_status;
 
 assign empty_o = (head == tail);
 assign full_o  = (head-1 == tail);
+assign store_permission_o = (hf[head] == EXECUTING_STORE);
 
 // Output data
 assign recovering_o = hf_status == RECOVERING ? 1'b1 : 1'b0;
@@ -76,7 +81,7 @@ always_comb begin : queue_control
             int instr_ended;
             if (req_i) nxt_tail = tail + 1;
             else nxt_tail = tail;
-             
+
             instr_ended = complete_ex_i + complete_mem_i + complete_rvm_i;
             nxt_head = head;
             for (int i = 0; i < instr_ended; i++) begin
@@ -112,7 +117,8 @@ always_ff @(posedge clk_i) begin : latch
                 if (req_i) begin
                     hf[tail].dest_reg      <= dest_reg_i;
                     hf[tail].current_value <= current_value_i;
-                    hf[tail].status        <= EXECUTNG;
+                    if (store_i) hf[tail].status <= EXECUTING_STORE;
+                    else hf[tail].status <= EXECUTNG;
                 end
 
                 if (complete_ex_i) hf[complete_ex_id_i].status <= EXEC_OK;
@@ -129,30 +135,30 @@ always_ff @(posedge clk_i) begin : latch
 end
 
 // Verification
-//assert property (disable iff(!rsn_i) @(posedge clk_i) full_o && req_i)
-//    else $fatal("%m: Buffer is full and a new request has arrived");
-//assert property (disable iff(!rsn_i) @(posedge clk_i) empty_o && (complete_ex_i | complete_mem_i | complete_rvm_i))
-//    else $fatal("%m: Buffer is empty and an instruction completed");
-//assert property (disable iff(!rsn_i) @(posedge clk_i) complete_ex_i |-> hf[complete_ex_id_i].status == EXECUTNG)
-//    else $fatal("%m: Completing an instruction that is not executing");
-//assert property (disable iff(!rsn_i) @(posedge clk_i) complete_mem_i |-> hf[complete_mem_id_i].status == EXECUTNG)
-//    else $fatal("%m: Completing an instruction that is not executing");
-//assert property (disable iff(!rsn_i) @(posedge clk_i) complete_rvm_i |-> hf[complete_rvm_id_i].status == EXECUTNG)
-//    else $fatal("%m: Completing an instruction that is not executing");
+assert property (disable iff(!rsn_i) @(posedge clk_i) req_i |-> !full_o)
+    else $fatal("%m: Buffer is full and a new request has arrived");
+assert property (disable iff(!rsn_i) @(posedge clk_i) (complete_ex_i | complete_mem_i | complete_rvm_i) && !req_i |-> !empty_o)
+    else $fatal("%m: Buffer is empty and an instruction completed");
+assert property (disable iff(!rsn_i) @(posedge clk_i) complete_ex_i |-> hf[complete_ex_id_i].status == EXECUTNG)
+    else $fatal("%m: Completing an instruction that is not executing");
+assert property (disable iff(!rsn_i) @(posedge clk_i) complete_mem_i |-> hf[complete_mem_id_i].status == EXECUTNG)
+    else $fatal("%m: Completing an instruction that is not executing");
+assert property (disable iff(!rsn_i) @(posedge clk_i) complete_rvm_i |-> hf[complete_rvm_id_i].status == EXECUTNG)
+    else $fatal("%m: Completing an instruction that is not executing");
 
 property not_same_id_p(completed, id, completed2, id2);
     @(posedge clk_i) completed |-> !(completed2 && (id == id2));
 endproperty
 
-assert property (disable iff(!rsn_i) 
+assert property (disable iff(!rsn_i)
     not_same_id_p(complete_ex_i, complete_ex_id_i, complete_mem_i, complete_mem_id_i)   and
     not_same_id_p(complete_ex_i, complete_ex_id_i, complete_rvm_i, complete_rvm_id_i)   and
-    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_ex_i, complete_ex_id_i)   and 
-    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_rvm_i, complete_rvm_id_i) and 
-    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_ex_i, complete_ex_id_i)   and 
+    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_ex_i, complete_ex_id_i)   and
+    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_rvm_i, complete_rvm_id_i) and
+    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_ex_i, complete_ex_id_i)   and
     not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_mem_i, complete_mem_id_i)
 ) else begin
     $fatal("%m: Different pipelines completing instruction with same id");
-end 
+end
 
 endmodule : segre_history_file

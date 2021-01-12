@@ -25,6 +25,7 @@ core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
 core_hf_t core_hf;
+logic mem_wr_done;
 
 assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
 assign input_hazards.id  = output_hazards.pipeline | core_hf.full;
@@ -108,6 +109,8 @@ segre_pipeline_wrapper pipeline_wrapper (
     .ex_instr_id_o         (core_hf.ex_complete_id),
     .mem_instr_id_o        (core_hf.mem_complete_id),
     .rvm_instr_id_o        (core_hf.rvm_complete_id),
+    // Store completed
+    .mem_wr_done_o         (mem_wr_done),
     // Branch & Jump
     .branch_completed_o    (core_if.branch_completed),
     .tkbr_o                (core_if.tkbr),
@@ -174,33 +177,31 @@ segre_mmu mmu (
 );
 
 assign core_hf.ex_complete  = rf_wdata.ex_we;
-// TODO: Add indicator for completed stores
-assign core_hf.mem_complete = rf_wdata.mem_we;
+assign core_hf.mem_complete = rf_wdata.mem_we | mem_wr_done;
 assign core_hf.rvm_complete = rf_wdata.rvm_we;
 
 segre_history_file history_file (
-    .clk_i             (clk_i),
-    .rsn_i             (rsn_i),
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
     // Input data from id
-    .req_i             (core_hf.instr_decoded),
-    .dest_reg_i        (decode_rf.raddr_w),
-    .current_value_i   (decode_rf.data_w),
-    
-    .exc_i             (0),
-    .exc_id_i          (0),
-    .complete_ex_i     (core_hf.ex_complete),
-    .complete_ex_id_i  (core_hf.ex_complete_id),
-    .complete_mem_i    (core_hf.mem_complete),
-    .complete_mem_id_i (core_hf.mem_complete_id),
-    .complete_rvm_i    (core_hf.rvm_complete),
-    .complete_rvm_id_i (core_hf.rvm_complete_id),
-    
-    .full_o            (core_hf.full),
-    .empty_o           (core_hf.empty),
-
-    .recovering_o      (core_hf.recovering),
-    .dest_reg_o        (core_hf.dest_reg),
-    .value_o           (core_hf.value)
+    .req_i              (core_hf.instr_decoded),
+    .store_i            (core_pipeline.memop_wr),
+    .dest_reg_i         (decode_rf.raddr_w),
+    .current_value_i    (decode_rf.data_w),
+    .exc_i              (0),
+    .exc_id_i           (0),
+    .complete_ex_i      (core_hf.ex_complete),
+    .complete_ex_id_i   (core_hf.ex_complete_id),
+    .complete_mem_i     (core_hf.mem_complete),
+    .complete_mem_id_i  (core_hf.mem_complete_id),
+    .complete_rvm_i     (core_hf.rvm_complete),
+    .complete_rvm_id_i  (core_hf.rvm_complete_id),
+    .full_o             (core_hf.full),
+    .empty_o            (core_hf.empty),
+    .store_permission_o (core_pipeline.store_permission),
+    .recovering_o       (core_hf.recovering),
+    .dest_reg_o         (core_hf.dest_reg),
+    .value_o            (core_hf.value)
 );
 
 endmodule : segre_core

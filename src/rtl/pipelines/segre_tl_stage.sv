@@ -19,6 +19,8 @@ module segre_tl_stage (
     input memop_data_type_e memop_type_i,
     // Instruction ID
     input logic [HF_PTR-1:0] instr_id_i,
+    // Store permission from HF
+    input logic store_permission_i, // TODO: Connect this signal so the SB only writes to cache if it is up
 
     // TL MEM interface
     // ALU
