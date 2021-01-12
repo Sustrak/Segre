@@ -11,9 +11,13 @@ module segre_history_file (
     input logic [WORD_SIZE-1:0] current_value_i,
     
     input logic exc_i,
-    input logic [HF_SIZE-1:0] exc_id_i,
-    input logic complete_i,
-    input logic [HF_SIZE-1:0] complete_id_i,
+    input logic [HF_PTR-1:0] exc_id_i,
+    input logic complete_ex_i,
+    input logic [HF_PTR-1:0] complete_ex_id_i,
+    input logic complete_mem_i,
+    input logic [HF_PTR-1:0] complete_mem_id_i,
+    input logic complete_rvm_i,
+    input logic [HF_PTR-1:0] complete_rvm_id_i,
     
     output logic full_o,
     output logic empty_o,
@@ -42,36 +46,20 @@ typedef struct packed {
 } hf_t;
 
 hf_t [HF_SIZE-1:0] hf;
-logic [HF_SIZE-1:0] head, nxt_head, tail, nxt_tail;
+logic [HF_PTR-1:0] head, tail, nxt_head, nxt_tail;
 hf_status_e hf_status, nxt_hf_status;
 
 
-assign empty_o = head == tail;
-assign full_o  = head-1 == tail;
+assign empty_o = (head == tail);
+assign full_o  = (head-1 == tail);
 
 // Output data
 assign recovering_o = hf_status == RECOVERING ? 1'b1 : 1'b0;
 assign dest_reg_o = hf[tail].dest_reg;
 assign value_o    = hf[tail].current_value;
 
-always_ff @(posedge clk_i) begin : new_entry
-    if (req_i) begin
-        hf[tail].dest_reg      <= dest_reg_i;
-        hf[tail].current_value <= current_value_i;
-        hf[tail].status        <= EXECUTNG;
-    end
-end
-
-always_ff @(posedge clk_i) begin : hf_events
-    if (complete_i) begin
-        hf[complete_id_i].status <= EXEC_OK;
-    end
-    if (exc_i) begin
-        hf[exc_id_i].status <= EXCEPTION;
-    end
-end
-
 always_comb begin : fsm_control
+    nxt_hf_status = hf_status;
     unique case (hf_status)
         NORMAL: begin
             if (hf[head].status == EXCEPTION) nxt_hf_status = RECOVERING;
@@ -82,15 +70,19 @@ always_comb begin : fsm_control
     endcase
 end
 
-/*
 always_comb begin : queue_control
     unique case (hf_status)
         NORMAL: begin
-            if (req_i) begin
-                nxt_tail = tail + 1;
-            end
-            if ((complete_i && complete_id_i == head) || (hf[head].status == EXEC_OK)) begin
-                nxt_head = head + 1;
+            int instr_ended;
+            if (req_i) nxt_tail = tail + 1;
+            else nxt_tail = tail;
+             
+            instr_ended = complete_ex_i + complete_mem_i + complete_rvm_i;
+            nxt_head = head;
+            for (int i = 0; i < instr_ended; i++) begin
+                if (complete_ex_id_i == nxt_head || complete_mem_id_i == nxt_head || complete_rvm_id_i == nxt_head || hf[nxt_head].status == EXEC_OK) begin
+                    nxt_head++;
+                end
             end
         end
         RECOVERING: begin
@@ -98,48 +90,69 @@ always_comb begin : queue_control
         end
     endcase
 end
-*/
-
-always_ff @(posedge clk_i) begin : queue_control
-    unique case (hf_status)
-        NORMAL: begin
-            if (req_i) begin
-                tail <= tail + 1;
-            end
-            if ((complete_i && complete_id_i == head) || (hf[head].status == EXEC_OK)) begin
-                head <= head + 1;
-                hf[head].status <= EMPTY;
-            end
-        end
-        RECOVERING: begin
-            tail <= tail - 1;
-            hf[tail].status <= EMPTY;
-        end
-    endcase
-end
 
 always_ff @(posedge clk_i) begin : latch
-    if (rsn_i) begin
+    if (!rsn_i) begin
         for (int i = 0; i < HF_SIZE; i++) begin
             hf[i].dest_reg      <= 0;
             hf[i].current_value <= 0;
-            hf[i].status        <= EXECUTNG;
+            hf[i].status        <= EMPTY;
         end
         tail <= 0;
         head <= 0;
-        nxt_tail <= 0;
-        nxt_head <= 0;
+        hf_status <= NORMAL;
     end
     else begin
-        //tail <= nxt_tail;
-        //head <= nxt_head;
         hf_status <= nxt_hf_status;
+        head <= nxt_head;
+        tail <= nxt_tail;
+
+        unique case (hf_status)
+            NORMAL: begin
+                if (req_i) begin
+                    hf[tail].dest_reg      <= dest_reg_i;
+                    hf[tail].current_value <= current_value_i;
+                    hf[tail].status        <= EXECUTNG;
+                end
+
+                if (complete_ex_i) hf[complete_ex_id_i].status <= EXEC_OK;
+                if (complete_mem_i) hf[complete_mem_id_i].status <= EXEC_OK;
+                if (complete_rvm_i) hf[complete_rvm_id_i].status <= EXEC_OK;
+                if (exc_i) hf[exc_id_i].status <= EXCEPTION;
+            end
+            RECOVERING: begin
+                hf[tail].status <= EMPTY;
+            end
+            default: ;
+        endcase
     end
 end
 
 // Verification
-assert property (disable iff(!rsn_i) @(posedge clk_i) full_o && req_i) else $fatal("%m: Buffer is full and a new request has arrived");
-assert property (disable iff(!rsn_i) @(posedge clk_i) empty_o && complete_i) else $fatal("%m: Buffer is empty and an instruction completed");
-assert property (disable iff(!rsn_i) @(posedge clk_i) complete_i |-> hf[complete_id_i].status == EXECUTNG) else $fatal("%m: Completing an instruction that is not executing");
+//assert property (disable iff(!rsn_i) @(posedge clk_i) full_o && req_i)
+//    else $fatal("%m: Buffer is full and a new request has arrived");
+//assert property (disable iff(!rsn_i) @(posedge clk_i) empty_o && (complete_ex_i | complete_mem_i | complete_rvm_i))
+//    else $fatal("%m: Buffer is empty and an instruction completed");
+//assert property (disable iff(!rsn_i) @(posedge clk_i) complete_ex_i |-> hf[complete_ex_id_i].status == EXECUTNG)
+//    else $fatal("%m: Completing an instruction that is not executing");
+//assert property (disable iff(!rsn_i) @(posedge clk_i) complete_mem_i |-> hf[complete_mem_id_i].status == EXECUTNG)
+//    else $fatal("%m: Completing an instruction that is not executing");
+//assert property (disable iff(!rsn_i) @(posedge clk_i) complete_rvm_i |-> hf[complete_rvm_id_i].status == EXECUTNG)
+//    else $fatal("%m: Completing an instruction that is not executing");
+
+property not_same_id_p(completed, id, completed2, id2);
+    @(posedge clk_i) completed |-> !(completed2 && (id == id2));
+endproperty
+
+assert property (disable iff(!rsn_i) 
+    not_same_id_p(complete_ex_i, complete_ex_id_i, complete_mem_i, complete_mem_id_i)   and
+    not_same_id_p(complete_ex_i, complete_ex_id_i, complete_rvm_i, complete_rvm_id_i)   and
+    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_ex_i, complete_ex_id_i)   and 
+    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_rvm_i, complete_rvm_id_i) and 
+    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_ex_i, complete_ex_id_i)   and 
+    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_mem_i, complete_mem_id_i)
+) else begin
+    $fatal("%m: Different pipelines completing instruction with same id");
+end 
 
 endmodule : segre_history_file

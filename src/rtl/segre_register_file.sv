@@ -9,6 +9,8 @@ module segre_register_file (
     output logic [WORD_SIZE-1:0] data_a_o,
     input  logic [REG_SIZE-1:0]  raddr_b_i,
     output logic [WORD_SIZE-1:0] data_b_o,
+    input  logic [REG_SIZE-1:0]  raddr_w_i,
+    output logic [WORD_SIZE-1:0] data_w_o,
 
     input rf_wdata_t wdata_i
 );
@@ -50,5 +52,6 @@ assign rf_reg[31:1] = rf_reg_aux[31:1];
 
 assign data_a_o = rf_reg[raddr_a_i];
 assign data_b_o = rf_reg[raddr_b_i];
+assign data_w_o = rf_reg[raddr_w_i];
 
 endmodule : segre_register_file

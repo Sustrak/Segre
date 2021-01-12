@@ -24,12 +24,16 @@ module segre_mem_stage (
     input logic [WORD_SIZE-1:0] sb_data_load_i,
     input logic [WORD_SIZE-1:0] sb_data_flush_i,
     input logic [ADDR_SIZE-1:0] sb_addr_i,
+    // Instruction ID
+    input logic [HF_PTR-1:0] instr_id_i,
 
     // MEM WB interface
     output logic [WORD_SIZE-1:0] cache_data_o,
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
+    // Instruction ID
+    output logic [HF_PTR-1:0] instr_id_o,
 
     // MMU
     input logic mmu_data_rdy_i,
@@ -99,11 +103,13 @@ always_ff @(posedge clk_i) begin
         cache_data_o <= 0;
         rf_we_o      <= 0;
         rf_waddr_o   <= 0;
+        instr_id_o   <= 0;
     end
     else begin
         cache_data_o <= mem_data;
         rf_we_o      <= rf_we_i;
         rf_waddr_o   <= rf_waddr_i;
+        instr_id_o   <= instr_id_i;
     end
 end
 

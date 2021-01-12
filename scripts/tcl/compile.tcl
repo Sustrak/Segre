@@ -48,4 +48,4 @@ vsim -dpicpppath /usr/bin/gcc -l build/sim_transcript +TEST_NAME=$test_name -vop
 #do scripts/wave.do
 
 # Run all
-run -all
+#run -all

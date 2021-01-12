@@ -16,6 +16,7 @@ module segre_id_stage (
     // Register file read operands
     output logic [REG_SIZE-1:0]  rf_raddr_a_o,
     output logic [REG_SIZE-1:0]  rf_raddr_b_o,
+    output logic [REG_SIZE-1:0]  rf_raddr_w_o,
     input  logic [WORD_SIZE-1:0] rf_data_a_i,
     input  logic [WORD_SIZE-1:0] rf_data_b_i,
     
@@ -23,6 +24,9 @@ module segre_id_stage (
     input bypass_data_t bypass_data_i,
 
     // ID EX interface
+    // History File
+    output logic instr_decoded_o,
+    output logic [HF_PTR-1:0] instr_id_o,
     // ALU
     output alu_opcode_e alu_opcode_o,
     output logic [WORD_SIZE-1:0] alu_src_a_o,
@@ -79,6 +83,8 @@ alu_opcode_e alu_opcode;
 pipeline_e pipeline;
 logic [WORD_SIZE-1:0] data_a;
 logic [WORD_SIZE-1:0] data_b;
+logic [HF_PTR-1:0] nxt_instr_id;
+logic instr_decoded;
 
 // Bypass
 bypass_e bypass_a;
@@ -90,8 +96,12 @@ assign rf_src_a = (opcode == OPCODE_LUI | opcode == OPCODE_AUIPC) ? 0 : rf_raddr
 assign rf_src_b = (id_opcode == OPCODE_LUI | id_opcode == OPCODE_AUIPC) ? 0 : rf_raddr_b;
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
+assign rf_raddr_w_o = rf_waddr;
 assign instr_dependence = war_dependence | waw_dependence;
-assign hazard_o = instr_dependence;
+assign hazard_o = instr_dependence | hazard_i;
+assign instr_decoded = ~hazard_o & instr_i != NOP;
+
+assign nxt_instr_id = instr_decoded ? (instr_id_o + 1) % HF_SIZE : instr_id_o;
 
 segre_decode decode (
     // Clock and Reset
@@ -227,10 +237,18 @@ always_comb begin : bypass_data
 end
 
 always_ff @(posedge clk_i) begin
-    if (instr_dependence) begin
-        rf_we_o <= 0;
-        memop_wr_o <= 0;
-        memop_rd_o <= 0;
+    if (!rsn_i) begin
+        memop_wr_o      <= 0;
+        memop_rd_o      <= 0;
+        rf_we_o         <= 0;
+        instr_decoded_o <= 0;
+        instr_id_o      <= ~{HF_PTR{1'b0}};
+    end
+    else if (instr_dependence) begin
+        rf_we_o         <= 0;
+        memop_wr_o      <= 0;
+        memop_rd_o      <= 0;
+        instr_decoded_o <= 0;
     end
     else if (!hazard_i) begin
         alu_src_a_o      <= alu_src_a;
@@ -249,6 +267,8 @@ always_ff @(posedge clk_i) begin
         bypass_a_o       <= bypass_a;
         bypass_b_o       <= bypass_b;
         id_opcode        <= opcode;
+        instr_id_o       <= nxt_instr_id;
+        instr_decoded_o  <= instr_decoded;
     end
 end
 

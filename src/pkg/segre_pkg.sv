@@ -41,6 +41,7 @@ parameter TLB_NUM_ENTRYS = 4;
 
 /** HISTORY FILE **/
 parameter HF_SIZE = 8;
+parameter HF_PTR  = $clog2(HF_SIZE);
 
 /*****************
 *    OPCODES     *
@@ -284,6 +285,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] br_src_b;
     bypass_e bypass_a;
     bypass_e bypass_b;
+    logic [HF_PTR-1:0] instr_id;
 } core_pipeline_t;
 
 typedef struct packed {
@@ -299,6 +301,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] data;
     logic rf_we_o;
     logic [REG_SIZE-1:0] rf_waddr_o;
+    logic [HF_PTR-1:0] instr_id;
 } mem_pipeline_t;
 
 typedef struct packed {
@@ -310,6 +313,7 @@ typedef struct packed {
     logic [REG_SIZE-1:0] rf_waddr;
     logic [WORD_SIZE-1:0] br_src_a;
     logic [WORD_SIZE-1:0] br_src_b;
+    logic [HF_PTR-1:0] instr_id;
 } ex_pipeline_t;
 
 typedef struct packed {
@@ -318,6 +322,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] alu_src_b;
     logic rf_we;
     logic [REG_SIZE-1:0]  rf_waddr;
+    logic [HF_PTR-1:0] instr_id;
 } rvm_pipeline_t;
 
 typedef struct packed {
@@ -330,6 +335,7 @@ typedef struct packed {
     logic memop_sign_ext;
     memop_data_type_e memop_type;
     bypass_e bypass_b;
+    logic [HF_PTR-1:0] instr_id;
 } tl_stage_t;
 
 typedef struct packed {
@@ -353,13 +359,16 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] sb_data_flush;
     logic [ADDR_SIZE-1:0] sb_addr;
     logic [DCACHE_INDEX_SIZE-1:0] addr_index;
+    logic [HF_PTR-1:0] instr_id;
 } mem_stage_t;
 
 typedef struct packed {
     logic [REG_SIZE-1:0] raddr_a;
     logic [REG_SIZE-1:0] raddr_b;
+    logic [REG_SIZE-1:0] raddr_w;
     logic [WORD_SIZE-1:0] data_a;
     logic [WORD_SIZE-1:0] data_b;
+    logic [WORD_SIZE-1:0] data_w;
 } decode_rf_t;
 
 typedef struct packed {
@@ -397,5 +406,20 @@ typedef struct packed {
     logic [REG_SIZE-1:0] rvm_waddr;
     logic [WORD_SIZE-1:0] rvm_data;
 } rf_wdata_t;
+
+typedef struct packed {
+    logic instr_decoded;
+    logic ex_complete;
+    logic [HF_PTR-1:0] ex_complete_id;
+    logic mem_complete;
+    logic [HF_PTR-1:0] mem_complete_id;
+    logic rvm_complete;
+    logic [HF_PTR-1:0] rvm_complete_id;
+    logic full;
+    logic empty;
+    logic recovering;
+    logic [REG_SIZE-1:0] dest_reg;
+    logic [WORD_SIZE-1:0] value;
+} core_hf_t;
 
 endpackage : segre_pkg
