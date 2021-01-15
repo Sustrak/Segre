@@ -66,13 +66,12 @@ segre_id_stage id_stage (
     // Register file read operands
     .rf_raddr_a_o     (decode_rf.raddr_a),
     .rf_raddr_b_o     (decode_rf.raddr_b),
-    .rf_raddr_w_o     (decode_rf.raddr_w),
     .rf_data_a_i      (decode_rf.data_a),
     .rf_data_b_i      (decode_rf.data_b),
     // Bypass
     .bypass_data_i    (core_id.bypass_data),
     // ID EX interface
-    .instr_decoded_o  (core_hf.instr_decoded),
+    .new_hf_entry_o  (core_hf.new_hf_entry),
     .instr_id_o       (core_pipeline.instr_id),
     // ALU
     .alu_opcode_o     (core_pipeline.alu_opcode),
@@ -140,8 +139,8 @@ segre_register_file segre_rf (
     .data_a_o    (decode_rf.data_a),
     .raddr_b_i   (decode_rf.raddr_b),
     .data_b_o    (decode_rf.data_b),
-    .raddr_w_i   (decode_rf.raddr_w),
-    .data_w_o    (decode_rf.data_w),
+    .raddr_w_i   (core_pipeline.rf_waddr),
+    .data_w_o    (core_hf.rf_data),
     .wdata_i     (rf_wdata)
 );
 
@@ -184,12 +183,12 @@ segre_history_file history_file (
     .clk_i              (clk_i),
     .rsn_i              (rsn_i),
     // Input data from id
-    .req_i              (core_hf.instr_decoded),
+    .req_i              (core_hf.new_hf_entry),
     .store_i            (core_pipeline.memop_wr),
-    .dest_reg_i         (decode_rf.raddr_w),
-    .current_value_i    (decode_rf.data_w),
-    .exc_i              (0),
-    .exc_id_i           (0),
+    .dest_reg_i         (core_pipeline.rf_waddr),
+    .current_value_i    (core_hf.rf_data),
+    .exc_i              (1'b0),
+    .exc_id_i           (3'b0),
     .complete_ex_i      (core_hf.ex_complete),
     .complete_ex_id_i   (core_hf.ex_complete_id),
     .complete_mem_i     (core_hf.mem_complete),

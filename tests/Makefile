@@ -6,7 +6,7 @@ AS = $(TARGET)-as
 GCC = $(TARGET)-gcc
 SPIKE = ../../riscv-isa-sim/build/spike --log-commits --isa rv32im
 CFLAGS_SPIKE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32im -mabi=ilp32 -Tlink.ld -Isrc/
-CFLAGS_SEGRE = -O0 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32im -mabi=ilp32 -Tsegre_link.ld -Isrc/
+CFLAGS_SEGRE = -O3 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32im -mabi=ilp32 -Tsegre_link.ld -Isrc/
 ASFLAGS = -march=rv32i -mabi=ilp32
 OBJD = $(TARGET)-objdump
 
@@ -17,7 +17,7 @@ TEST_HEX_SEGRE = $(patsubst build_segre/%.o, hex_segre/%.hex, $(TEST_OBJ_SEGRE))
 TEST_RES_SPIKE = $(patsubst build_spike/%.o, result_segre/%.result, $(TEST_OBJ_SPIKE))
 
 .PHONY: clean
-all: build_dirs build gen_hex gen_results
+all: build_dirs build gen_hex gen_results 
 
 build_dirs:
 	mkdir -p build_segre
@@ -78,6 +78,18 @@ result_segre/%.result: build_spike/%.o
 	cat tmp.result | grep -w "x30" | tail -n 2 | head -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	cat tmp.result | grep -w "x31" | tail -n 1 | awk '{print $$7}' | cut -c 3-11 | xargs -I {} echo {} >> $@
 	rm tmp.result
+
+buffer_sum: src/buffer_sum/buffer_sum.c
+	$(GCC) $(CFLAGS_SEGRE) $^ -o build_segre/buffer_sum.o
+	$(OBJD) -d build_segre/buffer_sum.o | grep -E "[a-f0-9]+:" | awk '{print $$2}' > hex_segre/buffer_sum.hex;
+
+mem_copy: src/mem_copy/mem_copy.c
+	$(GCC) $(CFLAGS_SEGRE) $^ -o build_segre/mem_copy.o
+	$(OBJD) -d build_segre/mem_copy.o | grep -E "[a-f0-9]+:" | awk '{print $$2}' > hex_segre/mem_copy.hex
+	
+matrix_multiply: src/matrix_multiply/matrix_multiply.c
+	$(GCC) $(CFLAGS_SEGRE) $^ -o build_segre/matrix_multiply.o
+	$(OBJD) -d build_segre/matrix_multiply.o | grep -E "[a-f0-9]+:" | awk '{print $$2}' > hex_segre/matrix_multiply.hex
 
 clean:
 	rm -rf hex_segre build_spike build_segre result_segre

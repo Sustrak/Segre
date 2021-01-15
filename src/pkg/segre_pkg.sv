@@ -367,10 +367,8 @@ typedef struct packed {
 typedef struct packed {
     logic [REG_SIZE-1:0] raddr_a;
     logic [REG_SIZE-1:0] raddr_b;
-    logic [REG_SIZE-1:0] raddr_w;
     logic [WORD_SIZE-1:0] data_a;
     logic [WORD_SIZE-1:0] data_b;
-    logic [WORD_SIZE-1:0] data_w;
 } decode_rf_t;
 
 typedef struct packed {
@@ -410,7 +408,8 @@ typedef struct packed {
 } rf_wdata_t;
 
 typedef struct packed {
-    logic instr_decoded;
+    logic new_hf_entry;
+    logic [WORD_SIZE-1:0] rf_data;
     logic ex_complete;
     logic [HF_PTR-1:0] ex_complete_id;
     logic mem_complete;

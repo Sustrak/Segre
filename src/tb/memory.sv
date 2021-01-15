@@ -23,7 +23,6 @@ module memory (
 
 parameter NUM_WORDS = 1024 * 64; // 64KB
 parameter TEXT_REGION = 0;
-//parameter DATA_REGION = 1024*32;
 parameter DATA_REGION = 32'hA000;
 
 logic [7:0] mem [NUM_WORDS-1:0];
