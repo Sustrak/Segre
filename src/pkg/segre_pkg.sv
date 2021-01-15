@@ -35,8 +35,8 @@ parameter STORE_BUFFER_NUM_ELEMS = 2;
 parameter RVM_NUM_STAGES = 5;
 
 /** TLB **/
-parameter VADDR_SIZE = 32;
-parameter PADDR_SIZE = 20;
+parameter VADDR_SIZE = ADDR_SIZE-12; //Should be 20
+parameter PADDR_SIZE = VADDR_SIZE-12; //Should be 8
 parameter TLB_NUM_ENTRYS = 4;
 
 /** HISTORY FILE **/
@@ -131,6 +131,13 @@ typedef enum logic [1:0] {
     WORD
 } memop_data_type_e;
 
+typedef enum logic [1:0] {
+    R, //READ
+    W, //WRITE
+    RW, //READWRITE
+    EX //EXECUTION
+} page_protection_e;
+
 typedef enum logic [2:0] {
     DCACHE_REQ,
     DCACHE_WAIT,
@@ -188,6 +195,19 @@ typedef struct packed {
     logic [REG_SIZE-1:0]  rvm5_wreg;
     logic [WORD_SIZE-1:0] rvm5_data;
 } bypass_data_t;
+
+typedef struct packed {
+    logic invalidate; 
+    logic req;
+    logic new_entry;
+    page_protection_e access_type;
+    logic [VADDR_SIZE-1:0] virtual_addr;
+    logic [PADDR_SIZE-1:0] physical_addr_i;
+    logic pp_exception;
+    logic hit;
+    logic miss;
+    logic [PADDR_SIZE-1:0] physical_addr_o;
+} tlb_st_t;
 
 typedef struct packed {
     logic req;

@@ -24,7 +24,12 @@ module segre_if_stage (
     input logic [ICACHE_INDEX_SIZE-1:0] mmu_lru_index_i,
     output logic ic_miss_o,
     output logic [ADDR_SIZE-1:0] ic_addr_o,
-    output logic ic_access_o
+    output logic ic_access_o,
+
+    //Privilege mode/Virtual Memory
+    input logic rm4_i,
+    input logic [ADDR_SIZE-1:0] satp_i,
+    output logic itlb_exception_o
 );
 
 logic [ADDR_SIZE-1:0] nxt_pc;
@@ -35,11 +40,13 @@ if_fsm_state_e if_fsm_nxt_state;
 
 icache_tag_t cache_tag;
 icache_data_t cache_data;
+tlb_st_t tlb_st;
+logic [ADDR_SIZE-1:0] physical_addr_aux;
 
 logic pipeline_hazard;
 
 assign cache_tag.index      = mmu_lru_index_i;
-assign cache_tag.tag        = pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
+//assign cache_tag.tag        = pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
 assign cache_tag.req        = (if_fsm_state == IF_IDLE && !hazard_i) ? 1'b1 : 1'b0;
 assign cache_tag.invalidate = 1'b0;
 assign cache_tag.mmu_data   = mmu_data_i;
@@ -57,6 +64,48 @@ assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}},
 
 assign hazard_o = pipeline_hazard;
 assign pc_o = (pc - 4);
+
+//TLB
+assign tlb_st.access_type = EX; //Instructions cache only reads executable code
+assign tlb_st.virtual_addr = pc[WORD_SIZE-1:12];
+assign itlb_exception_o = tlb_st.miss;
+assign physical_addr_aux = satp_i + pc;
+assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
+assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
+assign tlb_st.new_entry = 1'b0; //TODO: Actualitzar quan afegim excepcions
+
+always_comb begin : tlb_request
+    if(rm4_i) begin
+        tlb_st.req <= 0;
+    end
+    else begin
+        tlb_st.req <= (if_fsm_state == IF_IDLE && !hazard_i);
+    end
+end
+
+always_comb begin : cache_tag_selection
+    if(rm4_i) begin
+        cache_tag.tag <= pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
+    end
+    else begin
+        cache_tag.tag <= {12'h000,tlb_st.physical_addr_o,pc[11:ICACHE_BYTE_SIZE]};
+    end
+end
+
+segre_tlb itlb (
+    .clk_i           (clk_i),
+    .rsn_i           (rsn_i),
+    .invalidate_i    (tlb_st.invalidate),//
+    .req_i           (tlb_st.req), //
+    .new_entry_i     (tlb_st.new_entry),//
+    .access_type_i   (tlb_st.access_type), //
+    .virtual_addr_i   (tlb_st.virtual_addr), //
+    .physical_addr_i (tlb_st.physical_addr_i), //
+    .pp_exception_o  (tlb_st.pp_exception),
+    .hit_o           (tlb_st.hit),
+    .miss_o          (tlb_st.miss), //
+    .physical_addr_o (tlb_st.physical_addr_o) //
+);
 
 segre_icache_tag icache_tag (
     .clk_i        (clk_i),
