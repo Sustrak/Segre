@@ -90,7 +90,6 @@ always_comb begin : data_b
 
         // We try to bypass data or generate a dependence stall whenever the current instruction needs data from src_b else we skip all the logic
         if (src_b_i != 0 && (instr_opcode_i == OPCODE_BRANCH || instr_opcode_i == OPCODE_STORE || instr_opcode_i == OPCODE_OP)) begin
-            $display("TRY TO BYPASS B");
             if (src_b_i == dst_id_i) begin
                 if (id_opcode_i == OPCODE_OP || id_opcode_i == OPCODE_LUI || id_opcode_i == OPCODE_AUIPC) begin
                     bypass_b_o = BY_EX_PIPE;

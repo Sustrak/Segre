@@ -176,7 +176,7 @@ segre_mmu mmu (
 );
 
 assign core_hf.ex_complete  = rf_wdata.ex_we;
-assign core_hf.mem_complete = rf_wdata.mem_we | mem_wr_done;
+assign core_hf.mem_complete = rf_wdata.mem_we | mem_wr_done; // (Load completed | Store completed)
 assign core_hf.rvm_complete = rf_wdata.rvm_we;
 
 segre_history_file history_file (

@@ -163,9 +163,9 @@ end*/
 always_comb begin : sb_flush_chance
     unique case (fsm_state)
         MISS_IN_FLIGHT:    sb.flush_chance = 0;
-        TL_IDLE:           sb.flush_chance = (!memop_wr_i & !memop_rd_i);
+        TL_IDLE:           sb.flush_chance = store_permission_i & (!memop_wr_i & !memop_rd_i);
         HAZARD_DC_MISS:    sb.flush_chance = 0;
-        HAZARD_SB_TROUBLE: sb.flush_chance = 1;
+        HAZARD_SB_TROUBLE: sb.flush_chance = store_permission_i;
         default:           sb.flush_chance = 0;
     endcase
 end
