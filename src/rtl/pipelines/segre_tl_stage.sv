@@ -17,6 +17,10 @@ module segre_tl_stage (
     input logic memop_wr_i,
     input logic memop_sign_ext_i,
     input memop_data_type_e memop_type_i,
+    // Instruction ID
+    input logic [HF_PTR-1:0] instr_id_i,
+    // Store permission from HF
+    input logic store_permission_i, // TODO: Connect this signal so the SB only writes to cache if it is up
 
     // TL MEM interface
     // ALU
@@ -37,6 +41,8 @@ module segre_tl_stage (
     output logic [WORD_SIZE-1:0] sb_data_load_o,
     output logic [WORD_SIZE-1:0] sb_data_flush_o,
     output logic [ADDR_SIZE-1:0] sb_addr_o,
+    // Instruction ID
+    output logic [HF_PTR-1:0] instr_id_o,
 
     // MMU interface
     input logic mmu_data_rdy_i,
@@ -157,9 +163,9 @@ end*/
 always_comb begin : sb_flush_chance
     unique case (fsm_state)
         MISS_IN_FLIGHT:    sb.flush_chance = 0;
-        TL_IDLE:           sb.flush_chance = (!memop_wr_i & !memop_rd_i);
+        TL_IDLE:           sb.flush_chance = store_permission_i & (!memop_wr_i & !memop_rd_i);
         HAZARD_DC_MISS:    sb.flush_chance = 0;
-        HAZARD_SB_TROUBLE: sb.flush_chance = 1;
+        HAZARD_SB_TROUBLE: sb.flush_chance = store_permission_i;
         default:           sb.flush_chance = 0;
     endcase
 end
@@ -277,6 +283,7 @@ always_ff @(posedge clk_i) begin : stage_latch
         sb_data_flush_o    <= 0;
         sb_addr_o          <= 0;
         sb_flush_o         <= 0;
+        instr_id_o         <= 0;
     end 
     else begin
         if (!pipeline_hazard) begin
@@ -310,6 +317,7 @@ always_ff @(posedge clk_i) begin : stage_latch
             memop_type_o       <= memop_type_i;
             memop_type_flush_o <= sb.memop_data_type_o;
             sb_flush_o         <= sb.data_valid;
+            instr_id_o         <= instr_id_i;
         end
         else begin
             if(fsm_state == HAZARD_SB_TROUBLE) begin
@@ -320,6 +328,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 memop_wr_o       <= sb.data_valid;
                 sb_flush_o       <= sb.data_valid;
                 addr_index_o     <= cache_tag.addr_index;
+                instr_id_o       <= instr_id_o;
             end
             else begin
                 memop_wr_o <= 0;

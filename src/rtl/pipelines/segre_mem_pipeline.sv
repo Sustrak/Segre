@@ -14,10 +14,14 @@ module segre_mem_pipeline(
     input logic memop_wr_i,
     input logic memop_sign_ext_i,
     input memop_data_type_e memop_type_i,
+    input logic [HF_PTR-1:0] instr_id_i,
+    input logic store_permission_i,
 
     output logic [WORD_SIZE-1:0] data_o,
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
+    output logic [HF_PTR-1:0] instr_id_o,
+    output logic mem_wr_done_o,
     
     // MMU
     input logic mmu_data_rdy_i,
@@ -48,6 +52,8 @@ tl_stage_t tl_data;
 logic [WORD_SIZE-1:0] add_result;
 logic [WORD_SIZE-1:0] tl_store_data;
 
+assign mem_wr_done_o = mem_data.memop_wr;
+
 segre_tl_stage tl_stage(
     .clk_i             (clk_i),
     .rsn_i             (rsn_i),
@@ -63,6 +69,10 @@ segre_tl_stage tl_stage(
     .memop_wr_i         (tl_data.memop_wr),
     .memop_sign_ext_i   (tl_data.memop_sign_ext),
     .memop_type_i       (tl_data.memop_type),
+    // Instruction ID
+    .instr_id_i         (tl_data.instr_id),
+    // Store permission from HF
+    .store_permission_i (store_permission_i),
 
     // TL MEM interface
     // ALU
@@ -83,6 +93,8 @@ segre_tl_stage tl_stage(
     .sb_data_load_o     (mem_data.sb_data_load),
     .sb_data_flush_o    (mem_data.sb_data_flush),
     .sb_addr_o          (mem_data.sb_addr),
+    // Instruction ID
+    .instr_id_o         (mem_data.instr_id),
 
     // MMU interface
     .mmu_data_rdy_i     (mmu_data_rdy_i),
@@ -120,11 +132,15 @@ segre_mem_stage mem_stage (
     .sb_data_load_i     (mem_data.sb_data_load),
     .sb_data_flush_i    (mem_data.sb_data_flush),
     .sb_addr_i          (mem_data.sb_addr),
+    // Instruction ID
+    .instr_id_i         (mem_data.instr_id),
     // MEM WB intereface
     .cache_data_o       (data_o),
     //Register file
     .rf_we_o            (rf_we_o),
     .rf_waddr_o         (rf_waddr_o),
+    // Instruction ID
+    .instr_id_o         (instr_id_o),
     //MMU
     .mmu_data_rdy_i     (mmu_data_rdy_i),
     .mmu_data_i         (mmu_data_i),
@@ -167,6 +183,7 @@ always_ff @(posedge clk_i) begin : latch
         tl_data.memop_sign_ext <= 0;
         tl_data.memop_type     <= WORD;
         tl_data.bypass_b       <= NO_BYPASS;
+        tl_data.instr_id       <= 0;
     end
     else if (!tl_hazard_o) begin
         tl_data.addr           <= add_result;
@@ -178,6 +195,7 @@ always_ff @(posedge clk_i) begin : latch
         tl_data.memop_sign_ext <= memop_sign_ext_i;
         tl_data.memop_type     <= memop_type_i;
         tl_data.bypass_b       <= bypass_b_i;
+        tl_data.instr_id       <= instr_id_i;
     end
 end
 

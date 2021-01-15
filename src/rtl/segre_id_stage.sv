@@ -23,6 +23,9 @@ module segre_id_stage (
     input bypass_data_t bypass_data_i,
 
     // ID EX interface
+    // History File
+    output logic new_hf_entry_o,
+    output logic [HF_PTR-1:0] instr_id_o,
     // ALU
     output alu_opcode_e alu_opcode_o,
     output logic [WORD_SIZE-1:0] alu_src_a_o,
@@ -79,6 +82,7 @@ alu_opcode_e alu_opcode;
 pipeline_e pipeline;
 logic [WORD_SIZE-1:0] data_a;
 logic [WORD_SIZE-1:0] data_b;
+logic [HF_PTR-1:0] nxt_instr_id;
 
 // Bypass
 bypass_e bypass_a;
@@ -92,6 +96,9 @@ assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
 assign instr_dependence = war_dependence | waw_dependence;
 assign hazard_o = instr_dependence;
+
+assign new_hf_entry_o = rsn_i && !(hazard_i | hazard_o) && (rf_we_o || id_opcode == OPCODE_STORE);
+assign nxt_instr_id = new_hf_entry_o ? (instr_id_o + 1) % HF_SIZE : instr_id_o;
 
 segre_decode decode (
     // Clock and Reset
@@ -227,10 +234,17 @@ always_comb begin : bypass_data
 end
 
 always_ff @(posedge clk_i) begin
-    if (instr_dependence) begin
-        rf_we_o <= 0;
-        memop_wr_o <= 0;
-        memop_rd_o <= 0;
+    if (!rsn_i) begin
+        memop_wr_o      <= 0;
+        memop_rd_o      <= 0;
+        rf_we_o         <= 0;
+        instr_id_o      <= {HF_PTR{1'b0}};
+        id_opcode       <= OPCODE_AUIPC;
+    end
+    else if (instr_dependence) begin
+        rf_we_o         <= 0;
+        memop_wr_o      <= 0;
+        memop_rd_o      <= 0;
     end
     else if (!hazard_i) begin
         alu_src_a_o      <= alu_src_a;
@@ -249,6 +263,7 @@ always_ff @(posedge clk_i) begin
         bypass_a_o       <= bypass_a;
         bypass_b_o       <= bypass_b;
         id_opcode        <= opcode;
+        instr_id_o       <= nxt_instr_id;
     end
 end
 

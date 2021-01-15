@@ -89,7 +89,7 @@ always_comb begin : data_b
         bypass_b_o = NO_BYPASS;
 
         // We try to bypass data or generate a dependence stall whenever the current instruction needs data from src_b else we skip all the logic
-        if (src_b_i != 0 && instr_opcode_i == OPCODE_BRANCH && instr_opcode_i == OPCODE_STORE && instr_opcode_i == OPCODE_OP) begin
+        if (src_b_i != 0 && (instr_opcode_i == OPCODE_BRANCH || instr_opcode_i == OPCODE_STORE || instr_opcode_i == OPCODE_OP)) begin
             if (src_b_i == dst_id_i) begin
                 if (id_opcode_i == OPCODE_OP || id_opcode_i == OPCODE_LUI || id_opcode_i == OPCODE_AUIPC) begin
                     bypass_b_o = BY_EX_PIPE;
@@ -99,7 +99,12 @@ always_comb begin : data_b
                 end
             end
             else if (src_b_i == pipeline_data_i.alu_mem_wreg) begin
-                bypass_b_o = BY_MEM_TL;
+                if (instr_opcode_i == OPCODE_STORE) begin
+                    bypass_b_o = BY_MEM_TL;
+                end
+                else begin
+                    dependence_src_b = 1'b1;
+                end
             end
             else if (src_b_i == pipeline_data_i.ex_wreg) begin
                 bypass_b_o = BY_EX_ID;

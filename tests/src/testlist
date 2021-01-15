@@ -38,3 +38,4 @@ and.S
 st_ld_w.S
 st_ld_stress.S
 sb_stress.S
+hf_0.S

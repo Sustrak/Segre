@@ -19,6 +19,8 @@ module segre_ex_stage (
     // Branch | Jal
     input logic [WORD_SIZE-1:0] br_src_a_i,
     input logic [WORD_SIZE-1:0] br_src_b_i,
+    // Instruction ID
+    input logic [HF_PTR-1:0] instr_id_i,
 
     // EX RF interface
     // ALU
@@ -29,7 +31,9 @@ module segre_ex_stage (
     // Tkbr
     output logic branch_completed_o,
     output logic tkbr_o,
-    output logic [WORD_SIZE-1:0] new_pc_o
+    output logic [WORD_SIZE-1:0] new_pc_o,
+    // Instruction ID
+    output logic [HF_PTR-1:0] instr_id_o
 );
 
 logic [WORD_SIZE-1:0] alu_res;
@@ -62,6 +66,7 @@ always_ff @(posedge clk_i) begin
         rf_waddr_o       <= 0;
         tkbr_o           <= 0;
         new_pc_o         <= 0;
+        instr_id_o       <= 0;
     end
     else if (!hazard_i) begin
         alu_res_o          <= (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
@@ -70,6 +75,7 @@ always_ff @(posedge clk_i) begin
         tkbr_o             <= tkbr;
         new_pc_o           <= alu_res;
         branch_completed_o <= branch_completed;
+        instr_id_o         <= instr_id_i;
     end
 end
 

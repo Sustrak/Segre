@@ -24,9 +24,11 @@ decode_rf_t decode_rf;
 core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
+core_hf_t core_hf;
+logic mem_wr_done;
 
 assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
-assign input_hazards.id  = output_hazards.pipeline;
+assign input_hazards.id  = output_hazards.pipeline | core_hf.full;
 
 segre_if_stage if_stage (
     // Clock and Reset
@@ -68,7 +70,9 @@ segre_id_stage id_stage (
     .rf_data_b_i      (decode_rf.data_b),
     // Bypass
     .bypass_data_i    (core_id.bypass_data),
-    // ID EX interface   
+    // ID EX interface
+    .new_hf_entry_o  (core_hf.new_hf_entry),
+    .instr_id_o       (core_pipeline.instr_id),
     // ALU
     .alu_opcode_o     (core_pipeline.alu_opcode),
     .alu_src_a_o      (core_pipeline.alu_src_a),
@@ -100,6 +104,12 @@ segre_pipeline_wrapper pipeline_wrapper (
     .core_pipeline_i       (core_pipeline),
     // Register File
     .rf_data_o             (rf_wdata),
+    // Instruction ID
+    .ex_instr_id_o         (core_hf.ex_complete_id),
+    .mem_instr_id_o        (core_hf.mem_complete_id),
+    .rvm_instr_id_o        (core_hf.rvm_complete_id),
+    // Store completed
+    .mem_wr_done_o         (mem_wr_done),
     // Branch & Jump
     .branch_completed_o    (core_if.branch_completed),
     .tkbr_o                (core_if.tkbr),
@@ -129,6 +139,8 @@ segre_register_file segre_rf (
     .data_a_o    (decode_rf.data_a),
     .raddr_b_i   (decode_rf.raddr_b),
     .data_b_o    (decode_rf.data_b),
+    .raddr_w_i   (core_pipeline.rf_waddr),
+    .data_w_o    (core_hf.rf_data),
     .wdata_i     (rf_wdata)
 );
 
@@ -161,6 +173,34 @@ segre_mmu mmu (
     .mm_addr_o            (mm_addr_o),
     .mm_wr_addr_o         (mm_wr_addr_o),
     .mm_data_o            (mm_wr_data_o)
+);
+
+assign core_hf.ex_complete  = rf_wdata.ex_we;
+assign core_hf.mem_complete = rf_wdata.mem_we | mem_wr_done; // (Load completed | Store completed)
+assign core_hf.rvm_complete = rf_wdata.rvm_we;
+
+segre_history_file history_file (
+    .clk_i              (clk_i),
+    .rsn_i              (rsn_i),
+    // Input data from id
+    .req_i              (core_hf.new_hf_entry),
+    .store_i            (core_pipeline.memop_wr),
+    .dest_reg_i         (core_pipeline.rf_waddr),
+    .current_value_i    (core_hf.rf_data),
+    .exc_i              (1'b0),
+    .exc_id_i           (3'b0),
+    .complete_ex_i      (core_hf.ex_complete),
+    .complete_ex_id_i   (core_hf.ex_complete_id),
+    .complete_mem_i     (core_hf.mem_complete),
+    .complete_mem_id_i  (core_hf.mem_complete_id),
+    .complete_rvm_i     (core_hf.rvm_complete),
+    .complete_rvm_id_i  (core_hf.rvm_complete_id),
+    .full_o             (core_hf.full),
+    .empty_o            (core_hf.empty),
+    .store_permission_o (core_pipeline.store_permission),
+    .recovering_o       (core_hf.recovering),
+    .dest_reg_o         (core_hf.dest_reg),
+    .value_o            (core_hf.value)
 );
 
 endmodule : segre_core

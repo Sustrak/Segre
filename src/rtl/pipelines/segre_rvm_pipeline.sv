@@ -11,12 +11,16 @@ module segre_rvm_pipeline (
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
+    // Instruction ID
+    input logic [HF_PTR-1:0] instr_id_i,
     
     // ALU
     output logic [WORD_SIZE-1:0] alu_res_o,
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
+    // Instruction ID
+    output logic [HF_PTR-1:0] instr_id_o,
 
     // Bypass
     output logic rvm1_we_o,
@@ -33,6 +37,7 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] alu_res;
     logic rf_we;
     logic [REG_SIZE-1:0] rf_waddr;
+    logic [HF_PTR-1:0] instr_id;
 } rvm_data_t;
 
 rvm_data_t rvm_stage_1, rvm_stage_2, rvm_stage_3, rvm_stage_4, rvm_stage_5;
@@ -109,11 +114,13 @@ always_comb begin : output_logic
         alu_res_o    = 0;
         rf_we_o      = 0;
         rf_waddr_o   = 0;
+        instr_id_o   = 0;
     end
     else begin
         alu_res_o    = rvm_stage_5.alu_res;
         rf_we_o      = rvm_stage_5.rf_we;
         rf_waddr_o   = rvm_stage_5.rf_waddr;
+        instr_id_o   = rvm_stage_5.instr_id;
     end
 end
 
@@ -129,14 +136,24 @@ always_comb begin : bypass_data
 end
 
 always_ff @(posedge clk_i) begin : latches
-    rvm_stage_1.alu_res    <= alu_res;
-    rvm_stage_1.rf_we      <= rf_we_i;
-    rvm_stage_1.rf_waddr   <= rf_waddr_i;
+    if (!rsn_i) begin
+        rvm_stage_1 <= '{default: 0};
+        rvm_stage_2 <= '{default: 0};
+        rvm_stage_3 <= '{default: 0};
+        rvm_stage_4 <= '{default: 0};
+        rvm_stage_5 <= '{default: 0};
+    end
+    else begin
+        rvm_stage_1.alu_res    <= alu_res;
+        rvm_stage_1.rf_we      <= rf_we_i;
+        rvm_stage_1.rf_waddr   <= rf_waddr_i;
+        rvm_stage_1.instr_id   <= instr_id_i;
 
-    rvm_stage_2 <= rvm_stage_1;
-    rvm_stage_3 <= rvm_stage_2;
-    rvm_stage_4 <= rvm_stage_3;
-    rvm_stage_5 <= rvm_stage_4;
+        rvm_stage_2 <= rvm_stage_1;
+        rvm_stage_3 <= rvm_stage_2;
+        rvm_stage_4 <= rvm_stage_3;
+        rvm_stage_5 <= rvm_stage_4;
+    end
 end
 
 endmodule : segre_rvm_pipeline

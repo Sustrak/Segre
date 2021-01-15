@@ -26,4 +26,4 @@ jobs:
           ./CI/scripts/jal_jalr_regressions.sh
           echo "Runnin memop tests"
           ./CI/scripts/ld_regressions.sh
-          ./CI/scripts/st_regressions.sh
+          #./CI/scripts/st_regressions.sh

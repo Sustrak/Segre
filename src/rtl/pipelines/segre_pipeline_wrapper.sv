@@ -10,6 +10,12 @@ module segre_pipeline_wrapper (
 
     // Register File
     output rf_wdata_t rf_data_o,
+    // Instruction ID
+    output logic [HF_PTR-1:0] ex_instr_id_o,
+    output logic [HF_PTR-1:0] mem_instr_id_o,
+    output logic [HF_PTR-1:0] rvm_instr_id_o,
+    // Store completed
+    output logic mem_wr_done_o,
     // Branch & Jump
     output logic branch_completed_o,
     output logic tkbr_o,
@@ -69,6 +75,7 @@ segre_ex_stage ex_stage (
     .rf_waddr_i         (ex_data.rf_waddr),
     .br_src_a_i         (ex_data.br_src_a),
     .br_src_b_i         (ex_data.br_src_b),
+    .instr_id_i         (ex_data.instr_id),
 
     // Output
     .alu_res_o          (rf_data_o.ex_data),
@@ -76,7 +83,8 @@ segre_ex_stage ex_stage (
     .rf_waddr_o         (rf_data_o.ex_waddr),
     .branch_completed_o (branch_completed_o),
     .tkbr_o             (tkbr_o),
-    .new_pc_o           (new_pc_o)
+    .new_pc_o           (new_pc_o),
+    .instr_id_o         (ex_instr_id_o)
 );
 
 segre_mem_pipeline mem_pipeline (
@@ -94,11 +102,15 @@ segre_mem_pipeline mem_pipeline (
     .memop_wr_i            (mem_data.memop_wr),
     .memop_sign_ext_i      (mem_data.memop_sign_ext),
     .memop_type_i          (mem_data.memop_type),
+    .instr_id_i            (mem_data.instr_id),
+    .store_permission_i    (mem_data.store_permission),
 
     // Output
     .data_o                (rf_data_o.mem_data),
     .rf_we_o               (rf_data_o.mem_we),
     .rf_waddr_o            (rf_data_o.mem_waddr),
+    .instr_id_o            (mem_instr_id_o),
+    .mem_wr_done_o         (mem_wr_done_o),
 
     // MMU
     .mmu_data_rdy_i        (mmu_data_rdy_i),
@@ -128,15 +140,19 @@ segre_rvm_pipeline rvm_pipeline (
     .clk_i (clk_i),
     .rsn_i (rsn_i),
 
+    // Input
     .alu_opcode_i (rvm_data.alu_opcode),
     .alu_src_a_i  (rvm_data.alu_src_a),
     .alu_src_b_i  (rvm_data.alu_src_b),
     .rf_we_i      (rvm_data.rf_we),
     .rf_waddr_i   (rvm_data.rf_waddr),
+    .instr_id_i   (rvm_data.instr_id),
 
+    // Output
     .alu_res_o    (rf_data_o.rvm_data),
     .rf_we_o      (rf_data_o.rvm_we),
     .rf_waddr_o   (rf_data_o.rvm_waddr),
+    .instr_id_o   (rvm_instr_id_o),
 
     // Bypass
     .rvm1_we_o    (rvm1_we),
@@ -152,15 +168,19 @@ segre_rvm_pipeline rvm_pipeline (
 
 always_comb begin : input_decoder
     // EX PIPELINE
-    ex_data.alu_opcode      = core_pipeline_i.alu_opcode;
-    ex_data.br_src_a        = core_pipeline_i.br_src_a;
-    ex_data.br_src_b        = core_pipeline_i.br_src_b;
+    ex_data.alu_opcode        = core_pipeline_i.alu_opcode;
+    ex_data.br_src_a          = core_pipeline_i.br_src_a;
+    ex_data.br_src_b          = core_pipeline_i.br_src_b;
+    ex_data.instr_id          = core_pipeline_i.instr_id;
     // MEM PIPELINE
-    mem_data.memop_sign_ext = core_pipeline_i.memop_sign_ext;
-    mem_data.memop_type     = core_pipeline_i.memop_type;
-    mem_data.rf_st_data     = core_pipeline_i.rf_st_data;
+    mem_data.memop_sign_ext   = core_pipeline_i.memop_sign_ext;
+    mem_data.memop_type       = core_pipeline_i.memop_type;
+    mem_data.rf_st_data       = core_pipeline_i.rf_st_data;
+    mem_data.instr_id         = core_pipeline_i.instr_id;
+    mem_data.store_permission = core_pipeline_i.store_permission;
     // RVM PIPELINE
-    rvm_data.alu_opcode     = core_pipeline_i.alu_opcode;
+    rvm_data.alu_opcode       = core_pipeline_i.alu_opcode;
+    rvm_data.instr_id         = core_pipeline_i.instr_id;
     
     if (core_pipeline_i.pipeline == EX_PIPELINE) begin
         ex_data.rf_we    = core_pipeline_i.rf_we;
