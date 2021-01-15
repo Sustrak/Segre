@@ -17,7 +17,7 @@ TEST_HEX_SEGRE = $(patsubst build_segre/%.o, hex_segre/%.hex, $(TEST_OBJ_SEGRE))
 TEST_RES_SPIKE = $(patsubst build_spike/%.o, result_segre/%.result, $(TEST_OBJ_SPIKE))
 
 .PHONY: clean
-all: build_dirs build gen_hex gen_results 
+all: build_dirs build gen_hex gen_results buffer_sum mem_copy matrix_multiply
 
 build_dirs:
 	mkdir -p build_segre

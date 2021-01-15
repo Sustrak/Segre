@@ -3,4 +3,13 @@ int main () {
     int* b = a + 128;
     for (int i = 0; i < 128; i++) a[i] = 5;
     for (int i = 0; i < 128; i++) b[i] = a[i];
+    __asm__(
+        "csrw 0xfff, x0 \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+    );
 }

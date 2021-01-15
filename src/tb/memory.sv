@@ -21,7 +21,7 @@ module memory (
     output logic [DCACHE_LANE_SIZE-1:0] data_o
 );
 
-parameter NUM_WORDS = 1024 * 64; // 64KB
+parameter NUM_WORDS = 1024 * 1024; // 1MB
 parameter TEXT_REGION = 0;
 parameter DATA_REGION = 32'hA000;
 
