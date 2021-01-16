@@ -43,8 +43,8 @@ module segre_pipeline_wrapper (
     output logic tl_hazard_o,
 
     //Privilege mode / Virtual mem
-    input logic rm4_i,
-    input logic [ADDR_SIZE-1:0] satp_i,
+    input logic [WORD_SIZE-1:0] csr_priv_i,
+    input logic [WORD_SIZE-1:0] csr_satp_i,
     output logic dtlb_exception_o
 );
 
@@ -147,8 +147,8 @@ segre_mem_pipeline mem_pipeline (
     .alu_mem_rf_waddr_o    (alu_mem_rf_waddr),
     .tl_rf_we_o            (tl_rf_we),
     .tl_rf_waddr_o         (tl_rf_waddr),
-    .rm4_i                 (rm4_i),
-    .satp_i                (satp_i),
+    .csr_priv_i            (csr_priv_i),
+    .csr_satp_i            (csr_satp_i),
     .dtlb_exception_o      (dtlb_exception_o)
 );
 

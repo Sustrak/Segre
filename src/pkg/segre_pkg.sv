@@ -183,6 +183,18 @@ typedef enum logic [3:0] {
     BY_RVM5_TL
 } bypass_e;
 
+/*****************
+*      CSR       *
+*****************/
+typedef enum logic[11:0] { 
+    CSR_SATP,   // Displace value for VA to PA translation
+    CSR_PRIV,   // Privilege level of the machine (1 - Supervisor | 2 - User)
+    CSR_SIE,    // Supervisor Interrupt Enable
+    CSR_SCAUSE, // Supervisor Cause of the Interruption
+    CSR_SEPC,   // Supervisor PC that caused the interrupt
+    CSR_STVAL,  // Supervisor PA that caused the TLB fault
+    CSR_STVEC   // Supervisor trap vector base address
+} csr_e;
 /********************
 * SEGRE  DATATYPES  *
 ********************/
@@ -458,6 +470,13 @@ typedef struct packed {
     logic [CSR_SIZE-1:0] waddr;
     logic [WORD_SIZE-1:0] data_i;
     logic [WORD_SIZE-1:0] data_o;
+    logic [WORD_SIZE-1:0] csr_satp;
+    logic [WORD_SIZE-1:0] csr_priv;
+    logic [WORD_SIZE-1:0] csr_sie;
+    logic [WORD_SIZE-1:0] csr_scause;
+    logic [WORD_SIZE-1:0] csr_sepc;
+    logic [WORD_SIZE-1:0] csr_stval;
+    logic [WORD_SIZE-1:0] csr_stvec;
 } core_csr_t;
 
 endpackage : segre_pkg

@@ -27,8 +27,8 @@ module segre_if_stage (
     output logic ic_access_o,
 
     //Privilege mode/Virtual Memory
-    input logic rm4_i,
-    input logic [ADDR_SIZE-1:0] satp_i,
+    input logic [WORD_SIZE-1:0] csr_priv_i,
+    input logic [ADDR_SIZE-1:0] csr_satp_i,
     output logic itlb_exception_o
 );
 
@@ -69,13 +69,13 @@ assign pc_o = (pc - 4);
 assign tlb_st.access_type = EX; //Instructions cache only reads executable code
 assign tlb_st.virtual_addr = pc[WORD_SIZE-1:12];
 assign itlb_exception_o = tlb_st.miss;
-assign physical_addr_aux = satp_i + pc;
+assign physical_addr_aux = csr_satp_i + pc;
 assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
 assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
 assign tlb_st.new_entry = 1'b0; //TODO: Actualitzar quan afegim excepcions
 
 always_comb begin : tlb_request
-    if(rm4_i) begin
+    if(!csr_priv_i) begin
         tlb_st.req <= 0;
     end
     else begin
@@ -84,7 +84,7 @@ always_comb begin : tlb_request
 end
 
 always_comb begin : cache_tag_selection
-    if(rm4_i) begin
+    if(!csr_priv_i) begin
         cache_tag.tag <= pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
     end
     else begin

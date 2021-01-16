@@ -46,8 +46,8 @@ module segre_mem_pipeline(
     output logic [REG_SIZE-1:0] tl_rf_waddr_o,
 
      //Privilege mode/Virtual Memory
-    input logic rm4_i,
-    input logic [ADDR_SIZE-1:0] satp_i,
+    input logic [WORD_SIZE-1:0] csr_priv_i,
+    input logic [WORD_SIZE-1:0] csr_satp_i,
     output logic dtlb_exception_o
 );
 
@@ -113,9 +113,9 @@ segre_tl_stage tl_stage(
     // Hazard
     .pipeline_hazard_o  (tl_hazard_o),
     //Privilege mode
-    .rm4_i              (rm4_i),
+    .csr_priv_i         (crs_priv_i),
     //Virtual mem
-    .satp_i             (satp_i),
+    .csr_satp_i         (csr_satp_i),
     .dtlb_exception_o   (dtlb_exception_o)
 );
 
