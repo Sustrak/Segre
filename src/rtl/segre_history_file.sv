@@ -56,7 +56,7 @@ hf_status_e hf_status, nxt_hf_status;
 
 assign empty_o = (head == tail);
 assign full_o  = (head-1 == tail);
-assign store_permission_o = (hf[head] == EXECUTING_STORE);
+assign store_permission_o = (hf[head].status == EXECUTING_STORE);
 
 // Output data
 assign recovering_o = hf_status == RECOVERING ? 1'b1 : 1'b0;

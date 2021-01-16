@@ -268,7 +268,8 @@ always_comb begin : tl_fsm
     end else begin
         unique case (fsm_state)
             MISS_IN_FLIGHT: begin
-                if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
+                if(mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+                else if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
                     /*if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
                         fsm_nxt_state = HAZARD_DC_MISS;*/
                     if(valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[`ADDR_TAG])) begin
@@ -286,8 +287,7 @@ always_comb begin : tl_fsm
                         else if(sb.miss || sb.trouble)
                             fsm_nxt_state = HAZARD_DC_MISS;
                     end
-                end
-                else if(mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+                end                
             end
             HAZARD_DC_MISS: begin
                 if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
