@@ -25,7 +25,10 @@ core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
 core_hf_t core_hf;
+
 logic mem_wr_done;
+logic [HF_PTR-1:0] mem_wr_done_id;
+
 
 //Virtual Memory
 logic [ADDR_SIZE-1:0] satp; //[19:0]->Displacement for VA to PA translation
@@ -125,6 +128,7 @@ segre_pipeline_wrapper pipeline_wrapper (
     .rvm_instr_id_o        (core_hf.rvm_complete_id),
     // Store completed
     .mem_wr_done_o         (mem_wr_done),
+    .mem_wr_done_id_o      (mem_wr_done_id),
     // Branch & Jump
     .branch_completed_o    (core_if.branch_completed),
     .tkbr_o                (core_if.tkbr),
@@ -195,7 +199,7 @@ segre_mmu mmu (
 );
 
 assign core_hf.ex_complete  = rf_wdata.ex_we;
-assign core_hf.mem_complete = rf_wdata.mem_we | mem_wr_done; // (Load completed | Store completed)
+assign core_hf.mem_complete = rf_wdata.mem_we;
 assign core_hf.rvm_complete = rf_wdata.rvm_we;
 
 segre_history_file history_file (
@@ -212,6 +216,8 @@ segre_history_file history_file (
     .complete_ex_id_i   (core_hf.ex_complete_id),
     .complete_mem_i     (core_hf.mem_complete),
     .complete_mem_id_i  (core_hf.mem_complete_id),
+    .complete_st_i      (mem_wr_done),
+    .complete_st_id_i   (mem_wr_done_id),
     .complete_rvm_i     (core_hf.rvm_complete),
     .complete_rvm_id_i  (core_hf.rvm_complete_id),
     .full_o             (core_hf.full),

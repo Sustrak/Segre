@@ -16,6 +16,7 @@ module segre_pipeline_wrapper (
     output logic [HF_PTR-1:0] rvm_instr_id_o,
     // Store completed
     output logic mem_wr_done_o,
+    output logic [HF_PTR-1:0] mem_wr_done_id_o,
     // Branch & Jump
     output logic branch_completed_o,
     output logic tkbr_o,
@@ -116,6 +117,7 @@ segre_mem_pipeline mem_pipeline (
     .rf_waddr_o            (rf_data_o.mem_waddr),
     .instr_id_o            (mem_instr_id_o),
     .mem_wr_done_o         (mem_wr_done_o),
+    .mem_wr_done_id_o      (mem_wr_done_id_o),
 
     // MMU
     .mmu_data_rdy_i        (mmu_data_rdy_i),
