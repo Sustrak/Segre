@@ -273,6 +273,8 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] data_load_o;
     logic [WORD_SIZE-1:0] data_flush_o;
     logic [ADDR_SIZE-1:0] addr_o;
+    logic [HF_PTR-1:0] instr_id;
+    logic buffer_merge;
 } store_buffer_t;
 
 typedef struct packed {

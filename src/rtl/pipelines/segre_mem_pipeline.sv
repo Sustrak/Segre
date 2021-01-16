@@ -98,6 +98,7 @@ segre_tl_stage tl_stage(
     .sb_data_load_o     (mem_data.sb_data_load),
     .sb_data_flush_o    (mem_data.sb_data_flush),
     .sb_addr_o          (mem_data.sb_addr),
+    .sb_buffer_merge_o  (),
     // Instruction ID
     .instr_id_o         (mem_data.instr_id),
 
