@@ -94,7 +94,7 @@ always_comb begin : data_b
                 if (id_opcode_i == OPCODE_OP || id_opcode_i == OPCODE_LUI || id_opcode_i == OPCODE_AUIPC) begin
                     bypass_b_o = BY_EX_PIPE;
                 end
-                else begin
+                else if (instr_opcode_i != OPCODE_STORE) begin
                     dependence_src_b = 1'b1;
                 end
             end
