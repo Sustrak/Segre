@@ -17,6 +17,8 @@ module segre_history_file (
     input logic [HF_PTR-1:0] complete_ex_id_i,
     input logic complete_mem_i,
     input logic [HF_PTR-1:0] complete_mem_id_i,
+    input logic complete_st_i,
+    input logic [HF_PTR-1:0] complete_st_id_i,
     input logic complete_rvm_i,
     input logic [HF_PTR-1:0] complete_rvm_id_i,
 
@@ -56,7 +58,7 @@ hf_status_e hf_status, nxt_hf_status;
 
 assign empty_o = (head == tail);
 assign full_o  = (head-1 == tail);
-assign store_permission_o = (hf[head] == EXECUTING_STORE);
+assign store_permission_o = (hf[head].status == EXECUTING_STORE);
 
 // Output data
 assign recovering_o = hf_status == RECOVERING ? 1'b1 : 1'b0;
@@ -82,10 +84,10 @@ always_comb begin : queue_control
             if (req_i) nxt_tail = tail + 1;
             else nxt_tail = tail;
 
-            instr_ended = complete_ex_i + complete_mem_i + complete_rvm_i;
+            instr_ended = complete_ex_i + complete_mem_i + complete_rvm_i + complete_st_i;
             nxt_head = head;
             for (int i = 0; i < instr_ended; i++) begin
-                if (complete_ex_id_i == nxt_head || complete_mem_id_i == nxt_head || complete_rvm_id_i == nxt_head || hf[nxt_head].status == EXEC_OK) begin
+                if (complete_ex_id_i == nxt_head || complete_mem_id_i == nxt_head || complete_rvm_id_i == nxt_head || complete_st_id_i == nxt_head || hf[nxt_head].status == EXEC_OK) begin
                     nxt_head++;
                 end
             end
@@ -121,9 +123,10 @@ always_ff @(posedge clk_i) begin : latch
                     else hf[tail].status <= EXECUTNG;
                 end
 
-                if (complete_ex_i) hf[complete_ex_id_i].status <= EXEC_OK;
+                if (complete_ex_i)  hf[complete_ex_id_i].status <= EXEC_OK;
                 if (complete_mem_i) hf[complete_mem_id_i].status <= EXEC_OK;
                 if (complete_rvm_i) hf[complete_rvm_id_i].status <= EXEC_OK;
+                if (complete_st_i)  hf[complete_st_id_i].status <= EXEC_OK; 
                 if (exc_i) hf[exc_id_i].status <= EXCEPTION;
             end
             RECOVERING: begin
@@ -153,10 +156,13 @@ endproperty
 assert property (disable iff(!rsn_i)
     not_same_id_p(complete_ex_i, complete_ex_id_i, complete_mem_i, complete_mem_id_i)   and
     not_same_id_p(complete_ex_i, complete_ex_id_i, complete_rvm_i, complete_rvm_id_i)   and
+    not_same_id_p(complete_ex_i, complete_ex_id_i, complete_st_i, complete_st_id_i)     and
     not_same_id_p(complete_mem_i, complete_mem_id_i, complete_ex_i, complete_ex_id_i)   and
     not_same_id_p(complete_mem_i, complete_mem_id_i, complete_rvm_i, complete_rvm_id_i) and
+    not_same_id_p(complete_mem_i, complete_mem_id_i, complete_st_i, complete_st_id_i)   and
     not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_ex_i, complete_ex_id_i)   and
-    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_mem_i, complete_mem_id_i)
+    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_mem_i, complete_mem_id_i) and
+    not_same_id_p(complete_rvm_i, complete_rvm_id_i, complete_st_i, complete_st_id_i)
 ) else begin
     $fatal("%m: Different pipelines completing instruction with same id");
 end

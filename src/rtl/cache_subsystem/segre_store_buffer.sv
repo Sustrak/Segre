@@ -9,6 +9,7 @@ module segre_store_buffer (
     input logic [ADDR_SIZE-1:0] addr_i,
     input logic [WORD_SIZE-1:0] data_i,
     input memop_data_type_e memop_data_type_i,
+    input logic [HF_PTR-1:0] instr_id_i,
     output logic hit_o,
     output logic miss_o,
     //output logic full_o,
@@ -17,7 +18,9 @@ module segre_store_buffer (
     output memop_data_type_e memop_data_type_o,
     output logic [WORD_SIZE-1:0] data_load_o, //Support for load and flush at the same cycle
     output logic [WORD_SIZE-1:0] data_flush_o,
-    output logic [ADDR_SIZE-1:0] addr_o
+    output logic [ADDR_SIZE-1:0] addr_o,
+    output logic [HF_PTR-1:0] instr_id_o,
+    output logic buffer_merge_o
 );
 
 localparam NUM_ELEMS = 2;
@@ -28,6 +31,7 @@ typedef struct packed{
     logic [ADDR_SIZE-1:0] address;
     logic [3:0][7:0] data ;
     memop_data_type_e data_type;
+    logic [HF_PTR-1:0] instr_id;
 } buf_elem;
 
 buf_elem [NUM_ELEMS-1:0] buffer;
@@ -52,6 +56,10 @@ logic [NUM_ELEMS-1:0]hit_vector;
 logic hit;
 logic data_valid;
 logic trouble;
+
+logic [HF_PTR-1:0] instr_id_flush;
+logic [HF_PTR-1:0] instr_id_merge;
+logic buffer_merge;
 
 // Help Functions
 /*function logic[INDEX_SIZE-1:0] one_hot_to_binary(logic [NUM_ELEMS-1:0] one_hot);
@@ -141,6 +149,7 @@ always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and r
             buffer[i].data[2] <= 0;
             buffer[i].data[3] <= 0;
             buffer[i].data_type <= WORD;
+            buffer[i].instr_id <= 0;
         end
         head <= 0;
         tail <= 0;
@@ -164,6 +173,7 @@ always_comb begin : buffer_flush_comb
         end
         default: ;
     endcase
+    instr_id_flush <= buffer[tail].instr_id;
     address <= buffer[tail].address;
     memop_data_type <= buffer[tail].data_type;
     data_valid <= (flush_chance_i && (tail != head || full) && buffer[tail].valid);
@@ -252,6 +262,7 @@ always_ff @(posedge clk_i) begin : buffer_store
                     end
                     default: ;
                 endcase
+                buffer[one_hot_to_binary(hit_vector)].instr_id <= instr_id_i;
             end
         end
         else begin 
@@ -270,6 +281,7 @@ always_ff @(posedge clk_i) begin : buffer_store
                     end
                     default: ;
                 endcase
+                buffer[head].instr_id <= instr_id_i;
                 buffer[head].address <= addr_i;
                 buffer[head].valid <= 1;
                 buffer[head].data_type <= memop_data_type_i;
@@ -284,6 +296,11 @@ always_ff @(posedge clk_i) begin : buffer_store
     end
 end
 
+assign buffer_merge = req_store_i & hit & !trouble;
+assign instr_id_merge = buffer[one_hot_to_binary(hit_vector)].instr_id;
+
+assign buffer_merge_o = buffer_merge;
+assign instr_id_o = buffer_merge ? instr_id_merge : instr_id_flush;
 assign trouble_o = trouble || (full & (!hit) & req_store_i);
 //assign full_o = full & (!hit);
 assign hit_o = hit & (req_load_i | req_store_i);

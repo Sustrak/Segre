@@ -41,6 +41,7 @@ module segre_tl_stage (
     output logic [WORD_SIZE-1:0] sb_data_load_o,
     output logic [WORD_SIZE-1:0] sb_data_flush_o,
     output logic [ADDR_SIZE-1:0] sb_addr_o,
+    output logic sb_buffer_merge_o,
     // Instruction ID
     output logic [HF_PTR-1:0] instr_id_o,
 
@@ -198,6 +199,7 @@ segre_store_buffer store_buffer (
     .addr_i            (sb.addr_i),
     .data_i            (sb.data_i),
     .memop_data_type_i (sb.memop_data_type_i),
+    .instr_id_i        (instr_id_i),
     .hit_o             (sb.hit),
     .miss_o            (sb.miss),
     //.full_o            (sb.full),
@@ -206,7 +208,9 @@ segre_store_buffer store_buffer (
     .memop_data_type_o (sb.memop_data_type_o), //Only for flushing purposes
     .data_load_o       (sb.data_load_o),
     .data_flush_o      (sb.data_flush_o),
-    .addr_o            (sb.addr_o)
+    .addr_o            (sb.addr_o),
+    .instr_id_o        (sb.instr_id),
+    .buffer_merge_o    (sb.buffer_merge)
 );
 
 /*always_comb begin : sb_req_store
@@ -265,7 +269,8 @@ always_comb begin : tl_fsm
     end else begin
         unique case (fsm_state)
             MISS_IN_FLIGHT: begin
-                if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
+                if(mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+                else if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
                     /*if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
                         fsm_nxt_state = HAZARD_DC_MISS;*/
                     if(valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[`ADDR_TAG])) begin
@@ -283,8 +288,7 @@ always_comb begin : tl_fsm
                         else if(sb.miss || sb.trouble)
                             fsm_nxt_state = HAZARD_DC_MISS;
                     end
-                end
-                else if(mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+                end                
             end
             HAZARD_DC_MISS: begin
                 if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
@@ -342,6 +346,7 @@ always_ff @(posedge clk_i) begin : stage_latch
         sb_data_flush_o    <= 0;
         sb_addr_o          <= 0;
         sb_flush_o         <= 0;
+        sb_buffer_merge_o  <= 0;
         instr_id_o         <= 0;
     end 
     else begin
@@ -354,6 +359,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_hit_o         <= 1'b0;
                 memop_rd_o       <= 1'b0;
                 memop_wr_o       <= sb.data_valid;
+                instr_id_o       <= sb.instr_id;
             end
             else if(sb.hit) begin
                 //Load or Store hit at store buffer, no need to access cache
@@ -362,11 +368,13 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_hit_o         <= sb.hit;
                 memop_rd_o       <= memop_rd_i; //We have already read
                 memop_wr_o       <= 1'b0; //We have already write
+                instr_id_o       <= instr_id_i;
             end
             else begin
                 // Miss in store buffer or no memory operation and store buffer empty
                 memop_rd_o       <= memop_rd_i;
                 memop_wr_o       <= 1'b0;
+                instr_id_o       <= instr_id_i;
             end
             addr_o             <= addr_i;
             rf_we_o            <= rf_we_i;
@@ -376,7 +384,7 @@ always_ff @(posedge clk_i) begin : stage_latch
             memop_type_o       <= memop_type_i;
             memop_type_flush_o <= sb.memop_data_type_o;
             sb_flush_o         <= sb.data_valid;
-            instr_id_o         <= instr_id_i;
+            sb_buffer_merge_o  <= sb.buffer_merge;
         end
         else begin
             if(fsm_state == HAZARD_SB_TROUBLE) begin
@@ -387,14 +395,15 @@ always_ff @(posedge clk_i) begin : stage_latch
                 memop_wr_o       <= sb.data_valid;
                 sb_flush_o       <= sb.data_valid;
                 addr_index_o     <= cache_tag.addr_index;
-                instr_id_o       <= instr_id_o;
+                instr_id_o       <= sb.instr_id;
             end
             else begin
                 memop_wr_o <= 0;
                 sb_flush_o <= 0;
             end
-            rf_we_o    <= 0;
-            memop_rd_o <= 0;
+            rf_we_o           <= 0;
+            memop_rd_o        <= 0;
+            sb_buffer_merge_o <= 0;
         end       
         fsm_state <= fsm_nxt_state;
     end

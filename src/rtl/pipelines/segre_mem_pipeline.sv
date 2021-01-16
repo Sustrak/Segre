@@ -22,6 +22,7 @@ module segre_mem_pipeline(
     output logic [REG_SIZE-1:0] rf_waddr_o,
     output logic [HF_PTR-1:0] instr_id_o,
     output logic mem_wr_done_o,
+    output logic [HF_PTR-1:0] mem_wr_done_id_o,
     
     // MMU
     input logic mmu_data_rdy_i,
@@ -56,8 +57,10 @@ tl_stage_t tl_data;
 
 logic [WORD_SIZE-1:0] add_result;
 logic [WORD_SIZE-1:0] tl_store_data;
+logic sb_buffer_merge;
 
-assign mem_wr_done_o = mem_data.memop_wr;
+assign mem_wr_done_o = mem_data.memop_wr | sb_buffer_merge;
+assign mem_wr_done_id_o = mem_data.instr_id;
 
 segre_tl_stage tl_stage(
     .clk_i             (clk_i),
@@ -98,6 +101,7 @@ segre_tl_stage tl_stage(
     .sb_data_load_o     (mem_data.sb_data_load),
     .sb_data_flush_o    (mem_data.sb_data_flush),
     .sb_addr_o          (mem_data.sb_addr),
+    .sb_buffer_merge_o  (sb_buffer_merge),
     // Instruction ID
     .instr_id_o         (mem_data.instr_id),
 
