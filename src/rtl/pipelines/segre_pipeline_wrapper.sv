@@ -13,6 +13,7 @@ module segre_pipeline_wrapper (
     // CSR File
     output logic csr_access_o,
     output logic [CSR_SIZE-1:0] csr_waddr_o,
+    output logic [WORD_SIZE-1:0] csr_data_o,
     // Instruction ID
     output logic [HF_PTR-1:0] ex_instr_id_o,
     output logic [HF_PTR-1:0] mem_instr_id_o,
@@ -96,7 +97,8 @@ segre_ex_stage ex_stage (
     .new_pc_o           (new_pc_o),
     .instr_id_o         (ex_instr_id_o),
     .csr_access_o       (csr_access_o),
-    .csr_waddr_o        (csr_waddr_o)
+    .csr_waddr_o        (csr_waddr_o),
+    .csr_data_o         (csr_data_o)
 );
 
 segre_mem_pipeline mem_pipeline (

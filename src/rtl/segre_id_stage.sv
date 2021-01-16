@@ -207,7 +207,6 @@ always_comb begin : alu_src_a_mux
         ALU_A_REG: alu_src_a = data_a;
         ALU_A_IMM: alu_src_a = imm_a;
         ALU_A_PC : alu_src_a = pc_i;
-        ALU_A_CSR: alu_src_a = csr_data_i;
         default: ;
     endcase
 end
@@ -217,6 +216,7 @@ always_comb begin : alu_src_b_mux
         ALU_B_REG:  alu_src_b = data_b;
         ALU_B_IMM:  alu_src_b = imm_b;
         ALU_B_ZERO: alu_src_b = 0;
+        ALU_B_CSR:  alu_src_b = csr_data_i;
         default: ;
     endcase
 end

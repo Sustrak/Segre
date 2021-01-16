@@ -276,13 +276,15 @@ always_comb begin
         OPCODE_SYSTEM: begin
             // CSR OPERATIONS
             if (instr_i[`FUNC_3] == 3'b001) begin
-                alu_opcode_o = ALU_ADD;
-                src_b_mux_sel_o = ALU_B_ZERO;
+                alu_opcode_o = ALU_PASS_B;
+                src_a_mux_sel_o = ALU_A_REG;
+                src_b_mux_sel_o = ALU_B_CSR;
             end
             else if (instr_i[`FUNC_3] == 3'b101) begin
+                alu_opcode_o = ALU_PASS_B;
+                a_imm_mux_sel_o = IMM_A_RS1;
                 src_a_mux_sel_o = ALU_A_IMM;
-                src_b_mux_sel_o = ALU_B_ZERO;
-                alu_opcode_o = ALU_ADD;
+                src_b_mux_sel_o = ALU_B_CSR;
             end
         end
         default: ;

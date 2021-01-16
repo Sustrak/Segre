@@ -128,6 +128,7 @@ segre_pipeline_wrapper pipeline_wrapper (
     // CSR File
     .csr_access_o          (core_csr.we),
     .csr_waddr_o           (core_csr.waddr),
+    .csr_data_o            (core_csr.data_i),
     // Instruction ID
     .ex_instr_id_o         (core_hf.ex_complete_id),
     .mem_instr_id_o        (core_hf.mem_complete_id),

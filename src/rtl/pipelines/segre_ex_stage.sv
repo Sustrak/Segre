@@ -34,6 +34,7 @@ module segre_ex_stage (
     // CSR file
     output logic csr_access_o,
     output logic [CSR_SIZE-1:0] csr_waddr_o,
+    output logic [WORD_SIZE-1:0] csr_data_o,
     // Tkbr
     output logic branch_completed_o,
     output logic tkbr_o,
@@ -85,6 +86,7 @@ always_ff @(posedge clk_i) begin
         instr_id_o         <= instr_id_i;
         csr_access_o       <= csr_access_i;
         csr_waddr_o        <= csr_waddr_i;
+        csr_data_o         <= alu_src_a_i;
     end
 end
 

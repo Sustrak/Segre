@@ -14,8 +14,8 @@ module segre_csr_file (
 
 localparam NUM_REGS = 2**CSR_SIZE;
 
-logic [WORD_SIZE-1:0][NUM_REGS-1:0] csr_reg;
-logic [WORD_SIZE-1:0][NUM_REGS-1:0] csr_reg_aux;
+logic [NUM_REGS-1:0][WORD_SIZE-1:0] csr_reg;
+logic [NUM_REGS-1:0][WORD_SIZE-1:0] csr_reg_aux;
 logic [NUM_REGS-1:0] write_enable;
 
 always_comb begin
@@ -26,7 +26,8 @@ end
 
 always_ff @(posedge clk_i) begin
     if (!rsn_i) begin
-        csr_reg_aux <= '{default: '0};
+        csr_reg_aux[NUM_REGS-1:1] <= '{default: '0};
+        csr_reg_aux[0] <= 32'hbbbb_eeee;
     end
     else begin
         for (int j = 0; j < NUM_REGS; j++) begin

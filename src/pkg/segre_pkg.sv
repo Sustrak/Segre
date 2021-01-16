@@ -88,7 +88,8 @@ typedef enum logic [5:0] {
     ALU_DIV,
     ALU_DIVU,
     ALU_REM,
-    ALU_REMU
+    ALU_REMU,
+    ALU_PASS_B
 } alu_opcode_e;
 
 /*****************
@@ -97,14 +98,14 @@ typedef enum logic [5:0] {
 typedef enum logic[1:0] {
     ALU_A_REG,
     ALU_A_IMM,
-    ALU_A_PC,
-    ALU_A_CSR
+    ALU_A_PC
 } alu_src_a_e;
 
 typedef enum logic[1:0] {
     ALU_B_REG,
     ALU_B_IMM,
-    ALU_B_ZERO
+    ALU_B_ZERO,
+    ALU_B_CSR
 } alu_src_b_e;
 
 typedef enum logic {
