@@ -16,6 +16,9 @@ module segre_ex_stage (
     // Register file
     input logic rf_we_i,
     input logic [REG_SIZE-1:0] rf_waddr_i,
+    // CSR file
+    input logic csr_access_i,
+    input logic [CSR_SIZE-1:0] csr_waddr_i,
     // Branch | Jal
     input logic [WORD_SIZE-1:0] br_src_a_i,
     input logic [WORD_SIZE-1:0] br_src_b_i,
@@ -28,6 +31,9 @@ module segre_ex_stage (
     // Register file
     output logic rf_we_o,
     output logic [REG_SIZE-1:0] rf_waddr_o,
+    // CSR file
+    output logic csr_access_o,
+    output logic [CSR_SIZE-1:0] csr_waddr_o,
     // Tkbr
     output logic branch_completed_o,
     output logic tkbr_o,
@@ -67,6 +73,7 @@ always_ff @(posedge clk_i) begin
         tkbr_o           <= 0;
         new_pc_o         <= 0;
         instr_id_o       <= 0;
+        csr_access_o     <= 0;
     end
     else if (!hazard_i) begin
         alu_res_o          <= (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
@@ -76,6 +83,8 @@ always_ff @(posedge clk_i) begin
         new_pc_o           <= alu_res;
         branch_completed_o <= branch_completed;
         instr_id_o         <= instr_id_i;
+        csr_access_o       <= csr_access_i;
+        csr_waddr_o        <= csr_waddr_i;
     end
 end
 

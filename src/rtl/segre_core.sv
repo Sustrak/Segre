@@ -25,6 +25,7 @@ core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
 core_hf_t core_hf;
+core_csr_t core_csr;
 logic mem_wr_done;
 
 //Virtual Memory
@@ -81,8 +82,10 @@ segre_id_stage id_stage (
     // Register file read operands
     .rf_raddr_a_o     (decode_rf.raddr_a),
     .rf_raddr_b_o     (decode_rf.raddr_b),
+    .csr_raddr_o      (core_csr.raddr),
     .rf_data_a_i      (decode_rf.data_a),
     .rf_data_b_i      (decode_rf.data_b),
+    .csr_data_i       (core_csr.data_o),
     // Bypass
     .bypass_data_i    (core_id.bypass_data),
     // ID EX interface
@@ -108,7 +111,10 @@ segre_id_stage id_stage (
     .pipeline_o       (core_pipeline.pipeline),
     // Bypass
     .bypass_a_o       (core_pipeline.bypass_a),
-    .bypass_b_o       (core_pipeline.bypass_b)
+    .bypass_b_o       (core_pipeline.bypass_b),
+    // CSR
+    .csr_access_o     (core_pipeline.csr_access),
+    .csr_waddr_o      (core_pipeline.csr_waddr)
 );
 
 segre_pipeline_wrapper pipeline_wrapper (
@@ -119,6 +125,9 @@ segre_pipeline_wrapper pipeline_wrapper (
     .core_pipeline_i       (core_pipeline),
     // Register File
     .rf_data_o             (rf_wdata),
+    // CSR File
+    .csr_access_o          (core_csr.we),
+    .csr_waddr_o           (core_csr.waddr),
     // Instruction ID
     .ex_instr_id_o         (core_hf.ex_complete_id),
     .mem_instr_id_o        (core_hf.mem_complete_id),
@@ -161,6 +170,17 @@ segre_register_file segre_rf (
     .raddr_w_i   (core_pipeline.rf_waddr),
     .data_w_o    (core_hf.rf_data),
     .wdata_i     (rf_wdata)
+);
+
+segre_csr_file segre_csr (
+    .clk_i   (clk_i),
+    .rsn_i   (rsn_i),
+
+    .we_i    (core_csr.we),
+    .raddr_i (core_csr.raddr),
+    .waddr_i (core_csr.waddr),
+    .data_i  (core_csr.data_i),
+    .data_o  (core_csr.data_o)
 );
 
 segre_mmu mmu (

@@ -5,6 +5,7 @@ import segre_pkg::*;
 `define REG_RD 11:7
 `define FUNC_3 14:12
 `define FUNC_7 31:25
+`define REG_CSR 31:20
 
 module segre_decode(
     // Clock and Reset
@@ -20,6 +21,7 @@ module segre_decode(
     output logic [WORD_SIZE-1:0] imm_s_type_o,
     output logic [WORD_SIZE-1:0] imm_j_type_o,
     output logic [WORD_SIZE-1:0] imm_b_type_o,
+    output logic [WORD_SIZE-1:0] zimm_rs1_type_o,
 
     // ALU
     output alu_opcode_e alu_opcode_o,
@@ -43,7 +45,11 @@ module segre_decode(
     output logic memop_wr_o,
 
     // Pipeline
-    output pipeline_e pipeline_o
+    output pipeline_e pipeline_o,
+
+    // CSR
+    output logic csr_access_o,
+    output logic [CSR_SIZE-1:0] csr_addr_o
 );
 
 opcode_e instr_opcode;
@@ -51,11 +57,12 @@ opcode_e alu_instr_opcode;
 
 logic illegal_ins;
 
-assign imm_i_type_o = { {20{instr_i[31]}}, instr_i[31:20] };
-assign imm_u_type_o = { instr_i[31:12], 12'b0 };
-assign imm_s_type_o = { {20{instr_i[31]}}, instr_i[31:25], instr_i[11:7] };
-assign imm_j_type_o = { {12{instr_i[31]}}, instr_i[19:12], instr_i[20], instr_i[30:21], 1'b0 };
-assign imm_b_type_o = { {19{instr_i[31]}}, instr_i[31], instr_i[7], instr_i[30:25], instr_i[11:8], 1'b0 };
+assign imm_i_type_o    = { {20{instr_i[31]}}, instr_i[31:20] };
+assign imm_u_type_o    = { instr_i[31:12], 12'b0 };
+assign imm_s_type_o    = { {20{instr_i[31]}}, instr_i[31:25], instr_i[11:7] };
+assign imm_j_type_o    = { {12{instr_i[31]}}, instr_i[19:12], instr_i[20], instr_i[30:21], 1'b0 };
+assign imm_b_type_o    = { {19{instr_i[31]}}, instr_i[31], instr_i[7], instr_i[30:25], instr_i[11:8], 1'b0 };
+assign zimm_rs1_type_o = { 27'b0, raddr_a_o }; // RS1 zero extended
 
 // Source registers
 assign raddr_a_o = instr_i[`REG_RS1];
@@ -63,6 +70,7 @@ assign raddr_b_o = instr_i[`REG_RS2];
 
 // Destination registers
 assign waddr_o = instr_i[`REG_RD];
+assign csr_addr_o = instr_i[`REG_CSR];
 
 // Opcode
 assign opcode_o = opcode_e'(instr_i[6:0]);
@@ -78,6 +86,7 @@ always_comb begin
     memop_sign_ext_o = 1'b0;
     memop_type_o     = WORD;
     instr_opcode     = opcode_e'(instr_i[6:0]);
+    csr_access_o     = 1'b0;
 
     unique case(instr_opcode)
 
@@ -121,6 +130,13 @@ always_comb begin
         end
         OPCODE_AUIPC: begin
             rf_we_o = 1'b1;
+        end
+        OPCODE_SYSTEM: begin
+            if (instr_i[`FUNC_3]) begin
+                // CSR OPERATIONS
+                csr_access_o = 1'b1;
+                rf_we_o = 1'b1;
+            end
         end
         default: begin
             if (rsn_i) begin
@@ -256,6 +272,18 @@ always_comb begin
             src_b_mux_sel_o = ALU_B_IMM;
             b_imm_mux_sel_o = IMM_B_U;
             alu_opcode_o    = ALU_ADD;
+        end
+        OPCODE_SYSTEM: begin
+            // CSR OPERATIONS
+            if (instr_i[`FUNC_3] == 3'b001) begin
+                alu_opcode_o = ALU_ADD;
+                src_b_mux_sel_o = ALU_B_ZERO;
+            end
+            else if (instr_i[`FUNC_3] == 3'b101) begin
+                src_a_mux_sel_o = ALU_A_IMM;
+                src_b_mux_sel_o = ALU_B_ZERO;
+                alu_opcode_o = ALU_ADD;
+            end
         end
         default: ;
     endcase

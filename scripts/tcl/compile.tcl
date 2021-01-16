@@ -27,6 +27,7 @@ vlog -sv -work $work_dir $rtl_dir/segre_if_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_decode.sv
 vlog -sv -work $work_dir $rtl_dir/segre_id_stage.sv
 vlog -sv -work $work_dir $rtl_dir/segre_register_file.sv
+vlog -sv -work $work_dir $rtl_dir/segre_csr_file.sv
 vlog -sv -work $work_dir $rtl_dir/segre_core.sv
 vlog -sv -work $work_dir -F $rtl_dir/cache_subsystem/filelist.f
 vlog -sv -work $work_dir -F $rtl_dir/pipelines/filelist.f

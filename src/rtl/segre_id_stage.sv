@@ -16,8 +16,10 @@ module segre_id_stage (
     // Register file read operands
     output logic [REG_SIZE-1:0]  rf_raddr_a_o,
     output logic [REG_SIZE-1:0]  rf_raddr_b_o,
+    output logic [CSR_SIZE-1:0]  csr_raddr_o,
     input  logic [WORD_SIZE-1:0] rf_data_a_i,
     input  logic [WORD_SIZE-1:0] rf_data_b_i,
+    input  logic [WORD_SIZE-1:0] csr_data_i,
     
     // Bypass
     input bypass_data_t bypass_data_i,
@@ -46,7 +48,10 @@ module segre_id_stage (
     output pipeline_e pipeline_o,
     // Bypass
     output bypass_e bypass_a_o,
-    output bypass_e bypass_b_o
+    output bypass_e bypass_b_o,
+    // CSR
+    output logic csr_access_o,
+    output logic [CSR_SIZE-1:0] csr_waddr_o
 );
 
 opcode_e opcode;
@@ -56,6 +61,7 @@ logic [WORD_SIZE-1:0] imm_i_type;
 logic [WORD_SIZE-1:0] imm_s_type;
 logic [WORD_SIZE-1:0] imm_j_type;
 logic [WORD_SIZE-1:0] imm_b_type;
+logic [WORD_SIZE-1:0] zimm_rs1_type;
 alu_src_a_e src_a_mux_sel;
 alu_src_b_e src_b_mux_sel;
 alu_imm_a_e a_imm_mux_sel;
@@ -83,6 +89,8 @@ pipeline_e pipeline;
 logic [WORD_SIZE-1:0] data_a;
 logic [WORD_SIZE-1:0] data_b;
 logic [HF_PTR-1:0] nxt_instr_id;
+logic csr_access;
+logic [CSR_SIZE-1:0] csr_addr;
 
 // Bypass
 bypass_e bypass_a;
@@ -94,6 +102,7 @@ assign rf_src_a = (opcode == OPCODE_LUI | opcode == OPCODE_AUIPC) ? 0 : rf_raddr
 assign rf_src_b = (id_opcode == OPCODE_LUI | id_opcode == OPCODE_AUIPC) ? 0 : rf_raddr_b;
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
+assign csr_raddr_o  = csr_addr;
 assign instr_dependence = war_dependence | waw_dependence;
 assign hazard_o = instr_dependence;
 
@@ -114,6 +123,7 @@ segre_decode decode (
     .imm_s_type_o     (imm_s_type),
     .imm_j_type_o     (imm_j_type),
     .imm_b_type_o     (imm_b_type),
+    .zimm_rs1_type_o  (zimm_rs1_type),
 
     // ALU
     .alu_opcode_o     (alu_opcode),
@@ -137,7 +147,11 @@ segre_decode decode (
     .memop_sign_ext_o (memop_sign_ext),
 
     // Pipeline
-    .pipeline_o       (pipeline)
+    .pipeline_o       (pipeline),
+
+    // CSR
+    .csr_access_o     (csr_access),
+    .csr_addr_o       (csr_addr)
 );
 
 segre_bypass_controller bypass_controller (
@@ -169,8 +183,13 @@ segre_bypass_controller bypass_controller (
     .waw_dependence_o (waw_dependence)
 );
 
-// For the moment imm_a will always be 0
-assign imm_a = '0;
+always_comb begin : alu_imm_a_mux
+    unique case(a_imm_mux_sel)
+        IMM_A_ZERO: imm_a = 0;
+        IMM_A_RS1 : imm_a = zimm_rs1_type;
+        default: imm_a = 0;
+    endcase
+end
 
 always_comb begin : alu_imm_b_mux
     unique case(b_imm_mux_sel)
@@ -188,14 +207,16 @@ always_comb begin : alu_src_a_mux
         ALU_A_REG: alu_src_a = data_a;
         ALU_A_IMM: alu_src_a = imm_a;
         ALU_A_PC : alu_src_a = pc_i;
+        ALU_A_CSR: alu_src_a = csr_data_i;
         default: ;
     endcase
 end
 
 always_comb begin : alu_src_b_mux
     unique case(src_b_mux_sel)
-        ALU_B_REG: alu_src_b = data_b;
-        ALU_B_IMM: alu_src_b = imm_b;
+        ALU_B_REG:  alu_src_b = data_b;
+        ALU_B_IMM:  alu_src_b = imm_b;
+        ALU_B_ZERO: alu_src_b = 0;
         default: ;
     endcase
 end
@@ -240,11 +261,13 @@ always_ff @(posedge clk_i) begin
         rf_we_o         <= 0;
         instr_id_o      <= {HF_PTR{1'b0}};
         id_opcode       <= OPCODE_AUIPC;
+        csr_access_o    <= 0;
     end
     else if (instr_dependence) begin
         rf_we_o         <= 0;
         memop_wr_o      <= 0;
         memop_rd_o      <= 0;
+        csr_access_o    <= 0;
     end
     else if (!hazard_i) begin
         alu_src_a_o      <= alu_src_a;
@@ -264,6 +287,8 @@ always_ff @(posedge clk_i) begin
         bypass_b_o       <= bypass_b;
         id_opcode        <= opcode;
         instr_id_o       <= nxt_instr_id;
+        csr_access_o     <= csr_access;
+        csr_waddr_o      <= csr_addr;
     end
 end
 
