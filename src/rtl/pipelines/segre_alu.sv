@@ -29,6 +29,7 @@ always_comb begin
         ALU_AND   : alu_res = alu_src_a_i & alu_src_b_i;
         ALU_SLT   : alu_res = $signed(alu_src_a_i) < $signed(alu_src_b_i) ? 32'b1 : 32'b0;
         ALU_SLTU  : alu_res = $unsigned(alu_src_a_i) < $unsigned(alu_src_b_i) ? 32'b1 : 32'b0;
+        ALU_PASS_B: alu_res = alu_src_b_i;
         default: ;
     endcase
 end

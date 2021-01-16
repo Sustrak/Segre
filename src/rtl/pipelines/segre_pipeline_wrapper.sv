@@ -10,6 +10,10 @@ module segre_pipeline_wrapper (
 
     // Register File
     output rf_wdata_t rf_data_o,
+    // CSR File
+    output logic csr_access_o,
+    output logic [CSR_SIZE-1:0] csr_waddr_o,
+    output logic [WORD_SIZE-1:0] csr_data_o,
     // Instruction ID
     output logic [HF_PTR-1:0] ex_instr_id_o,
     output logic [HF_PTR-1:0] mem_instr_id_o,
@@ -40,8 +44,8 @@ module segre_pipeline_wrapper (
     output logic tl_hazard_o,
 
     //Privilege mode / Virtual mem
-    input logic rm4_i,
-    input logic [ADDR_SIZE-1:0] satp_i,
+    input logic [WORD_SIZE-1:0] csr_priv_i,
+    input logic [WORD_SIZE-1:0] csr_satp_i,
     output logic dtlb_exception_o
 );
 
@@ -82,6 +86,8 @@ segre_ex_stage ex_stage (
     .br_src_a_i         (ex_data.br_src_a),
     .br_src_b_i         (ex_data.br_src_b),
     .instr_id_i         (ex_data.instr_id),
+    .csr_access_i       (ex_data.csr_access),
+    .csr_waddr_i        (ex_data.csr_waddr),
 
     // Output
     .alu_res_o          (rf_data_o.ex_data),
@@ -90,7 +96,10 @@ segre_ex_stage ex_stage (
     .branch_completed_o (branch_completed_o),
     .tkbr_o             (tkbr_o),
     .new_pc_o           (new_pc_o),
-    .instr_id_o         (ex_instr_id_o)
+    .instr_id_o         (ex_instr_id_o),
+    .csr_access_o       (csr_access_o),
+    .csr_waddr_o        (csr_waddr_o),
+    .csr_data_o         (csr_data_o)
 );
 
 segre_mem_pipeline mem_pipeline (
@@ -140,8 +149,8 @@ segre_mem_pipeline mem_pipeline (
     .alu_mem_rf_waddr_o    (alu_mem_rf_waddr),
     .tl_rf_we_o            (tl_rf_we),
     .tl_rf_waddr_o         (tl_rf_waddr),
-    .rm4_i                 (rm4_i),
-    .satp_i                (satp_i),
+    .csr_priv_i            (csr_priv_i),
+    .csr_satp_i            (csr_satp_i),
     .dtlb_exception_o      (dtlb_exception_o)
 );
 
@@ -182,6 +191,8 @@ always_comb begin : input_decoder
     ex_data.br_src_a          = core_pipeline_i.br_src_a;
     ex_data.br_src_b          = core_pipeline_i.br_src_b;
     ex_data.instr_id          = core_pipeline_i.instr_id;
+    ex_data.csr_access        = core_pipeline_i.csr_access;
+    ex_data.csr_waddr         = core_pipeline_i.csr_waddr;
     // MEM PIPELINE
     mem_data.memop_sign_ext   = core_pipeline_i.memop_sign_ext;
     mem_data.memop_type       = core_pipeline_i.memop_type;

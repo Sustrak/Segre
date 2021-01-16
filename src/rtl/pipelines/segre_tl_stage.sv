@@ -53,16 +53,13 @@ module segre_tl_stage (
     output logic mmu_miss_o,
     output logic [ADDR_SIZE-1:0] mmu_addr_o,
     output logic mmu_cache_access_o,
-    //output logic mmu_wr_o,
-    //output memop_data_type_e mmu_wr_data_type_o,
-    //output logic [WORD_SIZE-1:0] mmu_data_o,
 
     // Hazard
     output logic pipeline_hazard_o,
 
     //Privilege mode / Virual mem
-    input logic rm4_i,
-    input logic [ADDR_SIZE-1:0] satp_i,
+    input logic [WORD_SIZE-1:0] csr_priv_i,
+    input logic [WORD_SIZE-1:0] csr_satp_i,
     output logic dtlb_exception_o
 );
 
@@ -94,7 +91,7 @@ always_comb begin : tlb_vaddr_selection
 end
 
 always_comb begin : tlb_request
-    if(rm4_i) begin
+    if(!csr_priv_i) begin
         tlb_st.req <= 0;
     end
     else begin
@@ -108,7 +105,7 @@ always_comb begin : tlb_request
 end
 
 always_comb begin : cache_tag_selection
-    if(rm4_i) begin
+    if(!csr_priv_i) begin
         if (sb.flush_chance & sb.data_valid) cache_tag.tag = sb.addr_o [`ADDR_TAG];
         else if (mmu_data_rdy_i)             cache_tag.tag = mmu_addr_i[`ADDR_TAG];
         else                                 cache_tag.tag = addr_i [`ADDR_TAG];

@@ -17,8 +17,8 @@ module segre_register_file (
 
 localparam NUM_REGS = 2**REG_SIZE;
 
-logic [WORD_SIZE-1:0][NUM_REGS-1:0] rf_reg;
-logic [WORD_SIZE-1:0][NUM_REGS-1:0] rf_reg_aux;
+logic [NUM_REGS-1:0][WORD_SIZE-1:0] rf_reg;
+logic [NUM_REGS-1:0][WORD_SIZE-1:0] rf_reg_aux;
 logic [NUM_REGS-1:0] ex_write_enable;
 logic [NUM_REGS-1:0] mem_write_enable;
 logic [NUM_REGS-1:0] rvm_write_enable;

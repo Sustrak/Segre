@@ -8,6 +8,7 @@ parameter WORD_SIZE = 32;
 parameter ADDR_SIZE = 32;
 parameter REG_SIZE  = 5;
 parameter NOP = 32'h00000013;
+parameter CSR_SIZE = 12;
 
 /********************
 * SEGRE  PARAMETERS *
@@ -87,7 +88,8 @@ typedef enum logic [5:0] {
     ALU_DIV,
     ALU_DIVU,
     ALU_REM,
-    ALU_REMU
+    ALU_REMU,
+    ALU_PASS_B
 } alu_opcode_e;
 
 /*****************
@@ -101,7 +103,9 @@ typedef enum logic[1:0] {
 
 typedef enum logic[1:0] {
     ALU_B_REG,
-    ALU_B_IMM
+    ALU_B_IMM,
+    ALU_B_ZERO,
+    ALU_B_CSR
 } alu_src_b_e;
 
 typedef enum logic {
@@ -122,7 +126,8 @@ typedef enum logic[2:0] {
 } alu_imm_b_e;
 
 typedef enum logic {
-    IMM_A_ZERO
+    IMM_A_ZERO,
+    IMM_A_RS1
 } alu_imm_a_e;
 
 typedef enum logic [1:0] {
@@ -178,6 +183,18 @@ typedef enum logic [3:0] {
     BY_RVM5_TL
 } bypass_e;
 
+/*****************
+*      CSR       *
+*****************/
+typedef enum logic[11:0] { 
+    CSR_SATP,   // Displace value for VA to PA translation
+    CSR_PRIV,   // Privilege level of the machine (1 - Supervisor | 2 - User)
+    CSR_SIE,    // Supervisor Interrupt Enable
+    CSR_SCAUSE, // Supervisor Cause of the Interruption
+    CSR_SEPC,   // Supervisor PC that caused the interrupt
+    CSR_STVAL,  // Supervisor PA that caused the TLB fault
+    CSR_STVEC   // Supervisor trap vector base address
+} csr_e;
 /********************
 * SEGRE  DATATYPES  *
 ********************/
@@ -309,6 +326,8 @@ typedef struct packed {
     bypass_e bypass_b;
     logic [HF_PTR-1:0] instr_id;
     logic store_permission;
+    logic csr_access;
+    logic [CSR_SIZE-1:0] csr_waddr;
 } core_pipeline_t;
 
 typedef struct packed {
@@ -338,6 +357,8 @@ typedef struct packed {
     logic [WORD_SIZE-1:0] br_src_a;
     logic [WORD_SIZE-1:0] br_src_b;
     logic [HF_PTR-1:0] instr_id;
+    logic csr_access;
+    logic [CSR_SIZE-1:0] csr_waddr;
 } ex_pipeline_t;
 
 typedef struct packed {
@@ -444,5 +465,20 @@ typedef struct packed {
     logic [REG_SIZE-1:0] dest_reg;
     logic [WORD_SIZE-1:0] value;
 } core_hf_t;
+
+typedef struct packed {
+    logic we;
+    logic [CSR_SIZE-1:0] raddr;
+    logic [CSR_SIZE-1:0] waddr;
+    logic [WORD_SIZE-1:0] data_i;
+    logic [WORD_SIZE-1:0] data_o;
+    logic [WORD_SIZE-1:0] csr_satp;
+    logic [WORD_SIZE-1:0] csr_priv;
+    logic [WORD_SIZE-1:0] csr_sie;
+    logic [WORD_SIZE-1:0] csr_scause;
+    logic [WORD_SIZE-1:0] csr_sepc;
+    logic [WORD_SIZE-1:0] csr_stval;
+    logic [WORD_SIZE-1:0] csr_stvec;
+} core_csr_t;
 
 endpackage : segre_pkg

@@ -25,26 +25,13 @@ core_mmu_t core_mmu;
 core_hazards_t input_hazards;
 core_hazards_t output_hazards;
 core_hf_t core_hf;
-
+core_csr_t core_csr;
 logic mem_wr_done;
 logic [HF_PTR-1:0] mem_wr_done_id;
 
 
-//Virtual Memory
-logic [ADDR_SIZE-1:0] satp; //[19:0]->Displacement for VA to PA translation
-//Exceptions / Privilege
-logic rm4; //0->User, 1->Supervisor
-
 assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
 assign input_hazards.id  = output_hazards.pipeline | core_hf.full;
-
-always_ff @(posedge clk_i) begin : ex_priv_latch
-    if(!rsn_i) begin
-        satp <= 32'h00008000;
-        //TODO: we should boot in supervisor mode, change it later
-        rm4 <= 0;
-    end
-end
 
 segre_if_stage if_stage (
     // Clock and Reset
@@ -67,8 +54,8 @@ segre_if_stage if_stage (
     .ic_miss_o          (core_mmu.ic_miss),
     .ic_addr_o          (core_mmu.ic_addr_i),
     .ic_access_o        (core_mmu.ic_access),
-    .rm4_i              (rm4),
-    .satp_i             (satp)  
+    .csr_priv_i         (core_csr.csr_priv),
+    .csr_satp_i         (core_csr.csr_satp)
 );
 
 segre_id_stage id_stage (
@@ -84,8 +71,10 @@ segre_id_stage id_stage (
     // Register file read operands
     .rf_raddr_a_o     (decode_rf.raddr_a),
     .rf_raddr_b_o     (decode_rf.raddr_b),
+    .csr_raddr_o      (core_csr.raddr),
     .rf_data_a_i      (decode_rf.data_a),
     .rf_data_b_i      (decode_rf.data_b),
+    .csr_data_i       (core_csr.data_o),
     // Bypass
     .bypass_data_i    (core_id.bypass_data),
     // ID EX interface
@@ -111,7 +100,10 @@ segre_id_stage id_stage (
     .pipeline_o       (core_pipeline.pipeline),
     // Bypass
     .bypass_a_o       (core_pipeline.bypass_a),
-    .bypass_b_o       (core_pipeline.bypass_b)
+    .bypass_b_o       (core_pipeline.bypass_b),
+    // CSR
+    .csr_access_o     (core_pipeline.csr_access),
+    .csr_waddr_o      (core_pipeline.csr_waddr)
 );
 
 segre_pipeline_wrapper pipeline_wrapper (
@@ -122,6 +114,10 @@ segre_pipeline_wrapper pipeline_wrapper (
     .core_pipeline_i       (core_pipeline),
     // Register File
     .rf_data_o             (rf_wdata),
+    // CSR File
+    .csr_access_o          (core_csr.we),
+    .csr_waddr_o           (core_csr.waddr),
+    .csr_data_o            (core_csr.data_i),
     // Instruction ID
     .ex_instr_id_o         (core_hf.ex_complete_id),
     .mem_instr_id_o        (core_hf.mem_complete_id),
@@ -148,9 +144,9 @@ segre_pipeline_wrapper pipeline_wrapper (
     // Hazard
     .tl_hazard_o           (output_hazards.pipeline),
     //Privilege mode
-    .rm4_i                 (rm4),
+    .csr_priv_i            (core_csr.csr_priv),
     //Virtual mem
-    .satp_i                (satp)
+    .csr_satp_i            (core_csr.csr_satp)
 );
 
 segre_register_file segre_rf (
@@ -165,6 +161,26 @@ segre_register_file segre_rf (
     .raddr_w_i   (core_pipeline.rf_waddr),
     .data_w_o    (core_hf.rf_data),
     .wdata_i     (rf_wdata)
+);
+
+segre_csr_file segre_csr (
+    .clk_i   (clk_i),
+    .rsn_i   (rsn_i),
+
+    .we_i    (core_csr.we),
+    .raddr_i (core_csr.raddr),
+    .waddr_i (core_csr.waddr),
+    .data_i  (core_csr.data_i),
+    .data_o  (core_csr.data_o),
+
+    // CSR outputs
+    .csr_satp_o   (core_csr.csr_satp),
+    .csr_priv_o   (core_csr.csr_priv),
+    .csr_sie_o    (core_csr.csr_sie),
+    .csr_scause_o (core_csr.csr_scause),
+    .csr_sepc_o   (core_csr.csr_sepc),
+    .csr_stval_o  (core_csr.csr_stval),
+    .csr_stvec_o  (core_csr.csr_stvec)
 );
 
 segre_mmu mmu (
