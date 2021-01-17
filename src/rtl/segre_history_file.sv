@@ -54,6 +54,7 @@ typedef struct packed {
 hf_t [HF_SIZE-1:0] hf;
 logic [HF_PTR-1:0] head, tail, nxt_head, nxt_tail;
 hf_status_e hf_status, nxt_hf_status;
+entry_status_e [HF_SIZE-1:0] nxt_status;
 
 
 assign empty_o = (head == tail);
@@ -80,20 +81,55 @@ end
 always_comb begin : queue_control
     unique case (hf_status)
         NORMAL: begin
-            int instr_ended;
+            integer nxt_head_tmp, i, j;
             if (req_i) nxt_tail = tail + 1;
             else nxt_tail = tail;
 
-            instr_ended = complete_ex_i + complete_mem_i + complete_rvm_i + complete_st_i;
-            nxt_head = head;
-            for (int i = 0; i < instr_ended; i++) begin
-                if (complete_ex_id_i == nxt_head || complete_mem_id_i == nxt_head || complete_rvm_id_i == nxt_head || complete_st_id_i == nxt_head || hf[nxt_head].status == EXEC_OK) begin
-                    nxt_head++;
+            for (i = 0; i < HF_SIZE; i++) begin
+                if (complete_ex_i && complete_ex_id_i == i) begin
+                    nxt_status[i] = EXEC_OK;
+                end
+                else if (complete_mem_i && complete_mem_id_i == i) begin
+                    nxt_status[i] = EXEC_OK;
+                end
+                else if (complete_rvm_i && complete_rvm_id_i == i) begin
+                    nxt_status[i] = EXEC_OK;
+                end
+                else if (complete_st_i && complete_st_id_i == i) begin
+                    nxt_status[i] = EXEC_OK;
+                end
+                else if (exc_i && exc_id_i == i) begin
+                    nxt_status[i] = EXCEPTION;
+                end
+                else if (req_i && tail == i) begin
+                    if (store_i) nxt_status[i] = EXECUTING_STORE;
+                    else nxt_status[i] = EXECUTNG;
+                end
+                else begin
+                    nxt_status[i] = hf[i].status;
+                end
+            end
+            
+            nxt_head_tmp = head;
+            while (nxt_status[nxt_head_tmp] == EXEC_OK) nxt_head_tmp = nxt_head_tmp+1;
+            nxt_head = nxt_head_tmp;
+            
+            for (j = 0; j < HF_SIZE; j++) begin
+                if (nxt_head <= nxt_tail) begin
+                    if (j < nxt_head || j > nxt_tail) begin
+                        nxt_status[j] = EMPTY;
+                    end
+                end
+                else if (nxt_head > nxt_tail) begin
+                    if (j < nxt_head && j > nxt_tail) begin
+                        nxt_status[j] = EMPTY;
+                    end
                 end
             end
         end
         RECOVERING: begin
             nxt_tail = tail - 1;
+            nxt_status[tail] = EMPTY;
         end
     endcase
 end
@@ -114,26 +150,14 @@ always_ff @(posedge clk_i) begin : latch
         head <= nxt_head;
         tail <= nxt_tail;
 
-        unique case (hf_status)
-            NORMAL: begin
-                if (req_i) begin
-                    hf[tail].dest_reg      <= dest_reg_i;
-                    hf[tail].current_value <= current_value_i;
-                    if (store_i) hf[tail].status <= EXECUTING_STORE;
-                    else hf[tail].status <= EXECUTNG;
-                end
+        if (hf_status == NORMAL && req_i) begin
+            hf[tail].dest_reg      <= dest_reg_i;
+            hf[tail].current_value <= current_value_i;
+        end
 
-                if (complete_ex_i)  hf[complete_ex_id_i].status <= EXEC_OK;
-                if (complete_mem_i) hf[complete_mem_id_i].status <= EXEC_OK;
-                if (complete_rvm_i) hf[complete_rvm_id_i].status <= EXEC_OK;
-                if (complete_st_i)  hf[complete_st_id_i].status <= EXEC_OK; 
-                if (exc_i) hf[exc_id_i].status <= EXCEPTION;
-            end
-            RECOVERING: begin
-                hf[tail].status <= EMPTY;
-            end
-            default: ;
-        endcase
+        for (int i = 0; i < HF_SIZE; i++) begin
+            hf[i].status <= nxt_status[i];
+        end
     end
 end
 
