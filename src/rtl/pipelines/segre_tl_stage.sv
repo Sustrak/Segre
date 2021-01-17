@@ -376,7 +376,8 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_hit_o         <= sb.hit;
                 memop_rd_o       <= memop_rd_i; //We have already read
                 memop_wr_o       <= 1'b0; //We have already write
-                instr_id_o       <= instr_id_i;
+                //instr_id_o       <= instr_id_i;
+                instr_id_o       <= sb.instr_id;
             end
             else begin
                 // Miss in store buffer or no memory operation and store buffer empty
