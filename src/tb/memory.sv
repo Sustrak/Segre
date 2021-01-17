@@ -35,14 +35,14 @@ int hex_file_fd;
 string test_name;
 
 `define rd_word_mem(mem, addr) \
-    `uvm_info("memory", $sformatf("Reading %0h from %0h", {mem[addr], mem[addr+1], mem[addr+2], mem[addr+3]}, addr), UVM_LOW);
+    `uvm_info("memory", $sformatf("Reading %0h from %0h", {mem[addr+3], mem[addr+2], mem[addr+1], mem[addr]}, addr), UVM_LOW);
 
 `define wr_word_mem(mem, word, addr) \
     `uvm_info("memory", $sformatf("Writting at %0h the data %0h", addr, word), UVM_LOW); \
-    mem[addr] = word >> 24; \
-    mem[addr+1] = word >> 16; \
-    mem[addr+2] = word >> 8; \
-    mem[addr+3] = word; \
+    mem[addr] = word; \
+    mem[addr+1] = word >> 8; \
+    mem[addr+2] = word >> 16; \
+    mem[addr+3] = word >> 24;
 
 initial begin
     int addr = 0;
@@ -78,9 +78,10 @@ initial begin
 
     addr = DATA_REGION;
     `uvm_info("memory", "Start writing data to memory", UVM_LOW)
-    /*for (int i = 0; i < 128; i++) begin
+    for (int i = 0; i < 128; i++) begin
         `wr_word_mem(mem, i, addr + (i*4))
-    end*/
+    end
+   /*
     `wr_word_mem(mem, 32'hfafa_fafa, addr)
     `wr_word_mem(mem, 32'hfafa_fafa, addr+4)
     `wr_word_mem(mem, 32'hfafa_fafa, addr+8)
@@ -101,6 +102,7 @@ initial begin
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+68)
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+72)
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+76)
+    */
     //for (int i = addr+80; i < NUM_WORDS; i = i + 4) begin
     //    `wr_word_mem(mem, 32'h0000_0000, i)
     //end

@@ -142,7 +142,7 @@ always_comb begin : if_fsm
             end
             IF_IDLE: begin
                 if (cache_tag.miss) if_fsm_nxt_state = IF_IC_MISS;
-                else if (cache_data.data_o[6:0] == OPCODE_BRANCH || cache_data.data_o[6:0] == OPCODE_JAL || cache_data.data_o[6:0] == OPCODE_JALR) begin
+                else if (!hazard_i && (cache_data.data_o[6:0] == OPCODE_BRANCH || cache_data.data_o[6:0] == OPCODE_JAL || cache_data.data_o[6:0] == OPCODE_JALR)) begin
                     if_fsm_nxt_state = IF_BRANCH;
                 end
                 else if_fsm_nxt_state = IF_IDLE;

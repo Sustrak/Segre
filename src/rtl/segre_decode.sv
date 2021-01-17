@@ -138,6 +138,8 @@ always_comb begin
                 rf_we_o = 1'b1;
             end
         end
+        OPCODE_BRANCH: begin
+        end
         default: begin
             if (rsn_i) begin
                 illegal_ins = 1'b1;
