@@ -279,22 +279,30 @@ always_comb begin : tl_fsm
                     else if((valid_tag_in_flight_reg && (tag_in_flight_reg == addr_i[`ADDR_TAG])) && sb.trouble) begin
                         fsm_nxt_state = HAZARD_DC_MISS;
                     end
+                    else fsm_nxt_state = MISS_IN_FLIGHT;
                 end
                 else if (memop_rd_i) begin //A new load arrives: In this case we won't issue a new request if the load has the same tag as the faulty store, or if it hits (obviously).
                     if(cache_tag.miss) begin //In general, we want to stall in a miss, but if the store buffer can serve the load it's not necessary
                         if (valid_tag_in_flight_reg && (tag_in_flight_reg != addr_i[`ADDR_TAG])) begin
                             fsm_nxt_state = HAZARD_DC_MISS;
                         end //Maybe the store buffer can provide the element
-                        else if(sb.miss || sb.trouble)
+                        else if(sb.miss || sb.trouble) begin
                             fsm_nxt_state = HAZARD_DC_MISS;
+                        end
+                        else begin
+                            fsm_nxt_state = MISS_IN_FLIGHT;
+                        end
                     end
-                end                
+                end
+                else fsm_nxt_state = MISS_IN_FLIGHT;                
             end
             HAZARD_DC_MISS: begin
                 if (mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+                else fsm_nxt_state = HAZARD_DC_MISS;
             end
             HAZARD_SB_TROUBLE: begin
                 if (!sb.trouble) fsm_nxt_state = TL_IDLE;
+                else fsm_nxt_state = HAZARD_SB_TROUBLE;
             end
             TL_IDLE: begin
                 if (valid_tag_in_flight_next) begin
