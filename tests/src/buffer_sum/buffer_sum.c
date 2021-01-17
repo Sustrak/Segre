@@ -5,13 +5,13 @@ int main(void) {
         sum += a[i];
     }
     __asm__(
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
         "csrw 0xfff, x0 \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
     );
     return sum;
 }

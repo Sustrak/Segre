@@ -12,12 +12,12 @@ int main() {
         }
     }
     __asm__(
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
+        "nop \n"
         "csrw 0xfff, x0 \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
-        "nop \n"
     );
 }
