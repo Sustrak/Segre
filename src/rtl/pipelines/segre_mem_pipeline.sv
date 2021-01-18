@@ -117,7 +117,7 @@ segre_tl_stage tl_stage(
     // Hazard
     .pipeline_hazard_o  (tl_hazard_o),
     //Privilege mode
-    .csr_priv_i         (crs_priv_i),
+    .csr_priv_i         (csr_priv_i),
     //Virtual mem
     .csr_satp_i         (csr_satp_i),
     .dtlb_exception_o   (dtlb_exception_o)

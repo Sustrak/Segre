@@ -36,7 +36,7 @@ always_ff @(posedge clk_i) begin
     if (!rsn_i) begin
         csr_reg_aux[NUM_REGS-1:7] <= '{default: '0};
         csr_reg_aux[CSR_SATP]   <= 32'h0000_8000;
-        csr_reg_aux[CSR_PRIV]   <= 32'h2;
+        csr_reg_aux[CSR_PRIV]   <= 32'h1;
         csr_reg_aux[CSR_SIE]    <= 32'h1;
         csr_reg_aux[CSR_SCAUSE] <= 32'h0;
         csr_reg_aux[CSR_SEPC]   <= 32'h0;
