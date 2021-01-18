@@ -1,0 +1,51 @@
+
+build_segre/hf_0.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	0000af17          	auipc	t5,0xa
+   4:	000f0f13          	mv	t5,t5
+   8:	004f2083          	lw	ra,4(t5) # a004 <user_stack_start+0x4>
+   c:	008f2103          	lw	sp,8(t5)
+  10:	002081b3          	add	gp,ra,sp
+  14:	00cf2203          	lw	tp,12(t5)
+  18:	fff00293          	li	t0,-1
+  1c:	fff00313          	li	t1,-1
+  20:	fff00393          	li	t2,-1
+  24:	fff00413          	li	s0,-1
+  28:	fff00493          	li	s1,-1
+  2c:	fff00513          	li	a0,-1
+  30:	fff00593          	li	a1,-1
+  34:	fff00613          	li	a2,-1
+  38:	fff00693          	li	a3,-1
+  3c:	fff00713          	li	a4,-1
+  40:	fff00793          	li	a5,-1
+  44:	fff00813          	li	a6,-1
+  48:	fff00893          	li	a7,-1
+  4c:	fff00913          	li	s2,-1
+  50:	fff00993          	li	s3,-1
+  54:	fff00a13          	li	s4,-1
+  58:	fff00a93          	li	s5,-1
+  5c:	fff00b13          	li	s6,-1
+  60:	fff00b93          	li	s7,-1
+  64:	fff00c13          	li	s8,-1
+  68:	fff00c93          	li	s9,-1
+  6c:	fff00d13          	li	s10,-1
+  70:	fff00d93          	li	s11,-1
+  74:	fff00e13          	li	t3,-1
+  78:	fff00e93          	li	t4,-1
+  7c:	fff00f13          	li	t5,-1
+  80:	fff00f93          	li	t6,-1
+  84:	00000013          	nop
+  88:	00000013          	nop
+  8c:	00000013          	nop
+  90:	00000013          	nop
+  94:	00000013          	nop
+  98:	00000013          	nop
+  9c:	00000013          	nop
+  a0:	00000013          	nop
+
+000000a4 <test_done>:
+  a4:	fff01073          	csrw	0xfff,zero

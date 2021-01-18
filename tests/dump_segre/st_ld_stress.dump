@@ -1,0 +1,138 @@
+
+build_segre/st_ld_stress.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	cacad0b7          	lui	ra,0xcacad
+   4:	aca08093          	addi	ra,ra,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+   8:	deadc137          	lui	sp,0xdeadc
+   c:	eef10113          	addi	sp,sp,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  10:	5a5a61b7          	lui	gp,0x5a5a6
+  14:	a5a18193          	addi	gp,gp,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  18:	cacad237          	lui	tp,0xcacad
+  1c:	aca20213          	addi	tp,tp,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  20:	deadc2b7          	lui	t0,0xdeadc
+  24:	eef28293          	addi	t0,t0,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  28:	5a5a6337          	lui	t1,0x5a5a6
+  2c:	a5a30313          	addi	t1,t1,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  30:	cacad3b7          	lui	t2,0xcacad
+  34:	aca38393          	addi	t2,t2,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  38:	deadc437          	lui	s0,0xdeadc
+  3c:	eef40413          	addi	s0,s0,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  40:	5a5a64b7          	lui	s1,0x5a5a6
+  44:	a5a48493          	addi	s1,s1,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  48:	cacad537          	lui	a0,0xcacad
+  4c:	aca50513          	addi	a0,a0,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  50:	deadc5b7          	lui	a1,0xdeadc
+  54:	eef58593          	addi	a1,a1,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  58:	5a5a6637          	lui	a2,0x5a5a6
+  5c:	a5a60613          	addi	a2,a2,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  60:	cacad6b7          	lui	a3,0xcacad
+  64:	aca68693          	addi	a3,a3,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  68:	deadc737          	lui	a4,0xdeadc
+  6c:	eef70713          	addi	a4,a4,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  70:	5a5a67b7          	lui	a5,0x5a5a6
+  74:	a5a78793          	addi	a5,a5,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  78:	cacad837          	lui	a6,0xcacad
+  7c:	aca80813          	addi	a6,a6,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  80:	cacad8b7          	lui	a7,0xcacad
+  84:	aca88893          	addi	a7,a7,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  88:	deadc937          	lui	s2,0xdeadc
+  8c:	eef90913          	addi	s2,s2,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  90:	5a5a69b7          	lui	s3,0x5a5a6
+  94:	a5a98993          	addi	s3,s3,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  98:	cacada37          	lui	s4,0xcacad
+  9c:	acaa0a13          	addi	s4,s4,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  a0:	deadcab7          	lui	s5,0xdeadc
+  a4:	eefa8a93          	addi	s5,s5,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  a8:	5a5a6b37          	lui	s6,0x5a5a6
+  ac:	a5ab0b13          	addi	s6,s6,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  b0:	cacadbb7          	lui	s7,0xcacad
+  b4:	acab8b93          	addi	s7,s7,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  b8:	deadcc37          	lui	s8,0xdeadc
+  bc:	eefc0c13          	addi	s8,s8,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  c0:	5a5a6cb7          	lui	s9,0x5a5a6
+  c4:	a5ac8c93          	addi	s9,s9,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  c8:	cacadd37          	lui	s10,0xcacad
+  cc:	acad0d13          	addi	s10,s10,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  d0:	deadcdb7          	lui	s11,0xdeadc
+  d4:	eefd8d93          	addi	s11,s11,-273 # deadbeef <user_stack_end+0xdeacd0d3>
+  d8:	5a5a6e37          	lui	t3,0x5a5a6
+  dc:	a5ae0e13          	addi	t3,t3,-1446 # 5a5a5a5a <user_stack_end+0x5a596c3e>
+  e0:	cacadeb7          	lui	t4,0xcacad
+  e4:	acae8e93          	addi	t4,t4,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  e8:	0000af17          	auipc	t5,0xa
+  ec:	f18f0f13          	addi	t5,t5,-232 # a000 <user_stack_start>
+  f0:	001f2223          	sw	ra,4(t5)
+  f4:	004f2083          	lw	ra,4(t5)
+  f8:	002f2423          	sw	sp,8(t5)
+  fc:	008f2103          	lw	sp,8(t5)
+ 100:	003f2623          	sw	gp,12(t5)
+ 104:	00cf2183          	lw	gp,12(t5)
+ 108:	004f2823          	sw	tp,16(t5)
+ 10c:	010f2203          	lw	tp,16(t5)
+ 110:	005f2a23          	sw	t0,20(t5)
+ 114:	014f2283          	lw	t0,20(t5)
+ 118:	006f2c23          	sw	t1,24(t5)
+ 11c:	018f2303          	lw	t1,24(t5)
+ 120:	007f2e23          	sw	t2,28(t5)
+ 124:	01cf2383          	lw	t2,28(t5)
+ 128:	028f2023          	sw	s0,32(t5)
+ 12c:	020f2403          	lw	s0,32(t5)
+ 130:	029f2223          	sw	s1,36(t5)
+ 134:	024f2483          	lw	s1,36(t5)
+ 138:	02af2423          	sw	a0,40(t5)
+ 13c:	028f2503          	lw	a0,40(t5)
+ 140:	02bf2623          	sw	a1,44(t5)
+ 144:	02cf2583          	lw	a1,44(t5)
+ 148:	02cf2823          	sw	a2,48(t5)
+ 14c:	030f2603          	lw	a2,48(t5)
+ 150:	02df2a23          	sw	a3,52(t5)
+ 154:	034f2683          	lw	a3,52(t5)
+ 158:	02ef2c23          	sw	a4,56(t5)
+ 15c:	038f2703          	lw	a4,56(t5)
+ 160:	02ff2e23          	sw	a5,60(t5)
+ 164:	03cf2783          	lw	a5,60(t5)
+ 168:	050f2023          	sw	a6,64(t5)
+ 16c:	040f2803          	lw	a6,64(t5)
+ 170:	051f2223          	sw	a7,68(t5)
+ 174:	044f2883          	lw	a7,68(t5)
+ 178:	052f2423          	sw	s2,72(t5)
+ 17c:	048f2903          	lw	s2,72(t5)
+ 180:	053f2623          	sw	s3,76(t5)
+ 184:	04cf2983          	lw	s3,76(t5)
+ 188:	054f2823          	sw	s4,80(t5)
+ 18c:	050f2a03          	lw	s4,80(t5)
+ 190:	055f2a23          	sw	s5,84(t5)
+ 194:	054f2a83          	lw	s5,84(t5)
+ 198:	056f2c23          	sw	s6,88(t5)
+ 19c:	058f2b03          	lw	s6,88(t5)
+ 1a0:	057f2e23          	sw	s7,92(t5)
+ 1a4:	05cf2b83          	lw	s7,92(t5)
+ 1a8:	078f2023          	sw	s8,96(t5)
+ 1ac:	060f2c03          	lw	s8,96(t5)
+ 1b0:	079f2223          	sw	s9,100(t5)
+ 1b4:	064f2c83          	lw	s9,100(t5)
+ 1b8:	07af2423          	sw	s10,104(t5)
+ 1bc:	068f2d03          	lw	s10,104(t5)
+ 1c0:	07bf2623          	sw	s11,108(t5)
+ 1c4:	06cf2d83          	lw	s11,108(t5)
+ 1c8:	07cf2823          	sw	t3,112(t5)
+ 1cc:	070f2e03          	lw	t3,112(t5)
+ 1d0:	07df2a23          	sw	t4,116(t5)
+ 1d4:	074f2e83          	lw	t4,116(t5)
+ 1d8:	fff00f13          	li	t5,-1
+ 1dc:	fff00f93          	li	t6,-1
+ 1e0:	00000013          	nop
+ 1e4:	00000013          	nop
+ 1e8:	00000013          	nop
+ 1ec:	00000013          	nop
+ 1f0:	00000013          	nop
+ 1f4:	00000013          	nop
+ 1f8:	00000013          	nop
+ 1fc:	00000013          	nop
+
+00000200 <test_done>:
+ 200:	fff01073          	csrw	0xfff,zero

@@ -15,19 +15,22 @@ TEST_OBJ_SEGRE = $(patsubst %.S, build_segre/%.o, $(TEST_SRC))
 TEST_OBJ_SPIKE = $(patsubst %.S, build_spike/%.o, $(TEST_SRC))
 TEST_HEX_SEGRE = $(patsubst build_segre/%.o, hex_segre/%.hex, $(TEST_OBJ_SEGRE))
 TEST_RES_SPIKE = $(patsubst build_spike/%.o, result_segre/%.result, $(TEST_OBJ_SPIKE))
+TEST_DUMP_SEGRE = $(patsubst build_segre/%.o, dump_segre/%.dump, $(TEST_OBJ_SEGRE))
 
 .PHONY: clean
-all: build_dirs build gen_hex gen_results buffer_sum mem_copy matrix_multiply
+all: build_dirs build gen_hex gen_results gen_dump buffer_sum mem_copy matrix_multiply
 
 build_dirs:
 	mkdir -p build_segre
 	mkdir -p build_spike
 	mkdir -p hex_segre
 	mkdir -p result_segre
+	mkdir -p dump_segre
 
 build: build_dirs $(TEST_OBJ_SEGRE) $(TEST_OBJ_SPIKE)
 gen_hex: build_dirs $(TEST_HEX_SEGRE)
 gen_results: build_dirs $(TEST_RES_SPIKE)
+gen_dump: build_dirs $(TEST_DUMP_SEGRE)
 
 build_segre/%.o: src/%.S
 	cp $^ segre_test.S
@@ -41,6 +44,9 @@ build_spike/%.o: src/%.S
 
 hex_segre/%.hex: build_segre/%.o
 	$(OBJD) -d $^ | grep -E "[a-f0-9]+:" | awk '{print $$2}' > $@;
+
+dump_segre/%.dump: build_segre/%.o
+	$(OBJD) -d $^ > $@
 
 result_segre/%.result: build_spike/%.o
 	rm -rf $@
@@ -82,14 +88,17 @@ result_segre/%.result: build_spike/%.o
 buffer_sum: src/buffer_sum/buffer_sum.c
 	$(GCC) $(CFLAGS_SEGRE) $^ -o build_segre/buffer_sum.o
 	$(OBJD) -d build_segre/buffer_sum.o | grep -E "[a-f0-9]+:" | awk '{print $$2}' > hex_segre/buffer_sum.hex;
+	$(OBJD) -d build_segre/buffer_sum.o > dump_segre/buffer_sum.dump
 
 mem_copy: src/mem_copy/mem_copy.c
 	$(GCC) $(CFLAGS_SEGRE) $^ -o build_segre/mem_copy.o
 	$(OBJD) -d build_segre/mem_copy.o | grep -E "[a-f0-9]+:" | awk '{print $$2}' > hex_segre/mem_copy.hex
+	$(OBJD) -d build_segre/mem_copy.o > dump_segre/mem_copy.dump
 	
 matrix_multiply: src/matrix_multiply/matrix_multiply.c
 	$(GCC) $(CFLAGS_SEGRE) $^ -o build_segre/matrix_multiply.o
 	$(OBJD) -d build_segre/matrix_multiply.o | grep -E "[a-f0-9]+:" | awk '{print $$2}' > hex_segre/matrix_multiply.hex
+	$(OBJD) -d build_segre/matrix_multiply.o > dump_segre/matrix_multiply.dump
 
 clean:
 	rm -rf hex_segre build_spike build_segre result_segre

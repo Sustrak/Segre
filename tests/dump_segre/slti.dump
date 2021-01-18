@@ -1,0 +1,81 @@
+
+build_segre/slti.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	fff00093          	li	ra,-1
+   4:	ffe00113          	li	sp,-2
+   8:	ffd00193          	li	gp,-3
+   c:	ffc00213          	li	tp,-4
+  10:	ffb00293          	li	t0,-5
+  14:	ffa00313          	li	t1,-6
+  18:	ff900393          	li	t2,-7
+  1c:	ff800413          	li	s0,-8
+  20:	ff700493          	li	s1,-9
+  24:	ff600513          	li	a0,-10
+  28:	ff500593          	li	a1,-11
+  2c:	ff400613          	li	a2,-12
+  30:	ff300693          	li	a3,-13
+  34:	ff200713          	li	a4,-14
+  38:	ff100793          	li	a5,-15
+  3c:	ff100813          	li	a6,-15
+  40:	ff000893          	li	a7,-16
+  44:	fef00913          	li	s2,-17
+  48:	fee00993          	li	s3,-18
+  4c:	fed00a13          	li	s4,-19
+  50:	fec00a93          	li	s5,-20
+  54:	feb00b13          	li	s6,-21
+  58:	fea00b93          	li	s7,-22
+  5c:	fe900c13          	li	s8,-23
+  60:	fe800c93          	li	s9,-24
+  64:	fe700d13          	li	s10,-25
+  68:	fe600d93          	li	s11,-26
+  6c:	fe500e13          	li	t3,-27
+  70:	fe400e93          	li	t4,-28
+  74:	fe300f13          	li	t5,-29
+  78:	fe200f93          	li	t6,-30
+  7c:	ffe0a013          	slti	zero,ra,-2
+  80:	ffe1a093          	slti	ra,gp,-2
+  84:	ffc1a113          	slti	sp,gp,-4
+  88:	ffc2a193          	slti	gp,t0,-4
+  8c:	ffb32213          	slti	tp,t1,-5
+  90:	ffa2a293          	slti	t0,t0,-6
+  94:	ffa3a313          	slti	t1,t2,-6
+  98:	ff932393          	slti	t2,t1,-7
+  9c:	ff742413          	slti	s0,s0,-9
+  a0:	ff84a493          	slti	s1,s1,-8
+  a4:	ff45a513          	slti	a0,a1,-12
+  a8:	ff46a593          	slti	a1,a3,-12
+  ac:	ff26a613          	slti	a2,a3,-14
+  b0:	ff27a693          	slti	a3,a5,-14
+  b4:	ff182713          	slti	a4,a6,-15
+  b8:	ff07a793          	slti	a5,a5,-16
+  bc:	ff08a813          	slti	a6,a7,-16
+  c0:	fef82893          	slti	a7,a6,-17
+  c4:	fed92913          	slti	s2,s2,-19
+  c8:	fee9a993          	slti	s3,s3,-18
+  cc:	feaaaa13          	slti	s4,s5,-22
+  d0:	feabaa93          	slti	s5,s7,-22
+  d4:	fe8bab13          	slti	s6,s7,-24
+  d8:	fe8cab93          	slti	s7,s9,-24
+  dc:	fe7d2c13          	slti	s8,s10,-25
+  e0:	fe6cac93          	slti	s9,s9,-26
+  e4:	fe6dad13          	slti	s10,s11,-26
+  e8:	fe5d2d93          	slti	s11,s10,-27
+  ec:	fe3e2e13          	slti	t3,t3,-29
+  f0:	fe4eae93          	slti	t4,t4,-28
+  f4:	fe1f2f13          	slti	t5,t5,-31
+  f8:	fe2faf93          	slti	t6,t6,-30
+  fc:	00000013          	nop
+ 100:	00000013          	nop
+ 104:	00000013          	nop
+ 108:	00000013          	nop
+ 10c:	00000013          	nop
+ 110:	00000013          	nop
+ 114:	00000013          	nop
+ 118:	00000013          	nop
+
+0000011c <test_done>:
+ 11c:	fff01073          	csrw	0xfff,zero

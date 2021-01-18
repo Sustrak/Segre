@@ -1,0 +1,203 @@
+
+build_segre/jaljalr.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	010000ef          	jal	ra,10 <jmp_1>
+   4:	cacad0b7          	lui	ra,0xcacad
+   8:	aca08093          	addi	ra,ra,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+   c:	000f0f67          	jalr	t5,t5
+
+00000010 <jmp_1>:
+  10:	0100016f          	jal	sp,20 <jmp_2>
+  14:	cacad137          	lui	sp,0xcacad
+  18:	aca10113          	addi	sp,sp,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  1c:	000e8ee7          	jalr	t4,t4
+
+00000020 <jmp_2>:
+  20:	010001ef          	jal	gp,30 <jmp_3>
+  24:	cacad1b7          	lui	gp,0xcacad
+  28:	aca18193          	addi	gp,gp,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  2c:	000e0e67          	jalr	t3,t3
+
+00000030 <jmp_3>:
+  30:	0100026f          	jal	tp,40 <jmp_4>
+  34:	cacad237          	lui	tp,0xcacad
+  38:	aca20213          	addi	tp,tp,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  3c:	000d8de7          	jalr	s11,s11
+
+00000040 <jmp_4>:
+  40:	010002ef          	jal	t0,50 <jmp_5>
+  44:	cacad2b7          	lui	t0,0xcacad
+  48:	aca28293          	addi	t0,t0,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  4c:	000d0d67          	jalr	s10,s10
+
+00000050 <jmp_5>:
+  50:	0100036f          	jal	t1,60 <jmp_6>
+  54:	cacad337          	lui	t1,0xcacad
+  58:	aca30313          	addi	t1,t1,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  5c:	000c8ce7          	jalr	s9,s9
+
+00000060 <jmp_6>:
+  60:	010003ef          	jal	t2,70 <jmp_7>
+  64:	cacad3b7          	lui	t2,0xcacad
+  68:	aca38393          	addi	t2,t2,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  6c:	000c0c67          	jalr	s8,s8
+
+00000070 <jmp_7>:
+  70:	0100046f          	jal	s0,80 <jmp_8>
+  74:	cacad437          	lui	s0,0xcacad
+  78:	aca40413          	addi	s0,s0,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  7c:	000b8be7          	jalr	s7,s7
+
+00000080 <jmp_8>:
+  80:	010004ef          	jal	s1,90 <jmp_9>
+  84:	cacad4b7          	lui	s1,0xcacad
+  88:	aca48493          	addi	s1,s1,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  8c:	000b0b67          	jalr	s6,s6
+
+00000090 <jmp_9>:
+  90:	0100056f          	jal	a0,a0 <jmp_10>
+  94:	cacad537          	lui	a0,0xcacad
+  98:	aca50513          	addi	a0,a0,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  9c:	000a8ae7          	jalr	s5,s5
+
+000000a0 <jmp_10>:
+  a0:	010005ef          	jal	a1,b0 <jmp_11>
+  a4:	cacad5b7          	lui	a1,0xcacad
+  a8:	aca58593          	addi	a1,a1,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  ac:	000a0a67          	jalr	s4,s4
+
+000000b0 <jmp_11>:
+  b0:	0100066f          	jal	a2,c0 <jmp_12>
+  b4:	cacad637          	lui	a2,0xcacad
+  b8:	aca60613          	addi	a2,a2,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  bc:	000989e7          	jalr	s3,s3
+
+000000c0 <jmp_12>:
+  c0:	010006ef          	jal	a3,d0 <jmp_13>
+  c4:	cacad6b7          	lui	a3,0xcacad
+  c8:	aca68693          	addi	a3,a3,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  cc:	00090967          	jalr	s2,s2
+
+000000d0 <jmp_13>:
+  d0:	0100076f          	jal	a4,e0 <jmp_14>
+  d4:	cacad737          	lui	a4,0xcacad
+  d8:	aca70713          	addi	a4,a4,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  dc:	000888e7          	jalr	a7,a7
+
+000000e0 <jmp_14>:
+  e0:	010007ef          	jal	a5,f0 <jmp_15>
+  e4:	cacad7b7          	lui	a5,0xcacad
+  e8:	aca78793          	addi	a5,a5,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  ec:	00080867          	jalr	a6,a6
+
+000000f0 <jmp_15>:
+  f0:	0100086f          	jal	a6,100 <jmp_16>
+  f4:	cacad837          	lui	a6,0xcacad
+  f8:	aca80813          	addi	a6,a6,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+  fc:	0e800fef          	jal	t6,1e4 <jmp_31>
+
+00000100 <jmp_16>:
+ 100:	010008ef          	jal	a7,110 <jmp_17>
+ 104:	cacad8b7          	lui	a7,0xcacad
+ 108:	aca88893          	addi	a7,a7,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 10c:	000787e7          	jalr	a5,a5
+
+00000110 <jmp_17>:
+ 110:	0100096f          	jal	s2,120 <jmp_18>
+ 114:	cacad937          	lui	s2,0xcacad
+ 118:	aca90913          	addi	s2,s2,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 11c:	00070767          	jalr	a4,a4
+
+00000120 <jmp_18>:
+ 120:	010009ef          	jal	s3,130 <jmp_19>
+ 124:	cacad9b7          	lui	s3,0xcacad
+ 128:	aca98993          	addi	s3,s3,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 12c:	000686e7          	jalr	a3,a3
+
+00000130 <jmp_19>:
+ 130:	01000a6f          	jal	s4,140 <jmp_20>
+ 134:	cacada37          	lui	s4,0xcacad
+ 138:	acaa0a13          	addi	s4,s4,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 13c:	00060667          	jalr	a2,a2
+
+00000140 <jmp_20>:
+ 140:	01000aef          	jal	s5,150 <jmp_21>
+ 144:	cacadab7          	lui	s5,0xcacad
+ 148:	acaa8a93          	addi	s5,s5,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 14c:	000585e7          	jalr	a1,a1
+
+00000150 <jmp_21>:
+ 150:	01000b6f          	jal	s6,160 <jmp_22>
+ 154:	cacadb37          	lui	s6,0xcacad
+ 158:	acab0b13          	addi	s6,s6,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 15c:	00050567          	jalr	a0,a0
+
+00000160 <jmp_22>:
+ 160:	01000bef          	jal	s7,170 <jmp_23>
+ 164:	cacadbb7          	lui	s7,0xcacad
+ 168:	acab8b93          	addi	s7,s7,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 16c:	000484e7          	jalr	s1,s1
+
+00000170 <jmp_23>:
+ 170:	01000c6f          	jal	s8,180 <jmp_24>
+ 174:	cacadc37          	lui	s8,0xcacad
+ 178:	acac0c13          	addi	s8,s8,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 17c:	00040467          	jalr	s0,s0
+
+00000180 <jmp_24>:
+ 180:	01000cef          	jal	s9,190 <jmp_25>
+ 184:	cacadcb7          	lui	s9,0xcacad
+ 188:	acac8c93          	addi	s9,s9,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 18c:	000383e7          	jalr	t2,t2
+
+00000190 <jmp_25>:
+ 190:	01000d6f          	jal	s10,1a0 <jmp_26>
+ 194:	cacadd37          	lui	s10,0xcacad
+ 198:	acad0d13          	addi	s10,s10,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 19c:	00030367          	jalr	t1,t1
+
+000001a0 <jmp_26>:
+ 1a0:	01000def          	jal	s11,1b0 <jmp_27>
+ 1a4:	cacaddb7          	lui	s11,0xcacad
+ 1a8:	acad8d93          	addi	s11,s11,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 1ac:	000282e7          	jalr	t0,t0
+
+000001b0 <jmp_27>:
+ 1b0:	01000e6f          	jal	t3,1c0 <jmp_28>
+ 1b4:	cacade37          	lui	t3,0xcacad
+ 1b8:	acae0e13          	addi	t3,t3,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 1bc:	00020267          	jalr	tp,tp # 0 <_start>
+
+000001c0 <jmp_28>:
+ 1c0:	01000eef          	jal	t4,1d0 <jmp_29>
+ 1c4:	cacadeb7          	lui	t4,0xcacad
+ 1c8:	acae8e93          	addi	t4,t4,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 1cc:	000181e7          	jalr	gp,gp
+
+000001d0 <jmp_29>:
+ 1d0:	01000f6f          	jal	t5,1e0 <jmp_30>
+ 1d4:	cacadf37          	lui	t5,0xcacad
+ 1d8:	acaf0f13          	addi	t5,t5,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 1dc:	00010167          	jalr	sp,sp
+
+000001e0 <jmp_30>:
+ 1e0:	000080e7          	jalr	ra
+
+000001e4 <jmp_31>:
+ 1e4:	cacadfb7          	lui	t6,0xcacad
+ 1e8:	acaf8f93          	addi	t6,t6,-1334 # cacacaca <user_stack_end+0xcac9dcae>
+ 1ec:	00000013          	nop
+ 1f0:	00000013          	nop
+ 1f4:	00000013          	nop
+ 1f8:	00000013          	nop
+ 1fc:	00000013          	nop
+ 200:	00000013          	nop
+ 204:	00000013          	nop
+ 208:	00000013          	nop
+
+0000020c <test_done>:
+ 20c:	fff01073          	csrw	0xfff,zero

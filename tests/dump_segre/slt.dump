@@ -1,0 +1,81 @@
+
+build_segre/slt.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	fff00093          	li	ra,-1
+   4:	ffe00113          	li	sp,-2
+   8:	ffd00193          	li	gp,-3
+   c:	ffc00213          	li	tp,-4
+  10:	ffb00293          	li	t0,-5
+  14:	ffa00313          	li	t1,-6
+  18:	ff900393          	li	t2,-7
+  1c:	ff800413          	li	s0,-8
+  20:	ff700493          	li	s1,-9
+  24:	ff600513          	li	a0,-10
+  28:	ff500593          	li	a1,-11
+  2c:	ff400613          	li	a2,-12
+  30:	ff300693          	li	a3,-13
+  34:	ff200713          	li	a4,-14
+  38:	ff100793          	li	a5,-15
+  3c:	ff000813          	li	a6,-16
+  40:	fef00893          	li	a7,-17
+  44:	fee00913          	li	s2,-18
+  48:	fed00993          	li	s3,-19
+  4c:	fec00a13          	li	s4,-20
+  50:	feb00a93          	li	s5,-21
+  54:	fea00b13          	li	s6,-22
+  58:	fe900b93          	li	s7,-23
+  5c:	fe800c13          	li	s8,-24
+  60:	fe700c93          	li	s9,-25
+  64:	fe600d13          	li	s10,-26
+  68:	fe500d93          	li	s11,-27
+  6c:	fe400e13          	li	t3,-28
+  70:	fe300e93          	li	t4,-29
+  74:	fe200f13          	li	t5,-30
+  78:	fe100f93          	li	t6,-31
+  7c:	0020a033          	slt	zero,ra,sp
+  80:	0021a0b3          	slt	ra,gp,sp
+  84:	0041a133          	slt	sp,gp,tp
+  88:	0042a1b3          	slt	gp,t0,tp
+  8c:	00532233          	slt	tp,t1,t0
+  90:	0062a2b3          	slt	t0,t0,t1
+  94:	0063a333          	slt	t1,t2,t1
+  98:	007323b3          	slt	t2,t1,t2
+  9c:	00942433          	slt	s0,s0,s1
+  a0:	0084a4b3          	slt	s1,s1,s0
+  a4:	00c5a533          	slt	a0,a1,a2
+  a8:	00c6a5b3          	slt	a1,a3,a2
+  ac:	00e6a633          	slt	a2,a3,a4
+  b0:	00e7a6b3          	slt	a3,a5,a4
+  b4:	00f82733          	slt	a4,a6,a5
+  b8:	0107a7b3          	slt	a5,a5,a6
+  bc:	0108a833          	slt	a6,a7,a6
+  c0:	011828b3          	slt	a7,a6,a7
+  c4:	01392933          	slt	s2,s2,s3
+  c8:	0129a9b3          	slt	s3,s3,s2
+  cc:	016aaa33          	slt	s4,s5,s6
+  d0:	016baab3          	slt	s5,s7,s6
+  d4:	018bab33          	slt	s6,s7,s8
+  d8:	018cabb3          	slt	s7,s9,s8
+  dc:	019d2c33          	slt	s8,s10,s9
+  e0:	01acacb3          	slt	s9,s9,s10
+  e4:	01adad33          	slt	s10,s11,s10
+  e8:	01bd2db3          	slt	s11,s10,s11
+  ec:	01de2e33          	slt	t3,t3,t4
+  f0:	01ceaeb3          	slt	t4,t4,t3
+  f4:	01ff2f33          	slt	t5,t5,t6
+  f8:	01efafb3          	slt	t6,t6,t5
+  fc:	00000013          	nop
+ 100:	00000013          	nop
+ 104:	00000013          	nop
+ 108:	00000013          	nop
+ 10c:	00000013          	nop
+ 110:	00000013          	nop
+ 114:	00000013          	nop
+ 118:	00000013          	nop
+
+0000011c <test_done>:
+ 11c:	fff01073          	csrw	0xfff,zero

@@ -1,0 +1,146 @@
+
+build_segre/blt.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00000013          	nop
+   4:	00100093          	li	ra,1
+   8:	00200113          	li	sp,2
+   c:	00300193          	li	gp,3
+  10:	00400213          	li	tp,4
+  14:	00500293          	li	t0,5
+  18:	00600313          	li	t1,6
+  1c:	00700393          	li	t2,7
+  20:	00800413          	li	s0,8
+  24:	00900493          	li	s1,9
+  28:	ff700513          	li	a0,-9
+  2c:	ff800593          	li	a1,-8
+  30:	ff900613          	li	a2,-7
+  34:	ffa00693          	li	a3,-6
+  38:	ffb00713          	li	a4,-5
+  3c:	ffc00793          	li	a5,-4
+  40:	ffd00813          	li	a6,-3
+  44:	ffe00893          	li	a7,-2
+  48:	fff00913          	li	s2,-1
+  4c:	00000993          	li	s3,0
+  50:	f0000a37          	lui	s4,0xf0000
+  54:	e0000ab7          	lui	s5,0xe0000
+  58:	d0000b37          	lui	s6,0xd0000
+  5c:	c0000bb7          	lui	s7,0xc0000
+  60:	b0000c37          	lui	s8,0xb0000
+  64:	a0000cb7          	lui	s9,0xa0000
+  68:	90000d37          	lui	s10,0x90000
+  6c:	80000db7          	lui	s11,0x80000
+  70:	70000e37          	lui	t3,0x70000
+  74:	60000eb7          	lui	t4,0x60000
+  78:	50000f37          	lui	t5,0x50000
+  7c:	00000f93          	li	t6,0
+  80:	00104663          	bgtz	ra,8c <b1>
+  84:	fff00093          	li	ra,-1
+  88:	fff01073          	csrw	0xfff,zero
+
+0000008c <b1>:
+  8c:	0be00093          	li	ra,190
+  90:	00314863          	blt	sp,gp,a0 <b2>
+  94:	fff00113          	li	sp,-1
+  98:	fff00193          	li	gp,-1
+  9c:	fff01073          	csrw	0xfff,zero
+
+000000a0 <b2>:
+  a0:	0be00113          	li	sp,190
+  a4:	0be00193          	li	gp,190
+  a8:	00524863          	blt	tp,t0,b8 <b3>
+  ac:	fff00213          	li	tp,-1
+  b0:	fff00293          	li	t0,-1
+  b4:	fff01073          	csrw	0xfff,zero
+
+000000b8 <b3>:
+  b8:	0be00213          	li	tp,190
+  bc:	0be00293          	li	t0,190
+  c0:	00734863          	blt	t1,t2,d0 <b4>
+  c4:	fff00313          	li	t1,-1
+  c8:	fff00393          	li	t2,-1
+  cc:	fff01073          	csrw	0xfff,zero
+
+000000d0 <b4>:
+  d0:	0be00313          	li	t1,190
+  d4:	0be00393          	li	t2,190
+  d8:	00944863          	blt	s0,s1,e8 <b5>
+  dc:	fff00413          	li	s0,-1
+  e0:	fff00493          	li	s1,-1
+  e4:	fff01073          	csrw	0xfff,zero
+
+000000e8 <b5>:
+  e8:	0be00413          	li	s0,190
+  ec:	0be00493          	li	s1,190
+  f0:	00b54863          	blt	a0,a1,100 <b6>
+  f4:	fff00513          	li	a0,-1
+  f8:	fff00593          	li	a1,-1
+  fc:	fff01073          	csrw	0xfff,zero
+
+00000100 <b6>:
+ 100:	0be00513          	li	a0,190
+ 104:	0be00593          	li	a1,190
+ 108:	00d64863          	blt	a2,a3,118 <b7>
+ 10c:	fff00613          	li	a2,-1
+ 110:	fff00693          	li	a3,-1
+ 114:	fff01073          	csrw	0xfff,zero
+
+00000118 <b7>:
+ 118:	0be00613          	li	a2,190
+ 11c:	0be00693          	li	a3,190
+ 120:	00f74863          	blt	a4,a5,130 <b8>
+ 124:	fff00713          	li	a4,-1
+ 128:	fff00793          	li	a5,-1
+ 12c:	fff01073          	csrw	0xfff,zero
+
+00000130 <b8>:
+ 130:	0be00713          	li	a4,190
+ 134:	0be00793          	li	a5,190
+ 138:	01184863          	blt	a6,a7,148 <b9>
+ 13c:	fff00813          	li	a6,-1
+ 140:	fff00893          	li	a7,-1
+ 144:	fff01073          	csrw	0xfff,zero
+
+00000148 <b9>:
+ 148:	0be00813          	li	a6,190
+ 14c:	0be00893          	li	a7,190
+ 150:	01394863          	blt	s2,s3,160 <b10>
+ 154:	fff00913          	li	s2,-1
+ 158:	fff00993          	li	s3,-1
+ 15c:	fff01073          	csrw	0xfff,zero
+
+00000160 <b10>:
+ 160:	0be00913          	li	s2,190
+ 164:	0be00993          	li	s3,190
+ 168:	075a4463          	blt	s4,s5,1d0 <test_done>
+ 16c:	0be00a13          	li	s4,190
+ 170:	0be00a93          	li	s5,190
+ 174:	057b4e63          	blt	s6,s7,1d0 <test_done>
+ 178:	0be00b13          	li	s6,190
+ 17c:	0be00b93          	li	s7,190
+ 180:	059c4863          	blt	s8,s9,1d0 <test_done>
+ 184:	0be00c13          	li	s8,190
+ 188:	0be00c93          	li	s9,190
+ 18c:	05bd4263          	blt	s10,s11,1d0 <test_done>
+ 190:	0be00d13          	li	s10,190
+ 194:	0be00d93          	li	s11,190
+ 198:	03de4c63          	blt	t3,t4,1d0 <test_done>
+ 19c:	0be00e13          	li	t3,190
+ 1a0:	0be00e93          	li	t4,190
+ 1a4:	03ff4663          	blt	t5,t6,1d0 <test_done>
+ 1a8:	0be00f13          	li	t5,190
+ 1ac:	0be00f93          	li	t6,190
+ 1b0:	00000013          	nop
+ 1b4:	00000013          	nop
+ 1b8:	00000013          	nop
+ 1bc:	00000013          	nop
+ 1c0:	00000013          	nop
+ 1c4:	00000013          	nop
+ 1c8:	00000013          	nop
+ 1cc:	00000013          	nop
+
+000001d0 <test_done>:
+ 1d0:	fff01073          	csrw	0xfff,zero

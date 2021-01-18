@@ -1,0 +1,108 @@
+
+build_segre/sra.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	01f00093          	li	ra,31
+   4:	01000113          	li	sp,16
+   8:	cafed1b7          	lui	gp,0xcafed
+   c:	afe18193          	addi	gp,gp,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  10:	cafed237          	lui	tp,0xcafed
+  14:	afe20213          	addi	tp,tp,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  18:	cafed2b7          	lui	t0,0xcafed
+  1c:	afe28293          	addi	t0,t0,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  20:	cafed337          	lui	t1,0xcafed
+  24:	afe30313          	addi	t1,t1,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  28:	cafed3b7          	lui	t2,0xcafed
+  2c:	afe38393          	addi	t2,t2,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  30:	cafed437          	lui	s0,0xcafed
+  34:	afe40413          	addi	s0,s0,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  38:	cafed4b7          	lui	s1,0xcafed
+  3c:	afe48493          	addi	s1,s1,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  40:	cafed537          	lui	a0,0xcafed
+  44:	afe50513          	addi	a0,a0,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  48:	cafed5b7          	lui	a1,0xcafed
+  4c:	afe58593          	addi	a1,a1,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  50:	cafed637          	lui	a2,0xcafed
+  54:	afe60613          	addi	a2,a2,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  58:	cafed6b7          	lui	a3,0xcafed
+  5c:	afe68693          	addi	a3,a3,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  60:	cafed737          	lui	a4,0xcafed
+  64:	afe70713          	addi	a4,a4,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  68:	cafed7b7          	lui	a5,0xcafed
+  6c:	afe78793          	addi	a5,a5,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  70:	cafed837          	lui	a6,0xcafed
+  74:	afe80813          	addi	a6,a6,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  78:	cafed8b7          	lui	a7,0xcafed
+  7c:	afe88893          	addi	a7,a7,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  80:	cafed937          	lui	s2,0xcafed
+  84:	afe90913          	addi	s2,s2,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  88:	cafed9b7          	lui	s3,0xcafed
+  8c:	afe98993          	addi	s3,s3,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  90:	cafeda37          	lui	s4,0xcafed
+  94:	afea0a13          	addi	s4,s4,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  98:	cafedab7          	lui	s5,0xcafed
+  9c:	afea8a93          	addi	s5,s5,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  a0:	cafedb37          	lui	s6,0xcafed
+  a4:	afeb0b13          	addi	s6,s6,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  a8:	cafedbb7          	lui	s7,0xcafed
+  ac:	afeb8b93          	addi	s7,s7,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  b0:	cafedc37          	lui	s8,0xcafed
+  b4:	afec0c13          	addi	s8,s8,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  b8:	cafedcb7          	lui	s9,0xcafed
+  bc:	afec8c93          	addi	s9,s9,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  c0:	cafedd37          	lui	s10,0xcafed
+  c4:	afed0d13          	addi	s10,s10,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  c8:	cafeddb7          	lui	s11,0xcafed
+  cc:	afed8d93          	addi	s11,s11,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  d0:	cafede37          	lui	t3,0xcafed
+  d4:	afee0e13          	addi	t3,t3,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  d8:	cafedeb7          	lui	t4,0xcafed
+  dc:	afee8e93          	addi	t4,t4,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  e0:	cafedf37          	lui	t5,0xcafed
+  e4:	afef0f13          	addi	t5,t5,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  e8:	cafedfb7          	lui	t6,0xcafed
+  ec:	afef8f93          	addi	t6,t6,-1282 # cafecafe <user_stack_end+0xcafddce2>
+  f0:	4010d033          	sra	zero,ra,ra
+  f4:	4011d1b3          	sra	gp,gp,ra
+  f8:	40225233          	sra	tp,tp,sp
+  fc:	4012d2b3          	sra	t0,t0,ra
+ 100:	40235333          	sra	t1,t1,sp
+ 104:	4013d3b3          	sra	t2,t2,ra
+ 108:	40245433          	sra	s0,s0,sp
+ 10c:	4014d4b3          	sra	s1,s1,ra
+ 110:	40255533          	sra	a0,a0,sp
+ 114:	4015d5b3          	sra	a1,a1,ra
+ 118:	40265633          	sra	a2,a2,sp
+ 11c:	4016d6b3          	sra	a3,a3,ra
+ 120:	40275733          	sra	a4,a4,sp
+ 124:	4017d7b3          	sra	a5,a5,ra
+ 128:	40285833          	sra	a6,a6,sp
+ 12c:	4018d8b3          	sra	a7,a7,ra
+ 130:	40295933          	sra	s2,s2,sp
+ 134:	4019d9b3          	sra	s3,s3,ra
+ 138:	402a5a33          	sra	s4,s4,sp
+ 13c:	401adab3          	sra	s5,s5,ra
+ 140:	402b5b33          	sra	s6,s6,sp
+ 144:	401bdbb3          	sra	s7,s7,ra
+ 148:	402c5c33          	sra	s8,s8,sp
+ 14c:	401cdcb3          	sra	s9,s9,ra
+ 150:	402d5d33          	sra	s10,s10,sp
+ 154:	401dddb3          	sra	s11,s11,ra
+ 158:	402e5e33          	sra	t3,t3,sp
+ 15c:	401edeb3          	sra	t4,t4,ra
+ 160:	402f5f33          	sra	t5,t5,sp
+ 164:	401fdfb3          	sra	t6,t6,ra
+ 168:	00000013          	nop
+ 16c:	00000013          	nop
+ 170:	00000013          	nop
+ 174:	00000013          	nop
+ 178:	00000013          	nop
+ 17c:	00000013          	nop
+ 180:	00000013          	nop
+ 184:	00000013          	nop
+
+00000188 <test_done>:
+ 188:	fff01073          	csrw	0xfff,zero

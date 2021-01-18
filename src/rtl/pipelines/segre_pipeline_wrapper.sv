@@ -188,8 +188,6 @@ segre_rvm_pipeline rvm_pipeline (
 always_comb begin : input_decoder
     // EX PIPELINE
     ex_data.alu_opcode        = core_pipeline_i.alu_opcode;
-    ex_data.br_src_a          = core_pipeline_i.br_src_a;
-    ex_data.br_src_b          = core_pipeline_i.br_src_b;
     ex_data.instr_id          = core_pipeline_i.instr_id;
     ex_data.csr_access        = core_pipeline_i.csr_access;
     ex_data.csr_waddr         = core_pipeline_i.csr_waddr;
@@ -240,26 +238,37 @@ always_comb begin : bypass
     unique case (core_pipeline_i.bypass_a)
         NO_BYPASS: begin
             ex_data.alu_src_a   = core_pipeline_i.alu_src_a;
+            ex_data.br_src_a    = core_pipeline_i.br_src_a;
             mem_data.alu_src_a  = core_pipeline_i.alu_src_a;
             rvm_data.alu_src_a  = core_pipeline_i.alu_src_a;
         end
         BY_EX_PIPE: begin
-            ex_data.alu_src_a   = rf_data_o.ex_data;
+            if (core_pipeline_i.is_branch_jal) ex_data.alu_src_a = core_pipeline_i.alu_src_a;
+            else ex_data.alu_src_a = rf_data_o.ex_data;
+
+            ex_data.br_src_a    = rf_data_o.ex_data;
             mem_data.alu_src_a  = rf_data_o.ex_data;
             rvm_data.alu_src_a  = rf_data_o.ex_data;
         end
         BY_MEM_PIPE: begin
-            ex_data.alu_src_a   = rf_data_o.mem_data;
+            if (core_pipeline_i.is_branch_jal) ex_data.alu_src_a = core_pipeline_i.alu_src_a;
+            else ex_data.alu_src_a = rf_data_o.mem_data;
+
+            ex_data.br_src_a    = rf_data_o.mem_data;
             mem_data.alu_src_a  = rf_data_o.mem_data;
             rvm_data.alu_src_a  = rf_data_o.mem_data;
         end
         BY_RVM5_PIPE: begin
-            ex_data.alu_src_a   = rf_data_o.rvm_data;
+            if (core_pipeline_i.is_branch_jal) ex_data.alu_src_a = core_pipeline_i.alu_src_a;
+            else ex_data.alu_src_a = rf_data_o.rvm_data;
+
+            ex_data.br_src_a    = rf_data_o.rvm_data;
             mem_data.alu_src_a  = rf_data_o.rvm_data;
             rvm_data.alu_src_a  = rf_data_o.rvm_data;
         end
         default: begin
             ex_data.alu_src_a   = core_pipeline_i.alu_src_a;
+            ex_data.br_src_a    = core_pipeline_i.alu_src_a;
             mem_data.alu_src_a  = core_pipeline_i.alu_src_a;
             rvm_data.alu_src_a  = core_pipeline_i.alu_src_a;
         end
@@ -268,26 +277,37 @@ always_comb begin : bypass
     unique case (core_pipeline_i.bypass_b)
         NO_BYPASS: begin
             ex_data.alu_src_b   = core_pipeline_i.alu_src_b;
+            ex_data.br_src_b    = core_pipeline_i.br_src_b;
             mem_data.alu_src_b  = core_pipeline_i.alu_src_b;
             rvm_data.alu_src_b  = core_pipeline_i.alu_src_b;
         end
         BY_EX_PIPE: begin
-            ex_data.alu_src_b   = rf_data_o.ex_data;
+            if (core_pipeline_i.is_branch_jal) ex_data.alu_src_b = core_pipeline_i.alu_src_b;
+            else ex_data.alu_src_b = rf_data_o.ex_data;
+
+            ex_data.br_src_b    = rf_data_o.ex_data;
             mem_data.alu_src_b  = rf_data_o.ex_data;
             rvm_data.alu_src_b  = rf_data_o.ex_data;
         end
         BY_MEM_PIPE: begin
-            ex_data.alu_src_b   = rf_data_o.mem_data;
+            if (core_pipeline_i.is_branch_jal) ex_data.alu_src_b = core_pipeline_i.alu_src_b;
+            else ex_data.alu_src_b = rf_data_o.mem_data;
+
+            ex_data.br_src_b    = rf_data_o.mem_data;
             mem_data.alu_src_b  = rf_data_o.mem_data;
             rvm_data.alu_src_b  = rf_data_o.mem_data;
         end
         BY_RVM5_PIPE: begin
-            ex_data.alu_src_b   = rf_data_o.rvm_data;
+            if (core_pipeline_i.is_branch_jal) ex_data.alu_src_b = core_pipeline_i.alu_src_b;
+            else ex_data.alu_src_b = rf_data_o.rvm_data;
+
+            ex_data.br_src_b    = rf_data_o.rvm_data;
             mem_data.alu_src_b  = rf_data_o.rvm_data;
             rvm_data.alu_src_b  = rf_data_o.rvm_data;
         end
         default: begin
             ex_data.alu_src_b   = core_pipeline_i.alu_src_b;
+            ex_data.br_src_b    = core_pipeline_i.br_src_b;
             mem_data.alu_src_b  = core_pipeline_i.alu_src_b;
             rvm_data.alu_src_b  = core_pipeline_i.alu_src_b;
         end

@@ -1,0 +1,22 @@
+
+build_segre/csr.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	aaaac1b7          	lui	gp,0xaaaac
+   4:	bbb18193          	addi	gp,gp,-1093 # aaaabbbb <user_stack_end+0xaaa9cd9f>
+   8:	00019173          	csrrw	sp,ustatus,gp
+   c:	001d5073          	fsflagsi	zero,26
+  10:	00000013          	nop
+  14:	00000013          	nop
+  18:	00000013          	nop
+  1c:	00000013          	nop
+  20:	00000013          	nop
+  24:	00000013          	nop
+  28:	00000013          	nop
+  2c:	00000013          	nop
+
+00000030 <test_done>:
+  30:	fff01073          	csrw	0xfff,zero

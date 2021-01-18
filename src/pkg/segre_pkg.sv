@@ -328,6 +328,7 @@ typedef struct packed {
     logic store_permission;
     logic csr_access;
     logic [CSR_SIZE-1:0] csr_waddr;
+    logic is_branch_jal;
 } core_pipeline_t;
 
 typedef struct packed {

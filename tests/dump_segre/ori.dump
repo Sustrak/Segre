@@ -1,0 +1,82 @@
+
+build_segre/ori.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00000013          	nop
+   4:	00000093          	li	ra,0
+   8:	00000113          	li	sp,0
+   c:	00000193          	li	gp,0
+  10:	00000213          	li	tp,0
+  14:	fff00293          	li	t0,-1
+  18:	00000313          	li	t1,0
+  1c:	00000393          	li	t2,0
+  20:	00000413          	li	s0,0
+  24:	00000493          	li	s1,0
+  28:	00000513          	li	a0,0
+  2c:	00000593          	li	a1,0
+  30:	00000613          	li	a2,0
+  34:	00000693          	li	a3,0
+  38:	00000713          	li	a4,0
+  3c:	fff00793          	li	a5,-1
+  40:	00000813          	li	a6,0
+  44:	00000893          	li	a7,0
+  48:	00000913          	li	s2,0
+  4c:	00000993          	li	s3,0
+  50:	00000a13          	li	s4,0
+  54:	00000a93          	li	s5,0
+  58:	00000b13          	li	s6,0
+  5c:	00000b93          	li	s7,0
+  60:	00000c13          	li	s8,0
+  64:	fff00c93          	li	s9,-1
+  68:	00000d13          	li	s10,0
+  6c:	00000d93          	li	s11,0
+  70:	00000e13          	li	t3,0
+  74:	00000e93          	li	t4,0
+  78:	00000f13          	li	t5,0
+  7c:	00000f93          	li	t6,0
+  80:	7ff0e013          	ori	zero,ra,2047
+  84:	7ff16093          	ori	ra,sp,2047
+  88:	7771e113          	ori	sp,gp,1911
+  8c:	55526193          	ori	gp,tp,1365
+  90:	3332e213          	ori	tp,t0,819
+  94:	11136293          	ori	t0,t1,273
+  98:	6663e313          	ori	t1,t2,1638
+  9c:	44446393          	ori	t2,s0,1092
+  a0:	2224e413          	ori	s0,s1,546
+  a4:	00056493          	ori	s1,a0,0
+  a8:	1235e513          	ori	a0,a1,291
+  ac:	23466593          	ori	a1,a2,564
+  b0:	3456e613          	ori	a2,a3,837
+  b4:	45676693          	ori	a3,a4,1110
+  b8:	5677e713          	ori	a4,a5,1383
+  bc:	67886793          	ori	a5,a6,1656
+  c0:	7898e813          	ori	a6,a7,1929
+  c4:	67896893          	ori	a7,s2,1656
+  c8:	5679e913          	ori	s2,s3,1383
+  cc:	456a6993          	ori	s3,s4,1110
+  d0:	345aea13          	ori	s4,s5,837
+  d4:	234b6a93          	ori	s5,s6,564
+  d8:	123beb13          	ori	s6,s7,291
+  dc:	000c6b93          	ori	s7,s8,0
+  e0:	757cec13          	ori	s8,s9,1879
+  e4:	575d6c93          	ori	s9,s10,1397
+  e8:	00aded13          	ori	s10,s11,10
+  ec:	00be6d93          	ori	s11,t3,11
+  f0:	00ceee13          	ori	t3,t4,12
+  f4:	00ef6e93          	ori	t4,t5,14
+  f8:	00f0ef13          	ori	t5,ra,15
+  fc:	00116f93          	ori	t6,sp,1
+ 100:	00000013          	nop
+ 104:	00000013          	nop
+ 108:	00000013          	nop
+ 10c:	00000013          	nop
+ 110:	00000013          	nop
+ 114:	00000013          	nop
+ 118:	00000013          	nop
+ 11c:	00000013          	nop
+
+00000120 <test_done>:
+ 120:	fff01073          	csrw	0xfff,zero

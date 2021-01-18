@@ -98,6 +98,7 @@ segre_id_stage id_stage (
     .br_src_b_o       (core_pipeline.br_src_b),
     // Pipeline
     .pipeline_o       (core_pipeline.pipeline),
+    .is_branch_jal_o  (core_pipeline.is_branch_jal),
     // Bypass
     .bypass_a_o       (core_pipeline.bypass_a),
     .bypass_b_o       (core_pipeline.bypass_b),

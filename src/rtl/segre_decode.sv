@@ -46,6 +46,7 @@ module segre_decode(
 
     // Pipeline
     output pipeline_e pipeline_o,
+    output logic is_branch_jal_o,
 
     // CSR
     output logic csr_access_o,
@@ -87,6 +88,7 @@ always_comb begin
     memop_type_o     = WORD;
     instr_opcode     = opcode_e'(instr_i[6:0]);
     csr_access_o     = 1'b0;
+    is_branch_jal_o  = 1'b0;
 
     unique case(instr_opcode)
 
@@ -124,9 +126,11 @@ always_comb begin
         end
         OPCODE_JAL: begin
             rf_we_o = 1'b1;
+            is_branch_jal_o = 1'b1;
         end
         OPCODE_JALR: begin
             rf_we_o = 1'b1;
+            is_branch_jal_o = 1'b1;
         end
         OPCODE_AUIPC: begin
             rf_we_o = 1'b1;
@@ -139,6 +143,7 @@ always_comb begin
             end
         end
         OPCODE_BRANCH: begin
+            is_branch_jal_o = 1'b1;
         end
         default: begin
             if (rsn_i) begin

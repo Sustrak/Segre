@@ -1,0 +1,80 @@
+
+build_segre/srl.o:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	02000093          	li	ra,32
+   4:	80000137          	lui	sp,0x80000
+   8:	600001b7          	lui	gp,0x60000
+   c:	80000237          	lui	tp,0x80000
+  10:	600002b7          	lui	t0,0x60000
+  14:	80000337          	lui	t1,0x80000
+  18:	600003b7          	lui	t2,0x60000
+  1c:	80000437          	lui	s0,0x80000
+  20:	600004b7          	lui	s1,0x60000
+  24:	80000537          	lui	a0,0x80000
+  28:	600005b7          	lui	a1,0x60000
+  2c:	80000637          	lui	a2,0x80000
+  30:	600006b7          	lui	a3,0x60000
+  34:	80000737          	lui	a4,0x80000
+  38:	600007b7          	lui	a5,0x60000
+  3c:	80000837          	lui	a6,0x80000
+  40:	600008b7          	lui	a7,0x60000
+  44:	80000937          	lui	s2,0x80000
+  48:	600009b7          	lui	s3,0x60000
+  4c:	80000a37          	lui	s4,0x80000
+  50:	60000ab7          	lui	s5,0x60000
+  54:	80000b37          	lui	s6,0x80000
+  58:	60000bb7          	lui	s7,0x60000
+  5c:	80000c37          	lui	s8,0x80000
+  60:	60000cb7          	lui	s9,0x60000
+  64:	80000d37          	lui	s10,0x80000
+  68:	60000db7          	lui	s11,0x60000
+  6c:	80000e37          	lui	t3,0x80000
+  70:	60000eb7          	lui	t4,0x60000
+  74:	80000f37          	lui	t5,0x80000
+  78:	60000fb7          	lui	t6,0x60000
+  7c:	0010d033          	srl	zero,ra,ra
+  80:	00115133          	srl	sp,sp,ra
+  84:	0011d1b3          	srl	gp,gp,ra
+  88:	00125233          	srl	tp,tp,ra
+  8c:	0012d2b3          	srl	t0,t0,ra
+  90:	00135333          	srl	t1,t1,ra
+  94:	0013d3b3          	srl	t2,t2,ra
+  98:	00145433          	srl	s0,s0,ra
+  9c:	0014d4b3          	srl	s1,s1,ra
+  a0:	00155533          	srl	a0,a0,ra
+  a4:	0015d5b3          	srl	a1,a1,ra
+  a8:	00165633          	srl	a2,a2,ra
+  ac:	0016d6b3          	srl	a3,a3,ra
+  b0:	00175733          	srl	a4,a4,ra
+  b4:	0017d7b3          	srl	a5,a5,ra
+  b8:	00185833          	srl	a6,a6,ra
+  bc:	0018d8b3          	srl	a7,a7,ra
+  c0:	00195933          	srl	s2,s2,ra
+  c4:	0019d9b3          	srl	s3,s3,ra
+  c8:	001a5a33          	srl	s4,s4,ra
+  cc:	001adab3          	srl	s5,s5,ra
+  d0:	001b5b33          	srl	s6,s6,ra
+  d4:	001bdbb3          	srl	s7,s7,ra
+  d8:	001c5c33          	srl	s8,s8,ra
+  dc:	001cdcb3          	srl	s9,s9,ra
+  e0:	001d5d33          	srl	s10,s10,ra
+  e4:	001dddb3          	srl	s11,s11,ra
+  e8:	001e5e33          	srl	t3,t3,ra
+  ec:	001edeb3          	srl	t4,t4,ra
+  f0:	001f5f33          	srl	t5,t5,ra
+  f4:	001fdfb3          	srl	t6,t6,ra
+  f8:	00000013          	nop
+  fc:	00000013          	nop
+ 100:	00000013          	nop
+ 104:	00000013          	nop
+ 108:	00000013          	nop
+ 10c:	00000013          	nop
+ 110:	00000013          	nop
+ 114:	00000013          	nop
+
+00000118 <test_done>:
+ 118:	fff01073          	csrw	0xfff,zero

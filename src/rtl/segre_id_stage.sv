@@ -45,6 +45,7 @@ module segre_id_stage (
     output logic [WORD_SIZE-1:0] br_src_a_o,
     output logic [WORD_SIZE-1:0] br_src_b_o,
     // Pipeline
+    output logic is_branch_jal_o,
     output pipeline_e pipeline_o,
     // Bypass
     output bypass_e bypass_a_o,
@@ -91,6 +92,7 @@ logic [WORD_SIZE-1:0] data_b;
 logic [HF_PTR-1:0] nxt_instr_id;
 logic csr_access;
 logic [CSR_SIZE-1:0] csr_addr;
+logic is_branch_jal;
 
 // Bypass
 bypass_e bypass_a;
@@ -148,6 +150,7 @@ segre_decode decode (
 
     // Pipeline
     .pipeline_o       (pipeline),
+    .is_branch_jal_o  (is_branch_jal),
 
     // CSR
     .csr_access_o     (csr_access),
@@ -289,6 +292,7 @@ always_ff @(posedge clk_i) begin
         instr_id_o       <= nxt_instr_id;
         csr_access_o     <= csr_access;
         csr_waddr_o      <= csr_addr;
+        is_branch_jal_o  <= is_branch_jal;
     end
 end
 
