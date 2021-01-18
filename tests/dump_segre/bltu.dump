@@ -4,143 +4,143 @@ build_segre/bltu.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00000000 <_start>:
-   0:	00000013          	nop
-   4:	00100093          	li	ra,1
-   8:	00200113          	li	sp,2
-   c:	00300193          	li	gp,3
-  10:	00400213          	li	tp,4
-  14:	00500293          	li	t0,5
-  18:	00600313          	li	t1,6
-  1c:	00700393          	li	t2,7
-  20:	00800413          	li	s0,8
-  24:	00900493          	li	s1,9
-  28:	ffe00513          	li	a0,-2
-  2c:	fff00593          	li	a1,-1
-  30:	ffc00613          	li	a2,-4
-  34:	ffd00693          	li	a3,-3
-  38:	ffa00713          	li	a4,-6
-  3c:	ffb00793          	li	a5,-5
-  40:	ff800813          	li	a6,-8
-  44:	ff900893          	li	a7,-7
-  48:	ff600913          	li	s2,-10
-  4c:	ff700993          	li	s3,-9
-  50:	ffc00a13          	li	s4,-4
-  54:	ffb00a93          	li	s5,-5
-  58:	ffa00b13          	li	s6,-6
-  5c:	ff900b93          	li	s7,-7
-  60:	ff800c13          	li	s8,-8
-  64:	ff700c93          	li	s9,-9
-  68:	ff600d13          	li	s10,-10
-  6c:	ff500d93          	li	s11,-11
-  70:	ff400e13          	li	t3,-12
-  74:	ff300e93          	li	t4,-13
-  78:	ff200f13          	li	t5,-14
-  7c:	ff100f93          	li	t6,-15
-  80:	00106663          	bltu	zero,ra,8c <b1>
-  84:	fff00093          	li	ra,-1
-  88:	fff01073          	csrw	0xfff,zero
+00008000 <_start>:
+    8000:	00000013          	nop
+    8004:	00100093          	li	ra,1
+    8008:	00200113          	li	sp,2
+    800c:	00300193          	li	gp,3
+    8010:	00400213          	li	tp,4
+    8014:	00500293          	li	t0,5
+    8018:	00600313          	li	t1,6
+    801c:	00700393          	li	t2,7
+    8020:	00800413          	li	s0,8
+    8024:	00900493          	li	s1,9
+    8028:	ffe00513          	li	a0,-2
+    802c:	fff00593          	li	a1,-1
+    8030:	ffc00613          	li	a2,-4
+    8034:	ffd00693          	li	a3,-3
+    8038:	ffa00713          	li	a4,-6
+    803c:	ffb00793          	li	a5,-5
+    8040:	ff800813          	li	a6,-8
+    8044:	ff900893          	li	a7,-7
+    8048:	ff600913          	li	s2,-10
+    804c:	ff700993          	li	s3,-9
+    8050:	ffc00a13          	li	s4,-4
+    8054:	ffb00a93          	li	s5,-5
+    8058:	ffa00b13          	li	s6,-6
+    805c:	ff900b93          	li	s7,-7
+    8060:	ff800c13          	li	s8,-8
+    8064:	ff700c93          	li	s9,-9
+    8068:	ff600d13          	li	s10,-10
+    806c:	ff500d93          	li	s11,-11
+    8070:	ff400e13          	li	t3,-12
+    8074:	ff300e93          	li	t4,-13
+    8078:	ff200f13          	li	t5,-14
+    807c:	ff100f93          	li	t6,-15
+    8080:	00106663          	bltu	zero,ra,808c <b1>
+    8084:	fff00093          	li	ra,-1
+    8088:	fff01073          	csrw	0xfff,zero
 
-0000008c <b1>:
-  8c:	0be00093          	li	ra,190
-  90:	00316863          	bltu	sp,gp,a0 <b2>
-  94:	fff00113          	li	sp,-1
-  98:	fff00193          	li	gp,-1
-  9c:	fff01073          	csrw	0xfff,zero
+0000808c <b1>:
+    808c:	0be00093          	li	ra,190
+    8090:	00316863          	bltu	sp,gp,80a0 <b2>
+    8094:	fff00113          	li	sp,-1
+    8098:	fff00193          	li	gp,-1
+    809c:	fff01073          	csrw	0xfff,zero
 
-000000a0 <b2>:
-  a0:	0be00113          	li	sp,190
-  a4:	0be00193          	li	gp,190
-  a8:	00526863          	bltu	tp,t0,b8 <b3>
-  ac:	fff00213          	li	tp,-1
-  b0:	fff00293          	li	t0,-1
-  b4:	fff01073          	csrw	0xfff,zero
+000080a0 <b2>:
+    80a0:	0be00113          	li	sp,190
+    80a4:	0be00193          	li	gp,190
+    80a8:	00526863          	bltu	tp,t0,80b8 <b3>
+    80ac:	fff00213          	li	tp,-1
+    80b0:	fff00293          	li	t0,-1
+    80b4:	fff01073          	csrw	0xfff,zero
 
-000000b8 <b3>:
-  b8:	0be00213          	li	tp,190
-  bc:	0be00293          	li	t0,190
-  c0:	00736863          	bltu	t1,t2,d0 <b4>
-  c4:	fff00313          	li	t1,-1
-  c8:	fff00393          	li	t2,-1
-  cc:	fff01073          	csrw	0xfff,zero
+000080b8 <b3>:
+    80b8:	0be00213          	li	tp,190
+    80bc:	0be00293          	li	t0,190
+    80c0:	00736863          	bltu	t1,t2,80d0 <b4>
+    80c4:	fff00313          	li	t1,-1
+    80c8:	fff00393          	li	t2,-1
+    80cc:	fff01073          	csrw	0xfff,zero
 
-000000d0 <b4>:
-  d0:	0be00313          	li	t1,190
-  d4:	0be00393          	li	t2,190
-  d8:	00946863          	bltu	s0,s1,e8 <b5>
-  dc:	fff00413          	li	s0,-1
-  e0:	fff00493          	li	s1,-1
-  e4:	fff01073          	csrw	0xfff,zero
+000080d0 <b4>:
+    80d0:	0be00313          	li	t1,190
+    80d4:	0be00393          	li	t2,190
+    80d8:	00946863          	bltu	s0,s1,80e8 <b5>
+    80dc:	fff00413          	li	s0,-1
+    80e0:	fff00493          	li	s1,-1
+    80e4:	fff01073          	csrw	0xfff,zero
 
-000000e8 <b5>:
-  e8:	0be00413          	li	s0,190
-  ec:	0be00493          	li	s1,190
-  f0:	00b56863          	bltu	a0,a1,100 <b6>
-  f4:	fff00513          	li	a0,-1
-  f8:	fff00593          	li	a1,-1
-  fc:	fff01073          	csrw	0xfff,zero
+000080e8 <b5>:
+    80e8:	0be00413          	li	s0,190
+    80ec:	0be00493          	li	s1,190
+    80f0:	00b56863          	bltu	a0,a1,8100 <b6>
+    80f4:	fff00513          	li	a0,-1
+    80f8:	fff00593          	li	a1,-1
+    80fc:	fff01073          	csrw	0xfff,zero
 
-00000100 <b6>:
- 100:	0be00513          	li	a0,190
- 104:	0be00593          	li	a1,190
- 108:	00d66863          	bltu	a2,a3,118 <b7>
- 10c:	fff00613          	li	a2,-1
- 110:	fff00693          	li	a3,-1
- 114:	fff01073          	csrw	0xfff,zero
+00008100 <b6>:
+    8100:	0be00513          	li	a0,190
+    8104:	0be00593          	li	a1,190
+    8108:	00d66863          	bltu	a2,a3,8118 <b7>
+    810c:	fff00613          	li	a2,-1
+    8110:	fff00693          	li	a3,-1
+    8114:	fff01073          	csrw	0xfff,zero
 
-00000118 <b7>:
- 118:	0be00613          	li	a2,190
- 11c:	0be00693          	li	a3,190
- 120:	00f76863          	bltu	a4,a5,130 <b8>
- 124:	fff00713          	li	a4,-1
- 128:	fff00793          	li	a5,-1
- 12c:	fff01073          	csrw	0xfff,zero
+00008118 <b7>:
+    8118:	0be00613          	li	a2,190
+    811c:	0be00693          	li	a3,190
+    8120:	00f76863          	bltu	a4,a5,8130 <b8>
+    8124:	fff00713          	li	a4,-1
+    8128:	fff00793          	li	a5,-1
+    812c:	fff01073          	csrw	0xfff,zero
 
-00000130 <b8>:
- 130:	0be00713          	li	a4,190
- 134:	0be00793          	li	a5,190
- 138:	01186863          	bltu	a6,a7,148 <b9>
- 13c:	fff00813          	li	a6,-1
- 140:	fff00893          	li	a7,-1
- 144:	fff01073          	csrw	0xfff,zero
+00008130 <b8>:
+    8130:	0be00713          	li	a4,190
+    8134:	0be00793          	li	a5,190
+    8138:	01186863          	bltu	a6,a7,8148 <b9>
+    813c:	fff00813          	li	a6,-1
+    8140:	fff00893          	li	a7,-1
+    8144:	fff01073          	csrw	0xfff,zero
 
-00000148 <b9>:
- 148:	0be00813          	li	a6,190
- 14c:	0be00893          	li	a7,190
- 150:	01396863          	bltu	s2,s3,160 <b10>
- 154:	fff00913          	li	s2,-1
- 158:	fff00993          	li	s3,-1
- 15c:	fff01073          	csrw	0xfff,zero
+00008148 <b9>:
+    8148:	0be00813          	li	a6,190
+    814c:	0be00893          	li	a7,190
+    8150:	01396863          	bltu	s2,s3,8160 <b10>
+    8154:	fff00913          	li	s2,-1
+    8158:	fff00993          	li	s3,-1
+    815c:	fff01073          	csrw	0xfff,zero
 
-00000160 <b10>:
- 160:	0be00913          	li	s2,190
- 164:	0be00993          	li	s3,190
- 168:	075a6463          	bltu	s4,s5,1d0 <test_done>
- 16c:	0be00a13          	li	s4,190
- 170:	0be00a93          	li	s5,190
- 174:	057b6e63          	bltu	s6,s7,1d0 <test_done>
- 178:	0be00b13          	li	s6,190
- 17c:	0be00b93          	li	s7,190
- 180:	059c6863          	bltu	s8,s9,1d0 <test_done>
- 184:	0be00c13          	li	s8,190
- 188:	0be00c93          	li	s9,190
- 18c:	05bd6263          	bltu	s10,s11,1d0 <test_done>
- 190:	0be00d13          	li	s10,190
- 194:	0be00d93          	li	s11,190
- 198:	03de6c63          	bltu	t3,t4,1d0 <test_done>
- 19c:	0be00e13          	li	t3,190
- 1a0:	0be00e93          	li	t4,190
- 1a4:	03ff6663          	bltu	t5,t6,1d0 <test_done>
- 1a8:	0be00f13          	li	t5,190
- 1ac:	0be00f93          	li	t6,190
- 1b0:	00000013          	nop
- 1b4:	00000013          	nop
- 1b8:	00000013          	nop
- 1bc:	00000013          	nop
- 1c0:	00000013          	nop
- 1c4:	00000013          	nop
- 1c8:	00000013          	nop
- 1cc:	00000013          	nop
+00008160 <b10>:
+    8160:	0be00913          	li	s2,190
+    8164:	0be00993          	li	s3,190
+    8168:	075a6463          	bltu	s4,s5,81d0 <test_done>
+    816c:	0be00a13          	li	s4,190
+    8170:	0be00a93          	li	s5,190
+    8174:	057b6e63          	bltu	s6,s7,81d0 <test_done>
+    8178:	0be00b13          	li	s6,190
+    817c:	0be00b93          	li	s7,190
+    8180:	059c6863          	bltu	s8,s9,81d0 <test_done>
+    8184:	0be00c13          	li	s8,190
+    8188:	0be00c93          	li	s9,190
+    818c:	05bd6263          	bltu	s10,s11,81d0 <test_done>
+    8190:	0be00d13          	li	s10,190
+    8194:	0be00d93          	li	s11,190
+    8198:	03de6c63          	bltu	t3,t4,81d0 <test_done>
+    819c:	0be00e13          	li	t3,190
+    81a0:	0be00e93          	li	t4,190
+    81a4:	03ff6663          	bltu	t5,t6,81d0 <test_done>
+    81a8:	0be00f13          	li	t5,190
+    81ac:	0be00f93          	li	t6,190
+    81b0:	00000013          	nop
+    81b4:	00000013          	nop
+    81b8:	00000013          	nop
+    81bc:	00000013          	nop
+    81c0:	00000013          	nop
+    81c4:	00000013          	nop
+    81c8:	00000013          	nop
+    81cc:	00000013          	nop
 
-000001d0 <test_done>:
- 1d0:	fff01073          	csrw	0xfff,zero
+000081d0 <test_done>:
+    81d0:	fff01073          	csrw	0xfff,zero

@@ -4,108 +4,108 @@ build_segre/srai.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00000000 <_start>:
-   0:	cafed0b7          	lui	ra,0xcafed
-   4:	afe08093          	addi	ra,ra,-1282 # cafecafe <user_stack_end+0xcafddce2>
-   8:	cafed137          	lui	sp,0xcafed
-   c:	afe10113          	addi	sp,sp,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  10:	cafed1b7          	lui	gp,0xcafed
-  14:	afe18193          	addi	gp,gp,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  18:	cafed237          	lui	tp,0xcafed
-  1c:	afe20213          	addi	tp,tp,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  20:	cafed2b7          	lui	t0,0xcafed
-  24:	afe28293          	addi	t0,t0,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  28:	cafed337          	lui	t1,0xcafed
-  2c:	afe30313          	addi	t1,t1,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  30:	cafed3b7          	lui	t2,0xcafed
-  34:	afe38393          	addi	t2,t2,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  38:	cafed437          	lui	s0,0xcafed
-  3c:	afe40413          	addi	s0,s0,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  40:	cafed4b7          	lui	s1,0xcafed
-  44:	afe48493          	addi	s1,s1,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  48:	cafed537          	lui	a0,0xcafed
-  4c:	afe50513          	addi	a0,a0,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  50:	cafed5b7          	lui	a1,0xcafed
-  54:	afe58593          	addi	a1,a1,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  58:	cafed637          	lui	a2,0xcafed
-  5c:	afe60613          	addi	a2,a2,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  60:	cafed6b7          	lui	a3,0xcafed
-  64:	afe68693          	addi	a3,a3,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  68:	cafed737          	lui	a4,0xcafed
-  6c:	afe70713          	addi	a4,a4,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  70:	cafed7b7          	lui	a5,0xcafed
-  74:	afe78793          	addi	a5,a5,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  78:	cafed837          	lui	a6,0xcafed
-  7c:	afe80813          	addi	a6,a6,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  80:	cafed8b7          	lui	a7,0xcafed
-  84:	afe88893          	addi	a7,a7,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  88:	cafed937          	lui	s2,0xcafed
-  8c:	afe90913          	addi	s2,s2,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  90:	cafed9b7          	lui	s3,0xcafed
-  94:	afe98993          	addi	s3,s3,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  98:	cafeda37          	lui	s4,0xcafed
-  9c:	afea0a13          	addi	s4,s4,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  a0:	cafedab7          	lui	s5,0xcafed
-  a4:	afea8a93          	addi	s5,s5,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  a8:	cafedb37          	lui	s6,0xcafed
-  ac:	afeb0b13          	addi	s6,s6,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  b0:	cafedbb7          	lui	s7,0xcafed
-  b4:	afeb8b93          	addi	s7,s7,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  b8:	cafedc37          	lui	s8,0xcafed
-  bc:	afec0c13          	addi	s8,s8,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  c0:	cafedcb7          	lui	s9,0xcafed
-  c4:	afec8c93          	addi	s9,s9,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  c8:	cafedd37          	lui	s10,0xcafed
-  cc:	afed0d13          	addi	s10,s10,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  d0:	cafeddb7          	lui	s11,0xcafed
-  d4:	afed8d93          	addi	s11,s11,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  d8:	cafede37          	lui	t3,0xcafed
-  dc:	afee0e13          	addi	t3,t3,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  e0:	cafedeb7          	lui	t4,0xcafed
-  e4:	afee8e93          	addi	t4,t4,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  e8:	cafedf37          	lui	t5,0xcafed
-  ec:	afef0f13          	addi	t5,t5,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  f0:	cafedfb7          	lui	t6,0xcafed
-  f4:	afef8f93          	addi	t6,t6,-1282 # cafecafe <user_stack_end+0xcafddce2>
-  f8:	0190d013          	srli	zero,ra,0x19
-  fc:	01015113          	srli	sp,sp,0x10
- 100:	0191d193          	srli	gp,gp,0x19
- 104:	01025213          	srli	tp,tp,0x10
- 108:	0192d293          	srli	t0,t0,0x19
- 10c:	01035313          	srli	t1,t1,0x10
- 110:	0193d393          	srli	t2,t2,0x19
- 114:	01045413          	srli	s0,s0,0x10
- 118:	0194d493          	srli	s1,s1,0x19
- 11c:	01055513          	srli	a0,a0,0x10
- 120:	0195d593          	srli	a1,a1,0x19
- 124:	01065613          	srli	a2,a2,0x10
- 128:	0196d693          	srli	a3,a3,0x19
- 12c:	01075713          	srli	a4,a4,0x10
- 130:	0197d793          	srli	a5,a5,0x19
- 134:	01085813          	srli	a6,a6,0x10
- 138:	0198d893          	srli	a7,a7,0x19
- 13c:	01095913          	srli	s2,s2,0x10
- 140:	0199d993          	srli	s3,s3,0x19
- 144:	010a5a13          	srli	s4,s4,0x10
- 148:	019ada93          	srli	s5,s5,0x19
- 14c:	010b5b13          	srli	s6,s6,0x10
- 150:	019bdb93          	srli	s7,s7,0x19
- 154:	010c5c13          	srli	s8,s8,0x10
- 158:	019cdc93          	srli	s9,s9,0x19
- 15c:	010d5d13          	srli	s10,s10,0x10
- 160:	019ddd93          	srli	s11,s11,0x19
- 164:	010e5e13          	srli	t3,t3,0x10
- 168:	019ede93          	srli	t4,t4,0x19
- 16c:	010f5f13          	srli	t5,t5,0x10
- 170:	019fdf93          	srli	t6,t6,0x19
- 174:	00000013          	nop
- 178:	00000013          	nop
- 17c:	00000013          	nop
- 180:	00000013          	nop
- 184:	00000013          	nop
- 188:	00000013          	nop
- 18c:	00000013          	nop
- 190:	00000013          	nop
+00008000 <_start>:
+    8000:	cafed0b7          	lui	ra,0xcafed
+    8004:	afe08093          	addi	ra,ra,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8008:	cafed137          	lui	sp,0xcafed
+    800c:	afe10113          	addi	sp,sp,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8010:	cafed1b7          	lui	gp,0xcafed
+    8014:	afe18193          	addi	gp,gp,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8018:	cafed237          	lui	tp,0xcafed
+    801c:	afe20213          	addi	tp,tp,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8020:	cafed2b7          	lui	t0,0xcafed
+    8024:	afe28293          	addi	t0,t0,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8028:	cafed337          	lui	t1,0xcafed
+    802c:	afe30313          	addi	t1,t1,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8030:	cafed3b7          	lui	t2,0xcafed
+    8034:	afe38393          	addi	t2,t2,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8038:	cafed437          	lui	s0,0xcafed
+    803c:	afe40413          	addi	s0,s0,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8040:	cafed4b7          	lui	s1,0xcafed
+    8044:	afe48493          	addi	s1,s1,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8048:	cafed537          	lui	a0,0xcafed
+    804c:	afe50513          	addi	a0,a0,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8050:	cafed5b7          	lui	a1,0xcafed
+    8054:	afe58593          	addi	a1,a1,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8058:	cafed637          	lui	a2,0xcafed
+    805c:	afe60613          	addi	a2,a2,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8060:	cafed6b7          	lui	a3,0xcafed
+    8064:	afe68693          	addi	a3,a3,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8068:	cafed737          	lui	a4,0xcafed
+    806c:	afe70713          	addi	a4,a4,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8070:	cafed7b7          	lui	a5,0xcafed
+    8074:	afe78793          	addi	a5,a5,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8078:	cafed837          	lui	a6,0xcafed
+    807c:	afe80813          	addi	a6,a6,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8080:	cafed8b7          	lui	a7,0xcafed
+    8084:	afe88893          	addi	a7,a7,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8088:	cafed937          	lui	s2,0xcafed
+    808c:	afe90913          	addi	s2,s2,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8090:	cafed9b7          	lui	s3,0xcafed
+    8094:	afe98993          	addi	s3,s3,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    8098:	cafeda37          	lui	s4,0xcafed
+    809c:	afea0a13          	addi	s4,s4,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80a0:	cafedab7          	lui	s5,0xcafed
+    80a4:	afea8a93          	addi	s5,s5,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80a8:	cafedb37          	lui	s6,0xcafed
+    80ac:	afeb0b13          	addi	s6,s6,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80b0:	cafedbb7          	lui	s7,0xcafed
+    80b4:	afeb8b93          	addi	s7,s7,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80b8:	cafedc37          	lui	s8,0xcafed
+    80bc:	afec0c13          	addi	s8,s8,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80c0:	cafedcb7          	lui	s9,0xcafed
+    80c4:	afec8c93          	addi	s9,s9,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80c8:	cafedd37          	lui	s10,0xcafed
+    80cc:	afed0d13          	addi	s10,s10,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80d0:	cafeddb7          	lui	s11,0xcafed
+    80d4:	afed8d93          	addi	s11,s11,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80d8:	cafede37          	lui	t3,0xcafed
+    80dc:	afee0e13          	addi	t3,t3,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80e0:	cafedeb7          	lui	t4,0xcafed
+    80e4:	afee8e93          	addi	t4,t4,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80e8:	cafedf37          	lui	t5,0xcafed
+    80ec:	afef0f13          	addi	t5,t5,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80f0:	cafedfb7          	lui	t6,0xcafed
+    80f4:	afef8f93          	addi	t6,t6,-1282 # cafecafe <user_stack_end+0xcafd5ce2>
+    80f8:	0190d013          	srli	zero,ra,0x19
+    80fc:	01015113          	srli	sp,sp,0x10
+    8100:	0191d193          	srli	gp,gp,0x19
+    8104:	01025213          	srli	tp,tp,0x10
+    8108:	0192d293          	srli	t0,t0,0x19
+    810c:	01035313          	srli	t1,t1,0x10
+    8110:	0193d393          	srli	t2,t2,0x19
+    8114:	01045413          	srli	s0,s0,0x10
+    8118:	0194d493          	srli	s1,s1,0x19
+    811c:	01055513          	srli	a0,a0,0x10
+    8120:	0195d593          	srli	a1,a1,0x19
+    8124:	01065613          	srli	a2,a2,0x10
+    8128:	0196d693          	srli	a3,a3,0x19
+    812c:	01075713          	srli	a4,a4,0x10
+    8130:	0197d793          	srli	a5,a5,0x19
+    8134:	01085813          	srli	a6,a6,0x10
+    8138:	0198d893          	srli	a7,a7,0x19
+    813c:	01095913          	srli	s2,s2,0x10
+    8140:	0199d993          	srli	s3,s3,0x19
+    8144:	010a5a13          	srli	s4,s4,0x10
+    8148:	019ada93          	srli	s5,s5,0x19
+    814c:	010b5b13          	srli	s6,s6,0x10
+    8150:	019bdb93          	srli	s7,s7,0x19
+    8154:	010c5c13          	srli	s8,s8,0x10
+    8158:	019cdc93          	srli	s9,s9,0x19
+    815c:	010d5d13          	srli	s10,s10,0x10
+    8160:	019ddd93          	srli	s11,s11,0x19
+    8164:	010e5e13          	srli	t3,t3,0x10
+    8168:	019ede93          	srli	t4,t4,0x19
+    816c:	010f5f13          	srli	t5,t5,0x10
+    8170:	019fdf93          	srli	t6,t6,0x19
+    8174:	00000013          	nop
+    8178:	00000013          	nop
+    817c:	00000013          	nop
+    8180:	00000013          	nop
+    8184:	00000013          	nop
+    8188:	00000013          	nop
+    818c:	00000013          	nop
+    8190:	00000013          	nop
 
-00000194 <test_done>:
- 194:	fff01073          	csrw	0xfff,zero
+00008194 <test_done>:
+    8194:	fff01073          	csrw	0xfff,zero

@@ -4,108 +4,108 @@ build_segre/slli.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00000000 <_start>:
-   0:	beefc0b7          	lui	ra,0xbeefc
-   4:	eef08093          	addi	ra,ra,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-   8:	beefc137          	lui	sp,0xbeefc
-   c:	eef10113          	addi	sp,sp,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  10:	beefc1b7          	lui	gp,0xbeefc
-  14:	eef18193          	addi	gp,gp,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  18:	beefc237          	lui	tp,0xbeefc
-  1c:	eef20213          	addi	tp,tp,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  20:	beefc2b7          	lui	t0,0xbeefc
-  24:	eef28293          	addi	t0,t0,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  28:	beefc337          	lui	t1,0xbeefc
-  2c:	eef30313          	addi	t1,t1,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  30:	beefc3b7          	lui	t2,0xbeefc
-  34:	eef38393          	addi	t2,t2,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  38:	beefc437          	lui	s0,0xbeefc
-  3c:	eef40413          	addi	s0,s0,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  40:	beefc4b7          	lui	s1,0xbeefc
-  44:	eef48493          	addi	s1,s1,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  48:	beefc537          	lui	a0,0xbeefc
-  4c:	eef50513          	addi	a0,a0,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  50:	beefc5b7          	lui	a1,0xbeefc
-  54:	eef58593          	addi	a1,a1,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  58:	beefc637          	lui	a2,0xbeefc
-  5c:	eef60613          	addi	a2,a2,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  60:	beefc6b7          	lui	a3,0xbeefc
-  64:	eef68693          	addi	a3,a3,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  68:	beefc737          	lui	a4,0xbeefc
-  6c:	eef70713          	addi	a4,a4,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  70:	beefc7b7          	lui	a5,0xbeefc
-  74:	eef78793          	addi	a5,a5,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  78:	beefc837          	lui	a6,0xbeefc
-  7c:	eef80813          	addi	a6,a6,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  80:	beefc8b7          	lui	a7,0xbeefc
-  84:	eef88893          	addi	a7,a7,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  88:	beefc937          	lui	s2,0xbeefc
-  8c:	eef90913          	addi	s2,s2,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  90:	beefc9b7          	lui	s3,0xbeefc
-  94:	eef98993          	addi	s3,s3,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  98:	beefca37          	lui	s4,0xbeefc
-  9c:	eefa0a13          	addi	s4,s4,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  a0:	beefcab7          	lui	s5,0xbeefc
-  a4:	eefa8a93          	addi	s5,s5,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  a8:	beefcb37          	lui	s6,0xbeefc
-  ac:	eefb0b13          	addi	s6,s6,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  b0:	beefcbb7          	lui	s7,0xbeefc
-  b4:	eefb8b93          	addi	s7,s7,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  b8:	beefcc37          	lui	s8,0xbeefc
-  bc:	eefc0c13          	addi	s8,s8,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  c0:	beefccb7          	lui	s9,0xbeefc
-  c4:	eefc8c93          	addi	s9,s9,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  c8:	beefcd37          	lui	s10,0xbeefc
-  cc:	eefd0d13          	addi	s10,s10,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  d0:	beefcdb7          	lui	s11,0xbeefc
-  d4:	eefd8d93          	addi	s11,s11,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  d8:	beefce37          	lui	t3,0xbeefc
-  dc:	eefe0e13          	addi	t3,t3,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  e0:	beefceb7          	lui	t4,0xbeefc
-  e4:	eefe8e93          	addi	t4,t4,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  e8:	beefcf37          	lui	t5,0xbeefc
-  ec:	eeff0f13          	addi	t5,t5,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  f0:	beefcfb7          	lui	t6,0xbeefc
-  f4:	eeff8f93          	addi	t6,t6,-273 # beefbeef <user_stack_end+0xbeeed0d3>
-  f8:	01f09013          	slli	zero,ra,0x1f
-  fc:	01011113          	slli	sp,sp,0x10
- 100:	01919193          	slli	gp,gp,0x19
- 104:	01021213          	slli	tp,tp,0x10
- 108:	01929293          	slli	t0,t0,0x19
- 10c:	01031313          	slli	t1,t1,0x10
- 110:	01939393          	slli	t2,t2,0x19
- 114:	01041413          	slli	s0,s0,0x10
- 118:	01949493          	slli	s1,s1,0x19
- 11c:	01051513          	slli	a0,a0,0x10
- 120:	01959593          	slli	a1,a1,0x19
- 124:	01061613          	slli	a2,a2,0x10
- 128:	01969693          	slli	a3,a3,0x19
- 12c:	01071713          	slli	a4,a4,0x10
- 130:	01979793          	slli	a5,a5,0x19
- 134:	01081813          	slli	a6,a6,0x10
- 138:	01989893          	slli	a7,a7,0x19
- 13c:	01091913          	slli	s2,s2,0x10
- 140:	01999993          	slli	s3,s3,0x19
- 144:	010a1a13          	slli	s4,s4,0x10
- 148:	019a9a93          	slli	s5,s5,0x19
- 14c:	010b1b13          	slli	s6,s6,0x10
- 150:	019b9b93          	slli	s7,s7,0x19
- 154:	010c1c13          	slli	s8,s8,0x10
- 158:	019c9c93          	slli	s9,s9,0x19
- 15c:	010d1d13          	slli	s10,s10,0x10
- 160:	019d9d93          	slli	s11,s11,0x19
- 164:	010e1e13          	slli	t3,t3,0x10
- 168:	019e9e93          	slli	t4,t4,0x19
- 16c:	010f1f13          	slli	t5,t5,0x10
- 170:	019f9f93          	slli	t6,t6,0x19
- 174:	00000013          	nop
- 178:	00000013          	nop
- 17c:	00000013          	nop
- 180:	00000013          	nop
- 184:	00000013          	nop
- 188:	00000013          	nop
- 18c:	00000013          	nop
- 190:	00000013          	nop
+00008000 <_start>:
+    8000:	beefc0b7          	lui	ra,0xbeefc
+    8004:	eef08093          	addi	ra,ra,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8008:	beefc137          	lui	sp,0xbeefc
+    800c:	eef10113          	addi	sp,sp,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8010:	beefc1b7          	lui	gp,0xbeefc
+    8014:	eef18193          	addi	gp,gp,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8018:	beefc237          	lui	tp,0xbeefc
+    801c:	eef20213          	addi	tp,tp,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8020:	beefc2b7          	lui	t0,0xbeefc
+    8024:	eef28293          	addi	t0,t0,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8028:	beefc337          	lui	t1,0xbeefc
+    802c:	eef30313          	addi	t1,t1,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8030:	beefc3b7          	lui	t2,0xbeefc
+    8034:	eef38393          	addi	t2,t2,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8038:	beefc437          	lui	s0,0xbeefc
+    803c:	eef40413          	addi	s0,s0,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8040:	beefc4b7          	lui	s1,0xbeefc
+    8044:	eef48493          	addi	s1,s1,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8048:	beefc537          	lui	a0,0xbeefc
+    804c:	eef50513          	addi	a0,a0,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8050:	beefc5b7          	lui	a1,0xbeefc
+    8054:	eef58593          	addi	a1,a1,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8058:	beefc637          	lui	a2,0xbeefc
+    805c:	eef60613          	addi	a2,a2,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8060:	beefc6b7          	lui	a3,0xbeefc
+    8064:	eef68693          	addi	a3,a3,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8068:	beefc737          	lui	a4,0xbeefc
+    806c:	eef70713          	addi	a4,a4,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8070:	beefc7b7          	lui	a5,0xbeefc
+    8074:	eef78793          	addi	a5,a5,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8078:	beefc837          	lui	a6,0xbeefc
+    807c:	eef80813          	addi	a6,a6,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8080:	beefc8b7          	lui	a7,0xbeefc
+    8084:	eef88893          	addi	a7,a7,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8088:	beefc937          	lui	s2,0xbeefc
+    808c:	eef90913          	addi	s2,s2,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8090:	beefc9b7          	lui	s3,0xbeefc
+    8094:	eef98993          	addi	s3,s3,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    8098:	beefca37          	lui	s4,0xbeefc
+    809c:	eefa0a13          	addi	s4,s4,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80a0:	beefcab7          	lui	s5,0xbeefc
+    80a4:	eefa8a93          	addi	s5,s5,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80a8:	beefcb37          	lui	s6,0xbeefc
+    80ac:	eefb0b13          	addi	s6,s6,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80b0:	beefcbb7          	lui	s7,0xbeefc
+    80b4:	eefb8b93          	addi	s7,s7,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80b8:	beefcc37          	lui	s8,0xbeefc
+    80bc:	eefc0c13          	addi	s8,s8,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80c0:	beefccb7          	lui	s9,0xbeefc
+    80c4:	eefc8c93          	addi	s9,s9,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80c8:	beefcd37          	lui	s10,0xbeefc
+    80cc:	eefd0d13          	addi	s10,s10,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80d0:	beefcdb7          	lui	s11,0xbeefc
+    80d4:	eefd8d93          	addi	s11,s11,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80d8:	beefce37          	lui	t3,0xbeefc
+    80dc:	eefe0e13          	addi	t3,t3,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80e0:	beefceb7          	lui	t4,0xbeefc
+    80e4:	eefe8e93          	addi	t4,t4,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80e8:	beefcf37          	lui	t5,0xbeefc
+    80ec:	eeff0f13          	addi	t5,t5,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80f0:	beefcfb7          	lui	t6,0xbeefc
+    80f4:	eeff8f93          	addi	t6,t6,-273 # beefbeef <user_stack_end+0xbeee50d3>
+    80f8:	01f09013          	slli	zero,ra,0x1f
+    80fc:	01011113          	slli	sp,sp,0x10
+    8100:	01919193          	slli	gp,gp,0x19
+    8104:	01021213          	slli	tp,tp,0x10
+    8108:	01929293          	slli	t0,t0,0x19
+    810c:	01031313          	slli	t1,t1,0x10
+    8110:	01939393          	slli	t2,t2,0x19
+    8114:	01041413          	slli	s0,s0,0x10
+    8118:	01949493          	slli	s1,s1,0x19
+    811c:	01051513          	slli	a0,a0,0x10
+    8120:	01959593          	slli	a1,a1,0x19
+    8124:	01061613          	slli	a2,a2,0x10
+    8128:	01969693          	slli	a3,a3,0x19
+    812c:	01071713          	slli	a4,a4,0x10
+    8130:	01979793          	slli	a5,a5,0x19
+    8134:	01081813          	slli	a6,a6,0x10
+    8138:	01989893          	slli	a7,a7,0x19
+    813c:	01091913          	slli	s2,s2,0x10
+    8140:	01999993          	slli	s3,s3,0x19
+    8144:	010a1a13          	slli	s4,s4,0x10
+    8148:	019a9a93          	slli	s5,s5,0x19
+    814c:	010b1b13          	slli	s6,s6,0x10
+    8150:	019b9b93          	slli	s7,s7,0x19
+    8154:	010c1c13          	slli	s8,s8,0x10
+    8158:	019c9c93          	slli	s9,s9,0x19
+    815c:	010d1d13          	slli	s10,s10,0x10
+    8160:	019d9d93          	slli	s11,s11,0x19
+    8164:	010e1e13          	slli	t3,t3,0x10
+    8168:	019e9e93          	slli	t4,t4,0x19
+    816c:	010f1f13          	slli	t5,t5,0x10
+    8170:	019f9f93          	slli	t6,t6,0x19
+    8174:	00000013          	nop
+    8178:	00000013          	nop
+    817c:	00000013          	nop
+    8180:	00000013          	nop
+    8184:	00000013          	nop
+    8188:	00000013          	nop
+    818c:	00000013          	nop
+    8190:	00000013          	nop
 
-00000194 <test_done>:
- 194:	fff01073          	csrw	0xfff,zero
+00008194 <test_done>:
+    8194:	fff01073          	csrw	0xfff,zero
