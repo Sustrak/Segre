@@ -268,7 +268,7 @@ always_comb begin : bypass
         end
         default: begin
             ex_data.alu_src_a   = core_pipeline_i.alu_src_a;
-            ex_data.br_src_a    = core_pipeline_i.alu_src_a;
+            ex_data.br_src_a    = core_pipeline_i.br_src_a;
             mem_data.alu_src_a  = core_pipeline_i.alu_src_a;
             rvm_data.alu_src_a  = core_pipeline_i.alu_src_a;
         end
