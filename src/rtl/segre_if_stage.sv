@@ -75,7 +75,7 @@ assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
 assign tlb_st.new_entry = (if_fsm_state == IF_TLB_MISS); 
 
 always_comb begin : tlb_request
-    if(!csr_priv_i) begin
+    if(csr_priv_i == 1) begin
         tlb_st.req <= 0;
     end
     else begin
@@ -84,7 +84,7 @@ always_comb begin : tlb_request
 end
 
 always_comb begin : cache_tag_selection
-    if(!csr_priv_i) begin
+    if(csr_priv_i == 1) begin
         cache_tag.tag <= pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
     end
     else begin

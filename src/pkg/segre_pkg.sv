@@ -152,8 +152,9 @@ typedef enum logic [2:0] {
     MMU_IDLE
 } mmu_fsm_state_e;
 
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
     HAZARD_DC_MISS,
+    HAZARD_DTLB_MISS,
     HAZARD_SB_TROUBLE,
     MISS_IN_FLIGHT,
     TL_IDLE

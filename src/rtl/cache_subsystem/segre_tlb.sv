@@ -99,7 +99,7 @@ always_ff @(posedge clk_i) begin : tlb_reset
         tlb[0].vaddr <= 0;
         tlb[0].paddr <= 0;
         tlb[0].page_protection <= EX;
-        tlb[1].valid <= 1;
+        tlb[1].valid <= 0;
         tlb[1].vaddr <= 20'h0000A;
         tlb[1].paddr <= 8'h0A;
         tlb[1].page_protection <= RW;
