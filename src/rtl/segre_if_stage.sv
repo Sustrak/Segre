@@ -194,15 +194,17 @@ always_ff @(posedge clk_i) begin
         instr_o <= NOP;
         pc <= 0;
     end
-    else if (pipeline_hazard) begin
-        instr_o <= NOP;
-        if (tkbr_i) begin
-            pc <= nxt_pc;
-        end
-    end
     else if (!hazard_i) begin
-        instr_o <= cache_data.data_o;
-        pc      <= nxt_pc;
+        if (pipeline_hazard) begin
+            instr_o <= NOP;
+            if (tkbr_i) begin
+                pc <= nxt_pc;
+            end
+        end
+        else begin
+            instr_o <= cache_data.data_o;
+            pc      <= nxt_pc;
+        end
     end
     if_fsm_state <= if_fsm_nxt_state;
 end
