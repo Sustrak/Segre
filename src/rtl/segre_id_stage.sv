@@ -301,7 +301,7 @@ always_ff @(posedge clk_i) begin
             br_src_a_o       <= br_src_a;
             br_src_b_o       <= br_src_b;
             alu_opcode_o     <= alu_opcode;
-            memop_rf_data_o  <= rf_data_b_i;
+            memop_rf_data_o  <= memop_rf_data;
             pipeline_o       <= pipeline;
             bypass_a_o       <= bypass_a;
             bypass_b_o       <= bypass_b;
