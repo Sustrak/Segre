@@ -5,15 +5,15 @@ build_segre/mem_copy.o:     file format elf32-littleriscv
 Disassembly of section .text.startup:
 
 00008000 <main>:
-    8000:	0000a7b7          	lui	a5,0xa
+    8000:	000127b7          	lui	a5,0x12
     8004:	00500693          	li	a3,5
-    8008:	20078713          	addi	a4,a5,512 # a200 <main+0x2200>
+    8008:	20078713          	addi	a4,a5,512 # 12200 <main+0xa200>
     800c:	00d7a023          	sw	a3,0(a5)
     8010:	00478793          	addi	a5,a5,4
     8014:	fee79ce3          	bne	a5,a4,800c <main+0xc>
-    8018:	0000a737          	lui	a4,0xa
+    8018:	00012737          	lui	a4,0x12
     801c:	00078693          	mv	a3,a5
-    8020:	00072803          	lw	a6,0(a4) # a000 <main+0x2000>
+    8020:	00072803          	lw	a6,0(a4) # 12000 <main+0xa000>
     8024:	00472503          	lw	a0,4(a4)
     8028:	00872583          	lw	a1,8(a4)
     802c:	00c72603          	lw	a2,12(a4)

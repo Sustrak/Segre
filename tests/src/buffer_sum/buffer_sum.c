@@ -2,7 +2,7 @@
 // i -> a5 -> x15 -> a200
 int main(void) {
     int sum = 0;
-    int *a = (int*) 0xA000;
+    int *a = (int*) 0x12000;
     for (int i = 0; i < 128; i++) {
         sum += a[i];
     }

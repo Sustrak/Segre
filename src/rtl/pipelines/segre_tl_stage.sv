@@ -173,7 +173,7 @@ end
 assign cache_tag.invalidate = 0;
 
 // MMU
-assign mmu_cache_access_o = cache_tag.req | sb.req_store | sb.req_load;
+assign mmu_cache_access_o = (cache_tag.req | sb.req_store | sb.req_load) & !tlb_st.miss;
 //assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 assign mmu_miss_o         = (csr_priv_i == 1) ? rsn_i & (cache_tag.miss & sb.miss) : rsn_i & (cache_tag.miss & sb.miss) & !tlb_st.miss; 
 //assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == addr_i[`ADDR_TAG])); 
