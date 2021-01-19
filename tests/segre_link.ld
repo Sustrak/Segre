@@ -3,9 +3,9 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x8000;
+    . = 0x000;
     .text : { *(.text) }
-    . = ALIGN(0x12000);
+    . = ALIGN(0xA000);
     .data : { *(.data) }
 }
 
