@@ -58,7 +58,7 @@ entry_status_e [HF_SIZE-1:0] nxt_status;
 
 
 assign empty_o = (head == tail);
-assign full_o  = (head-1 == tail);
+assign full_o  = (head-1 == tail) || (head==0 && tail==7);
 assign store_permission_o = (hf[head].status == EXECUTING_STORE);
 
 // Output data

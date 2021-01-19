@@ -78,7 +78,7 @@ initial begin
 
     addr = DATA_REGION;
     `uvm_info("memory", "Start writing data to memory", UVM_LOW)
-    for (int i = 0; i < 128; i++) begin
+    for (int i = 0; i < 128*128*3; i++) begin
         `wr_word_mem(mem, i, addr + (i*4))
     end
    /*

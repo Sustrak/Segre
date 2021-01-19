@@ -1,13 +1,16 @@
+#define SIZE 128
+#define DISP 7
+
 int main() {
     int *a = (int *) 0xA000;
-    int *b = a + 128*128;
-    int *c = b + 128*128;
+    int *b = a + SIZE*SIZE;
+    int *c = b + SIZE*SIZE;
     
-    for (int i = 0; i < 128; i++) {
-        for (int j = 0; j < 128; j++) {
-            c[i+(j<<7)] = 0;
-            for (int k = 0; k < 128; k++) {
-                c[i+(j<<7)] = c[i+(j<<7)] + a[i+(k<<7)] * b[k+(j<<7)];
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            c[i+(j<<DISP)] = 0;
+            for (int k = 0; k < SIZE; k++) {
+                c[i+(j<<DISP)] = c[i+(j<<DISP)] + a[i+(k<<DISP)] * b[k+(j<<DISP)];
             }
         }
     }

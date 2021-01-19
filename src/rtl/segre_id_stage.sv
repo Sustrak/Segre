@@ -6,7 +6,8 @@ module segre_id_stage (
     input logic rsn_i,
 
     // Hazard
-    input logic hazard_i,
+    input logic tl_hazard_i,
+    input logic hf_full_i,
     output logic hazard_o,
 
     // IF and ID stage
@@ -100,15 +101,21 @@ bypass_e bypass_b;
 
 logic instr_dependence, war_dependence, waw_dependence;
 
+logic memop_wr_q ;
+logic memop_rd_q ;
+logic rf_we_q    ;
+logic csr_access_q;
+
 assign rf_src_a = (opcode == OPCODE_LUI | opcode == OPCODE_AUIPC) ? 0 : rf_raddr_a;
 assign rf_src_b = (id_opcode == OPCODE_LUI | id_opcode == OPCODE_AUIPC) ? 0 : rf_raddr_b;
 assign rf_raddr_a_o = rf_raddr_a;
 assign rf_raddr_b_o = rf_raddr_b;
 assign csr_raddr_o  = csr_addr;
 assign instr_dependence = war_dependence | waw_dependence;
-assign hazard_o = instr_dependence;
 
-assign new_hf_entry_o = rsn_i && !(hazard_i | hazard_o) && (rf_we_o || id_opcode == OPCODE_STORE);
+assign hazard_o = instr_dependence || hf_full_i || (tl_hazard_i && pipeline_o == MEM_PIPELINE);
+
+assign new_hf_entry_o = rsn_i && !(hf_full_i || (tl_hazard_i && pipeline_o == MEM_PIPELINE)) && (rf_we_o || id_opcode == OPCODE_STORE);
 assign nxt_instr_id = new_hf_entry_o ? (instr_id_o + 1) % HF_SIZE : instr_id_o;
 
 segre_decode decode (
@@ -259,41 +266,50 @@ end
 
 always_ff @(posedge clk_i) begin
     if (!rsn_i) begin
-        memop_wr_o      <= 0;
-        memop_rd_o      <= 0;
-        rf_we_o         <= 0;
+        memop_wr_q      <= 0;
+        memop_rd_q      <= 0;
+        rf_we_q         <= 0;
         instr_id_o      <= {HF_PTR{1'b0}};
         id_opcode       <= OPCODE_AUIPC;
-        csr_access_o    <= 0;
+        csr_access_q    <= 0;
     end
-    else if (instr_dependence) begin
-        rf_we_o         <= 0;
-        memop_wr_o      <= 0;
-        memop_rd_o      <= 0;
-        csr_access_o    <= 0;
-    end
-    else if (!hazard_i) begin
-        alu_src_a_o      <= alu_src_a;
-        alu_src_b_o      <= alu_src_b;
-        rf_we_o          <= instr_i == NOP ? 1'b0 : rf_we;
-        rf_waddr_o       <= rf_waddr;
-        memop_sign_ext_o <= memop_sign_ext;
-        memop_type_o     <= memop_type;
-        memop_rd_o       <= memop_rd;
-        memop_wr_o       <= memop_wr;
-        br_src_a_o       <= br_src_a;
-        br_src_b_o       <= br_src_b;
-        alu_opcode_o     <= alu_opcode;
-        memop_rf_data_o  <= rf_data_b_i;
-        pipeline_o       <= pipeline;
-        bypass_a_o       <= bypass_a;
-        bypass_b_o       <= bypass_b;
-        id_opcode        <= opcode;
+    else begin
+        if (instr_dependence) begin
+            rf_we_q         <= 0;
+            memop_wr_q      <= 0;
+            memop_rd_q      <= 0;
+            csr_access_q    <= 0;
+        end
+        else if (!tl_hazard_i || (tl_hazard_i && pipeline_o != MEM_PIPELINE)) begin
+            alu_src_a_o      <= alu_src_a;
+            alu_src_b_o      <= alu_src_b;
+            rf_we_q          <= instr_i == NOP ? 1'b0 : rf_we;
+            rf_waddr_o       <= rf_waddr;
+            memop_sign_ext_o <= memop_sign_ext;
+            memop_type_o     <= memop_type;
+            memop_rd_q       <= memop_rd;
+            memop_wr_q       <= memop_wr;
+            br_src_a_o       <= br_src_a;
+            br_src_b_o       <= br_src_b;
+            alu_opcode_o     <= alu_opcode;
+            memop_rf_data_o  <= rf_data_b_i;
+            pipeline_o       <= pipeline;
+            bypass_a_o       <= bypass_a;
+            bypass_b_o       <= bypass_b;
+            id_opcode        <= opcode;
+            csr_access_q     <= csr_access;
+            csr_waddr_o      <= csr_addr;
+            is_branch_jal_o  <= is_branch_jal;
+        end
         instr_id_o       <= nxt_instr_id;
-        csr_access_o     <= csr_access;
-        csr_waddr_o      <= csr_addr;
-        is_branch_jal_o  <= is_branch_jal;
     end
+end
+
+always_comb begin
+    rf_we_o      = hf_full_i ? 1'b0 : rf_we_q     ;
+    memop_wr_o   = hf_full_i ? 1'b0 : memop_wr_q  ;
+    memop_rd_o   = hf_full_i ? 1'b0 : memop_rd_q  ;
+    csr_access_o = hf_full_i ? 1'b0 : csr_access_q;
 end
 
 endmodule

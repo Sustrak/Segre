@@ -30,8 +30,7 @@ logic mem_wr_done;
 logic [HF_PTR-1:0] mem_wr_done_id;
 
 
-assign input_hazards.ifs = output_hazards.id | output_hazards.pipeline;
-assign input_hazards.id  = output_hazards.pipeline | core_hf.full;
+assign input_hazards.ifs = output_hazards.id; 
 
 segre_if_stage if_stage (
     // Clock and Reset
@@ -63,7 +62,8 @@ segre_id_stage id_stage (
     .clk_i            (clk_i),
     .rsn_i            (rsn_i),
     // Hazard
-    .hazard_i         (input_hazards.id),
+    .tl_hazard_i      (output_hazards.pipeline),
+    .hf_full_i        (core_hf.full),
     .hazard_o         (output_hazards.id),
     // IF ID interface   
     .instr_i          (core_id.instr),

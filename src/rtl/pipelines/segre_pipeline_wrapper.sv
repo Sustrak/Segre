@@ -188,26 +188,25 @@ segre_rvm_pipeline rvm_pipeline (
 always_comb begin : input_decoder
     // EX PIPELINE
     ex_data.alu_opcode        = core_pipeline_i.alu_opcode;
-    ex_data.instr_id          = core_pipeline_i.instr_id;
     ex_data.csr_access        = core_pipeline_i.csr_access;
     ex_data.csr_waddr         = core_pipeline_i.csr_waddr;
     // MEM PIPELINE
     mem_data.memop_sign_ext   = core_pipeline_i.memop_sign_ext;
     mem_data.memop_type       = core_pipeline_i.memop_type;
     mem_data.rf_st_data       = core_pipeline_i.rf_st_data;
-    mem_data.instr_id         = core_pipeline_i.instr_id;
     mem_data.store_permission = core_pipeline_i.store_permission;
     // RVM PIPELINE
     rvm_data.alu_opcode       = core_pipeline_i.alu_opcode;
-    rvm_data.instr_id         = core_pipeline_i.instr_id;
     
     if (core_pipeline_i.pipeline == EX_PIPELINE) begin
         ex_data.rf_we    = core_pipeline_i.rf_we;
         ex_data.rf_waddr = core_pipeline_i.rf_waddr;
+        ex_data.instr_id = core_pipeline_i.instr_id;
     end
     else begin
         ex_data.rf_we    = 0;
         ex_data.rf_waddr = 0;
+        ex_data.instr_id = 0;
     end
     
     if (core_pipeline_i.pipeline == MEM_PIPELINE) begin
@@ -215,21 +214,25 @@ always_comb begin : input_decoder
         mem_data.rf_waddr    = core_pipeline_i.rf_waddr;
         mem_data.memop_rd    = core_pipeline_i.memop_rd;
         mem_data.memop_wr    = core_pipeline_i.memop_wr;
+        mem_data.instr_id    = core_pipeline_i.instr_id;
     end
     else begin
         mem_data.rf_we       = 0;
         mem_data.rf_waddr    = 0;
         mem_data.memop_rd    = 0;
         mem_data.memop_wr    = 0;
+        mem_data.instr_id    = 0;
     end
 
     if (core_pipeline_i.pipeline == RVM_PIPELINE) begin
         rvm_data.rf_we    = core_pipeline_i.rf_we;
         rvm_data.rf_waddr = core_pipeline_i.rf_waddr;
+        rvm_data.instr_id = core_pipeline_i.instr_id;
     end
     else begin
         rvm_data.rf_we    = 0;
         rvm_data.rf_waddr = 0;
+        rvm_data.instr_id = 0;
     end
 
 end
