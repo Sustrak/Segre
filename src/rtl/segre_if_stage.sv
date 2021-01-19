@@ -58,7 +58,7 @@ assign cache_data.mmu_wr_data = mmu_wr_data_i;
 assign cache_data.mmu_data    = mmu_data_i;
 
 assign ic_access_o = cache_tag.req & rsn_i;
-assign ic_miss_o   = cache_tag.miss & !tlb_st.miss;
+assign ic_miss_o   = (csr_priv_i == 1) ? cache_tag.miss : cache_tag.miss & !tlb_st.miss;
 
 //assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 

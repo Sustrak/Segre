@@ -103,9 +103,9 @@ initial begin
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+72)
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+76)
     
-    //for (int i = addr+80; i < NUM_WORDS; i = i + 4) begin
-    //    `wr_word_mem(mem, 32'h0000_0000, i)
-    //end
+    for (int i = addr+80; i < NUM_WORDS/8; i = i + 4) begin
+        `wr_word_mem(mem, 32'h0000_0000, i)
+    end
 end
 
 always @(posedge clk_i) begin

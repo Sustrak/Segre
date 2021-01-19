@@ -175,7 +175,7 @@ assign cache_tag.invalidate = 0;
 // MMU
 assign mmu_cache_access_o = cache_tag.req | sb.req_store | sb.req_load;
 //assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
-assign mmu_miss_o         = rsn_i & (cache_tag.miss & sb.miss); 
+assign mmu_miss_o         = (csr_priv_i == 1) ? rsn_i & (cache_tag.miss & sb.miss) : rsn_i & (cache_tag.miss & sb.miss) & !tlb_st.miss; 
 //assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == addr_i[`ADDR_TAG])); 
 assign pipeline_hazard_o  = pipeline_hazard;
 // Write through
@@ -184,7 +184,7 @@ assign pipeline_hazard_o  = pipeline_hazard;
 //assign mmu_data_o         = rf_st_data_i;
 
 // STORE BUFFER
-assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i : 1'b0;
+assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i & !tlb_st.miss : 1'b0;
 //assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? (memop_wr_i & !pipeline_hazard_o) : 1'b0;
 assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_rd_i : 1'b0;
 assign sb.addr_i            = addr_i;
@@ -198,7 +198,7 @@ segre_tlb dtlb (
     .req_i           (tlb_st.req),
     .new_entry_i     (tlb_st.new_entry),
     .access_type_i   (tlb_st.access_type),
-    .virtual_addr_i   (tlb_st.virtual_addr),
+    .virtual_addr_i  (tlb_st.virtual_addr),
     .physical_addr_i (tlb_st.physical_addr_i),
     .pp_exception_o  (tlb_st.pp_exception),
     .hit_o           (tlb_st.hit),
@@ -284,10 +284,10 @@ always_comb begin : pipeline_stop
             end
             TL_IDLE: begin 
                 if(memop_wr_i) begin
-                    pipeline_hazard = sb.trouble; //All stores go through the SB, we don't have to check the cache.
+                    pipeline_hazard = sb.trouble | tlb_st.miss; //All stores go through the SB, we don't have to check the cache.
                 end
                 else begin
-                    pipeline_hazard = sb.miss & cache_tag.miss; //Load cannot be served from the SB or the cache
+                    pipeline_hazard = tlb_st.miss | (sb.miss & cache_tag.miss); //Load cannot be served from the SB or the cache
                 end
             end
             default:;
