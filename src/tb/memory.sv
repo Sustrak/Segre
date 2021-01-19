@@ -22,8 +22,8 @@ module memory (
 );
 
 parameter NUM_WORDS = 1024 * 1024; // 1MB
-parameter TEXT_REGION = 0;
-parameter DATA_REGION = 32'hA000;
+parameter TEXT_REGION = 32'h8000;
+parameter DATA_REGION = 32'h12000;
 
 logic [7:0] mem [NUM_WORDS-1:0];
 
@@ -45,7 +45,7 @@ string test_name;
     mem[addr+3] = word >> 24;
 
 initial begin
-    int addr = 0;
+    int addr = TEXT_REGION;
     static string line, hex_file_name;
 
     // Read the hex file path and open the file in read mode
@@ -80,8 +80,8 @@ initial begin
     `uvm_info("memory", "Start writing data to memory", UVM_LOW)
     for (int i = 0; i < 128*128*3; i++) begin
         `wr_word_mem(mem, i, addr + (i*4))
-    end
-   /*
+    end*/
+   
     `wr_word_mem(mem, 32'hfafa_fafa, addr)
     `wr_word_mem(mem, 32'hfafa_fafa, addr+4)
     `wr_word_mem(mem, 32'hfafa_fafa, addr+8)
@@ -102,10 +102,10 @@ initial begin
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+68)
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+72)
     `wr_word_mem(mem, 32'h5a5a_5a5a, addr+76)
-    */
-    //for (int i = addr+80; i < NUM_WORDS; i = i + 4) begin
-    //    `wr_word_mem(mem, 32'h0000_0000, i)
-    //end
+    
+    for (int i = addr+80; i < NUM_WORDS/8; i = i + 4) begin
+        `wr_word_mem(mem, 32'h0000_0000, i)
+    end
 end
 
 always @(posedge clk_i) begin

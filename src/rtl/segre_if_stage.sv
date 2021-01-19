@@ -58,9 +58,9 @@ assign cache_data.mmu_wr_data = mmu_wr_data_i;
 assign cache_data.mmu_data    = mmu_data_i;
 
 assign ic_access_o = cache_tag.req & rsn_i;
-assign ic_miss_o   = cache_tag.miss;
+assign ic_miss_o   = (csr_priv_i == 1) ? cache_tag.miss : cache_tag.miss & !tlb_st.miss;
 
-assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+//assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 
 assign hazard_o = pipeline_hazard;
 assign pc_o = (pc - 4);
@@ -72,10 +72,19 @@ assign itlb_exception_o = tlb_st.miss;
 assign physical_addr_aux = csr_satp_i + pc;
 assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
 assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
-assign tlb_st.new_entry = 1'b0; //TODO: Actualitzar quan afegim excepcions
+assign tlb_st.new_entry = (if_fsm_state == IF_TLB_MISS); 
+
+always_comb begin : ic_addr_selection
+    if (csr_priv_i == 1) begin
+        ic_addr_o <= cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+    end
+    else begin
+        ic_addr_o <= cache_tag.miss ? {12'h000,tlb_st.physical_addr_o,pc[11:0]} : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+    end
+end
 
 always_comb begin : tlb_request
-    if(!csr_priv_i) begin
+    if(csr_priv_i == 1) begin
         tlb_st.req <= 0;
     end
     else begin
@@ -84,7 +93,7 @@ always_comb begin : tlb_request
 end
 
 always_comb begin : cache_tag_selection
-    if(!csr_priv_i) begin
+    if(csr_priv_i == 1) begin
         cache_tag.tag <= pc[WORD_SIZE-1:ICACHE_BYTE_SIZE];
     end
     else begin
@@ -99,7 +108,7 @@ segre_tlb itlb (
     .req_i           (tlb_st.req), //
     .new_entry_i     (tlb_st.new_entry),//
     .access_type_i   (tlb_st.access_type), //
-    .virtual_addr_i   (tlb_st.virtual_addr), //
+    .virtual_addr_i  (tlb_st.virtual_addr), //
     .physical_addr_i (tlb_st.physical_addr_i), //
     .pp_exception_o  (tlb_st.pp_exception),
     .hit_o           (tlb_st.hit),
@@ -141,7 +150,8 @@ always_comb begin : if_fsm
                 else if_fsm_nxt_state = IF_IC_MISS;
             end
             IF_IDLE: begin
-                if (cache_tag.miss) if_fsm_nxt_state = IF_IC_MISS;
+                if(tlb_st.miss) if_fsm_nxt_state = IF_TLB_MISS;
+                else if (cache_tag.miss) if_fsm_nxt_state = IF_IC_MISS;
                 else if (!hazard_i && (cache_data.data_o[6:0] == OPCODE_BRANCH || cache_data.data_o[6:0] == OPCODE_JAL || cache_data.data_o[6:0] == OPCODE_JALR)) begin
                     if_fsm_nxt_state = IF_BRANCH;
                 end
@@ -150,6 +160,9 @@ always_comb begin : if_fsm
             IF_BRANCH: begin
                 if (branch_completed_i) if_fsm_nxt_state = IF_IDLE;
                 else if_fsm_nxt_state = IF_BRANCH;
+            end
+            IF_TLB_MISS: begin
+                if_fsm_nxt_state = IF_IDLE;
             end
             default: ;
         endcase
@@ -162,7 +175,7 @@ always_comb begin : pc_logic
     end else begin
         if (tkbr_i) begin
             nxt_pc = new_pc_i;
-        end else if (if_fsm_state == IF_IC_MISS || if_fsm_state == IF_BRANCH) begin
+        end else if (if_fsm_state == IF_TLB_MISS || if_fsm_state == IF_IC_MISS || if_fsm_state == IF_BRANCH) begin
             nxt_pc = pc;
         end else begin
             nxt_pc = pc + 4;
@@ -176,9 +189,10 @@ always_comb begin : pipeline_stop
     end
     else begin
         unique case (if_fsm_state)
-            IF_IC_MISS: pipeline_hazard = 1;
-            IF_BRANCH : pipeline_hazard = 1;
-            IF_IDLE:    pipeline_hazard = cache_tag.miss;
+            IF_IC_MISS:   pipeline_hazard = 1;
+            IF_BRANCH :   pipeline_hazard = 1;
+            IF_TLB_MISS : pipeline_hazard = 1;
+            IF_IDLE:      pipeline_hazard = cache_tag.miss;
             default:;
         endcase
     end

@@ -89,7 +89,8 @@ logic memop_sign_ext;
 alu_opcode_e alu_opcode;
 pipeline_e pipeline;
 logic [WORD_SIZE-1:0] data_a;
-logic [WORD_SIZE-1:0] data_b;
+logic [WORD_SIZE-1:0] data_b; 
+logic [WORD_SIZE-1:0] memop_rf_data;
 logic [HF_PTR-1:0] nxt_instr_id;
 logic csr_access;
 logic [CSR_SIZE-1:0] csr_addr;
@@ -261,6 +262,14 @@ always_comb begin : bypass_data
         BY_MEM_ID   : data_b = bypass_data_i.mem_data;
         BY_RVM5_ID  : data_b = bypass_data_i.rvm5_data;
         default: data_b = rf_data_b_i;
+    endcase
+
+    unique case (bypass_b)
+        NO_BYPASS   : memop_rf_data = rf_data_b_i;
+        BY_EX_ID    : memop_rf_data = bypass_data_i.ex_data;
+        BY_MEM_ID   : memop_rf_data = bypass_data_i.mem_data;
+        BY_RVM5_ID  : memop_rf_data = bypass_data_i.rvm5_data;
+        default: memop_rf_data = rf_data_b_i;
     endcase
 end
 

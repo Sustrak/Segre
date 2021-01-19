@@ -4,77 +4,77 @@ build_segre/srli.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00000000 <_start>:
-   0:	600000b7          	lui	ra,0x60000
-   4:	80000137          	lui	sp,0x80000
-   8:	600001b7          	lui	gp,0x60000
-   c:	80000237          	lui	tp,0x80000
-  10:	600002b7          	lui	t0,0x60000
-  14:	80000337          	lui	t1,0x80000
-  18:	600003b7          	lui	t2,0x60000
-  1c:	80000437          	lui	s0,0x80000
-  20:	600004b7          	lui	s1,0x60000
-  24:	80000537          	lui	a0,0x80000
-  28:	600005b7          	lui	a1,0x60000
-  2c:	80000637          	lui	a2,0x80000
-  30:	600006b7          	lui	a3,0x60000
-  34:	80000737          	lui	a4,0x80000
-  38:	600007b7          	lui	a5,0x60000
-  3c:	80000837          	lui	a6,0x80000
-  40:	600008b7          	lui	a7,0x60000
-  44:	80000937          	lui	s2,0x80000
-  48:	600009b7          	lui	s3,0x60000
-  4c:	80000a37          	lui	s4,0x80000
-  50:	60000ab7          	lui	s5,0x60000
-  54:	80000b37          	lui	s6,0x80000
-  58:	60000bb7          	lui	s7,0x60000
-  5c:	80000c37          	lui	s8,0x80000
-  60:	60000cb7          	lui	s9,0x60000
-  64:	80000d37          	lui	s10,0x80000
-  68:	60000db7          	lui	s11,0x60000
-  6c:	80000e37          	lui	t3,0x80000
-  70:	60000eb7          	lui	t4,0x60000
-  74:	80000f37          	lui	t5,0x80000
-  78:	60000fb7          	lui	t6,0x60000
-  7c:	0190d013          	srli	zero,ra,0x19
-  80:	01915113          	srli	sp,sp,0x19
-  84:	0191d193          	srli	gp,gp,0x19
-  88:	01925213          	srli	tp,tp,0x19
-  8c:	0192d293          	srli	t0,t0,0x19
-  90:	01935313          	srli	t1,t1,0x19
-  94:	0193d393          	srli	t2,t2,0x19
-  98:	01945413          	srli	s0,s0,0x19
-  9c:	0194d493          	srli	s1,s1,0x19
-  a0:	01955513          	srli	a0,a0,0x19
-  a4:	0195d593          	srli	a1,a1,0x19
-  a8:	01965613          	srli	a2,a2,0x19
-  ac:	0196d693          	srli	a3,a3,0x19
-  b0:	01975713          	srli	a4,a4,0x19
-  b4:	0197d793          	srli	a5,a5,0x19
-  b8:	01985813          	srli	a6,a6,0x19
-  bc:	0198d893          	srli	a7,a7,0x19
-  c0:	01995913          	srli	s2,s2,0x19
-  c4:	0199d993          	srli	s3,s3,0x19
-  c8:	019a5a13          	srli	s4,s4,0x19
-  cc:	019ada93          	srli	s5,s5,0x19
-  d0:	019b5b13          	srli	s6,s6,0x19
-  d4:	019bdb93          	srli	s7,s7,0x19
-  d8:	019c5c13          	srli	s8,s8,0x19
-  dc:	019cdc93          	srli	s9,s9,0x19
-  e0:	019d5d13          	srli	s10,s10,0x19
-  e4:	019ddd93          	srli	s11,s11,0x19
-  e8:	019e5e13          	srli	t3,t3,0x19
-  ec:	019ede93          	srli	t4,t4,0x19
-  f0:	019f5f13          	srli	t5,t5,0x19
-  f4:	019fdf93          	srli	t6,t6,0x19
-  f8:	00000013          	nop
-  fc:	00000013          	nop
- 100:	00000013          	nop
- 104:	00000013          	nop
- 108:	00000013          	nop
- 10c:	00000013          	nop
- 110:	00000013          	nop
- 114:	00000013          	nop
+00008000 <_start>:
+    8000:	600000b7          	lui	ra,0x60000
+    8004:	80000137          	lui	sp,0x80000
+    8008:	600001b7          	lui	gp,0x60000
+    800c:	80000237          	lui	tp,0x80000
+    8010:	600002b7          	lui	t0,0x60000
+    8014:	80000337          	lui	t1,0x80000
+    8018:	600003b7          	lui	t2,0x60000
+    801c:	80000437          	lui	s0,0x80000
+    8020:	600004b7          	lui	s1,0x60000
+    8024:	80000537          	lui	a0,0x80000
+    8028:	600005b7          	lui	a1,0x60000
+    802c:	80000637          	lui	a2,0x80000
+    8030:	600006b7          	lui	a3,0x60000
+    8034:	80000737          	lui	a4,0x80000
+    8038:	600007b7          	lui	a5,0x60000
+    803c:	80000837          	lui	a6,0x80000
+    8040:	600008b7          	lui	a7,0x60000
+    8044:	80000937          	lui	s2,0x80000
+    8048:	600009b7          	lui	s3,0x60000
+    804c:	80000a37          	lui	s4,0x80000
+    8050:	60000ab7          	lui	s5,0x60000
+    8054:	80000b37          	lui	s6,0x80000
+    8058:	60000bb7          	lui	s7,0x60000
+    805c:	80000c37          	lui	s8,0x80000
+    8060:	60000cb7          	lui	s9,0x60000
+    8064:	80000d37          	lui	s10,0x80000
+    8068:	60000db7          	lui	s11,0x60000
+    806c:	80000e37          	lui	t3,0x80000
+    8070:	60000eb7          	lui	t4,0x60000
+    8074:	80000f37          	lui	t5,0x80000
+    8078:	60000fb7          	lui	t6,0x60000
+    807c:	0190d013          	srli	zero,ra,0x19
+    8080:	01915113          	srli	sp,sp,0x19
+    8084:	0191d193          	srli	gp,gp,0x19
+    8088:	01925213          	srli	tp,tp,0x19
+    808c:	0192d293          	srli	t0,t0,0x19
+    8090:	01935313          	srli	t1,t1,0x19
+    8094:	0193d393          	srli	t2,t2,0x19
+    8098:	01945413          	srli	s0,s0,0x19
+    809c:	0194d493          	srli	s1,s1,0x19
+    80a0:	01955513          	srli	a0,a0,0x19
+    80a4:	0195d593          	srli	a1,a1,0x19
+    80a8:	01965613          	srli	a2,a2,0x19
+    80ac:	0196d693          	srli	a3,a3,0x19
+    80b0:	01975713          	srli	a4,a4,0x19
+    80b4:	0197d793          	srli	a5,a5,0x19
+    80b8:	01985813          	srli	a6,a6,0x19
+    80bc:	0198d893          	srli	a7,a7,0x19
+    80c0:	01995913          	srli	s2,s2,0x19
+    80c4:	0199d993          	srli	s3,s3,0x19
+    80c8:	019a5a13          	srli	s4,s4,0x19
+    80cc:	019ada93          	srli	s5,s5,0x19
+    80d0:	019b5b13          	srli	s6,s6,0x19
+    80d4:	019bdb93          	srli	s7,s7,0x19
+    80d8:	019c5c13          	srli	s8,s8,0x19
+    80dc:	019cdc93          	srli	s9,s9,0x19
+    80e0:	019d5d13          	srli	s10,s10,0x19
+    80e4:	019ddd93          	srli	s11,s11,0x19
+    80e8:	019e5e13          	srli	t3,t3,0x19
+    80ec:	019ede93          	srli	t4,t4,0x19
+    80f0:	019f5f13          	srli	t5,t5,0x19
+    80f4:	019fdf93          	srli	t6,t6,0x19
+    80f8:	00000013          	nop
+    80fc:	00000013          	nop
+    8100:	00000013          	nop
+    8104:	00000013          	nop
+    8108:	00000013          	nop
+    810c:	00000013          	nop
+    8110:	00000013          	nop
+    8114:	00000013          	nop
 
-00000118 <test_done>:
- 118:	fff01073          	csrw	0xfff,zero
+00008118 <test_done>:
+    8118:	fff01073          	csrw	0xfff,zero

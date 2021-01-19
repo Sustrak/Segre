@@ -4,43 +4,43 @@ build_segre/matrix_multiply.o:     file format elf32-littleriscv
 
 Disassembly of section .text.startup:
 
-00000000 <main>:
-   0:	00010eb7          	lui	t4,0x10
-   4:	0002a8b7          	lui	a7,0x2a
-   8:	00000f93          	li	t6,0
-   c:	0000a337          	lui	t1,0xa
-  10:	00000f13          	li	t5,0
-  14:	0001a3b7          	lui	t2,0x1a
-  18:	e00e8e93          	addi	t4,t4,-512 # fe00 <main+0xfe00>
-  1c:	20088893          	addi	a7,a7,512 # 2a200 <main+0x2a200>
-  20:	08000293          	li	t0,128
-  24:	20038513          	addi	a0,t2,512 # 1a200 <main+0x1a200>
-  28:	01df8e33          	add	t3,t6,t4
-  2c:	00ae0833          	add	a6,t3,a0
-  30:	00082023          	sw	zero,0(a6)
-  34:	e0050793          	addi	a5,a0,-512
-  38:	00030613          	mv	a2,t1
-  3c:	00000693          	li	a3,0
-  40:	00062703          	lw	a4,0(a2)
-  44:	0007a583          	lw	a1,0(a5)
-  48:	00478793          	addi	a5,a5,4
-  4c:	20060613          	addi	a2,a2,512
-  50:	02b70733          	mul	a4,a4,a1
-  54:	00e686b3          	add	a3,a3,a4
-  58:	00d82023          	sw	a3,0(a6)
-  5c:	fef512e3          	bne	a0,a5,40 <main+0x40>
-  60:	20050513          	addi	a0,a0,512
-  64:	fd1514e3          	bne	a0,a7,2c <main+0x2c>
-  68:	001f0f13          	addi	t5,t5,1
-  6c:	00430313          	addi	t1,t1,4 # a004 <main+0xa004>
-  70:	004f8f93          	addi	t6,t6,4
-  74:	fa5f18e3          	bne	t5,t0,24 <main+0x24>
-  78:	00000013          	nop
-  7c:	00000013          	nop
-  80:	00000013          	nop
-  84:	00000013          	nop
-  88:	00000013          	nop
-  8c:	00000013          	nop
-  90:	fff01073          	csrw	0xfff,zero
-  94:	00000513          	li	a0,0
-  98:	00008067          	ret
+00008000 <main>:
+    8000:	00010eb7          	lui	t4,0x10
+    8004:	0002a8b7          	lui	a7,0x2a
+    8008:	00000f93          	li	t6,0
+    800c:	0000a337          	lui	t1,0xa
+    8010:	00000f13          	li	t5,0
+    8014:	0001a3b7          	lui	t2,0x1a
+    8018:	e00e8e93          	addi	t4,t4,-512 # fe00 <main+0x7e00>
+    801c:	20088893          	addi	a7,a7,512 # 2a200 <main+0x22200>
+    8020:	08000293          	li	t0,128
+    8024:	20038513          	addi	a0,t2,512 # 1a200 <main+0x12200>
+    8028:	01df8e33          	add	t3,t6,t4
+    802c:	00ae0833          	add	a6,t3,a0
+    8030:	00082023          	sw	zero,0(a6)
+    8034:	e0050793          	addi	a5,a0,-512
+    8038:	00030613          	mv	a2,t1
+    803c:	00000693          	li	a3,0
+    8040:	00062703          	lw	a4,0(a2)
+    8044:	0007a583          	lw	a1,0(a5)
+    8048:	00478793          	addi	a5,a5,4
+    804c:	20060613          	addi	a2,a2,512
+    8050:	02b70733          	mul	a4,a4,a1
+    8054:	00e686b3          	add	a3,a3,a4
+    8058:	00d82023          	sw	a3,0(a6)
+    805c:	fef512e3          	bne	a0,a5,8040 <main+0x40>
+    8060:	20050513          	addi	a0,a0,512
+    8064:	fd1514e3          	bne	a0,a7,802c <main+0x2c>
+    8068:	001f0f13          	addi	t5,t5,1
+    806c:	00430313          	addi	t1,t1,4 # a004 <main+0x2004>
+    8070:	004f8f93          	addi	t6,t6,4
+    8074:	fa5f18e3          	bne	t5,t0,8024 <main+0x24>
+    8078:	00000013          	nop
+    807c:	00000013          	nop
+    8080:	00000013          	nop
+    8084:	00000013          	nop
+    8088:	00000013          	nop
+    808c:	00000013          	nop
+    8090:	fff01073          	csrw	0xfff,zero
+    8094:	00000513          	li	a0,0
+    8098:	00008067          	ret

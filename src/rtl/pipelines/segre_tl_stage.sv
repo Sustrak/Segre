@@ -67,6 +67,9 @@ dcache_tag_t cache_tag;
 store_buffer_t sb;
 tlb_st_t tlb_st;
 
+logic [ADDR_SIZE-1:0] tlb_faulting_address;
+logic [ADDR_SIZE-1:0] physical_addr_aux;
+
 tl_fsm_state_e fsm_state;
 tl_fsm_state_e fsm_nxt_state;
 logic pipeline_hazard;
@@ -78,11 +81,28 @@ logic valid_tag_in_flight_reg;
 logic miss_in_fligt_miss;
 
 //TLB
-assign tlb_st.access_type = memop_wr_i ? W : R;
+//assign tlb_st.access_type = memop_wr_i ? W : R;
 assign dtlb_exception_o = tlb_st.miss;
-assign tlb_st.physical_addr_i = 8'h00; //TODO: Entenc que sera una senyal manejada per les excepcions, ho deixo a 0s de moment
+assign physical_addr_aux = csr_satp_i + tlb_faulting_address;
+assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
 assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
-assign tlb_st.new_entry = 1'b0; //TODO: Actualitzar quan afegim excepcions
+assign tlb_st.new_entry = (fsm_state == HAZARD_DTLB_MISS);
+
+always_comb begin : access_type_selection
+    if (fsm_state == HAZARD_DTLB_MISS) begin
+        tlb_st.access_type = RW;
+    end
+    else begin
+        if (memop_wr_i) tlb_st.access_type = W;
+        else tlb_st.access_type = R;
+    end
+end
+
+always_comb begin : tlb_faulting_address_source_selection
+    if (sb.flush_chance & sb.data_valid) tlb_faulting_address = sb.addr_o;
+    else if (mmu_data_rdy_i)             tlb_faulting_address = mmu_addr_i;
+    else                                 tlb_faulting_address = addr_i;
+end
 
 always_comb begin : tlb_vaddr_selection
     if (sb.flush_chance & sb.data_valid) tlb_st.virtual_addr = sb.addr_o [WORD_SIZE-1:12];
@@ -91,7 +111,7 @@ always_comb begin : tlb_vaddr_selection
 end
 
 always_comb begin : tlb_request
-    if(!csr_priv_i) begin
+    if(csr_priv_i == 1) begin
         tlb_st.req <= 0;
     end
     else begin
@@ -105,7 +125,7 @@ always_comb begin : tlb_request
 end
 
 always_comb begin : cache_tag_selection
-    if(!csr_priv_i) begin
+    if(csr_priv_i == 1) begin
         if (sb.flush_chance & sb.data_valid) cache_tag.tag = sb.addr_o [`ADDR_TAG];
         else if (mmu_data_rdy_i)             cache_tag.tag = mmu_addr_i[`ADDR_TAG];
         else                                 cache_tag.tag = addr_i [`ADDR_TAG];
@@ -130,13 +150,23 @@ end*/
 
 always_comb begin : mmu_addr_selection
     if(mmu_data_rdy_i) begin
-        mmu_addr_o <= cache_tag.addr; //Possible writeback
+        mmu_addr_o <= cache_tag.addr; //Possible writeback. As cache store PA, we can send it to Memory as it is.
     end
-    else if (cache_tag.miss | memop_wr_i) begin
-        mmu_addr_o <= addr_i; //Requesting a line to cache
+    else if(csr_priv_i == 1) begin
+        if (cache_tag.miss | memop_wr_i) begin
+            mmu_addr_o <= addr_i; //Requesting a line to cache
+        end
+        else begin
+            mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+        end
     end
     else begin
-        mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+        if (cache_tag.miss | memop_wr_i) begin
+            mmu_addr_o <= {12'h000,tlb_st.physical_addr_o,addr_i[11:0]}; //Requesting a line to cache
+        end
+        else begin
+            mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+        end
     end
 end
 
@@ -145,7 +175,7 @@ assign cache_tag.invalidate = 0;
 // MMU
 assign mmu_cache_access_o = cache_tag.req | sb.req_store | sb.req_load;
 //assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
-assign mmu_miss_o         = rsn_i & (cache_tag.miss & sb.miss); 
+assign mmu_miss_o         = (csr_priv_i == 1) ? rsn_i & (cache_tag.miss & sb.miss) : rsn_i & (cache_tag.miss & sb.miss) & !tlb_st.miss; 
 //assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == addr_i[`ADDR_TAG])); 
 assign pipeline_hazard_o  = pipeline_hazard;
 // Write through
@@ -154,7 +184,7 @@ assign pipeline_hazard_o  = pipeline_hazard;
 //assign mmu_data_o         = rf_st_data_i;
 
 // STORE BUFFER
-assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i : 1'b0;
+assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i & !tlb_st.miss : 1'b0;
 //assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? (memop_wr_i & !pipeline_hazard_o) : 1'b0;
 assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_rd_i : 1'b0;
 assign sb.addr_i            = addr_i;
@@ -168,7 +198,7 @@ segre_tlb dtlb (
     .req_i           (tlb_st.req),
     .new_entry_i     (tlb_st.new_entry),
     .access_type_i   (tlb_st.access_type),
-    .virtual_addr_i   (tlb_st.virtual_addr),
+    .virtual_addr_i  (tlb_st.virtual_addr),
     .physical_addr_i (tlb_st.physical_addr_i),
     .pp_exception_o  (tlb_st.pp_exception),
     .hit_o           (tlb_st.hit),
@@ -228,6 +258,7 @@ always_comb begin : sb_flush_chance
         MISS_IN_FLIGHT:    sb.flush_chance = 0;
         TL_IDLE:           sb.flush_chance = store_permission_i & (!memop_wr_i & !memop_rd_i);
         HAZARD_DC_MISS:    sb.flush_chance = 0;
+        HAZARD_DTLB_MISS:  sb.flush_chance = 0;
         HAZARD_SB_TROUBLE: sb.flush_chance = store_permission_i;
         default:           sb.flush_chance = 0;
     endcase
@@ -241,6 +272,7 @@ always_comb begin : pipeline_stop
         unique case (fsm_state)
             HAZARD_DC_MISS:    pipeline_hazard = 1;
             HAZARD_SB_TROUBLE: pipeline_hazard = 1;
+            HAZARD_DTLB_MISS:  pipeline_hazard = 1;
             MISS_IN_FLIGHT: begin
                 //TODO:Josep, Mira aixo dels static bit
                 //static bit different_tag = valid_tag_in_flight_reg & (tag_in_flight_reg != addr_i[`ADDR_TAG]);
@@ -252,10 +284,10 @@ always_comb begin : pipeline_stop
             end
             TL_IDLE: begin 
                 if(memop_wr_i) begin
-                    pipeline_hazard = sb.trouble; //All stores go through the SB, we don't have to check the cache.
+                    pipeline_hazard = sb.trouble | tlb_st.miss; //All stores go through the SB, we don't have to check the cache.
                 end
                 else begin
-                    pipeline_hazard = sb.miss & cache_tag.miss; //Load cannot be served from the SB or the cache
+                    pipeline_hazard = tlb_st.miss | (sb.miss & cache_tag.miss); //Load cannot be served from the SB or the cache
                 end
             end
             default:;
@@ -304,8 +336,12 @@ always_comb begin : tl_fsm
                 if (!sb.trouble) fsm_nxt_state = TL_IDLE;
                 else fsm_nxt_state = HAZARD_SB_TROUBLE;
             end
+            HAZARD_DTLB_MISS: begin
+                fsm_nxt_state = TL_IDLE;
+            end
             TL_IDLE: begin
-                if (valid_tag_in_flight_next) begin
+                if (tlb_st.miss) fsm_nxt_state = HAZARD_DTLB_MISS;
+                else if (valid_tag_in_flight_next) begin
                     if(sb.trouble) fsm_nxt_state = HAZARD_SB_TROUBLE; //Miss on a store, but SB can't store the data
                     else fsm_nxt_state = MISS_IN_FLIGHT; //Failing a store and SB can store the data
                 end
