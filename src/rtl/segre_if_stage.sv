@@ -60,7 +60,7 @@ assign cache_data.mmu_data    = mmu_data_i;
 assign ic_access_o = cache_tag.req & rsn_i;
 assign ic_miss_o   = cache_tag.miss;
 
-assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+//assign ic_addr_o   = cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 
 assign hazard_o = pipeline_hazard;
 assign pc_o = (pc - 4);
@@ -73,6 +73,15 @@ assign physical_addr_aux = csr_satp_i + pc;
 assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
 assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
 assign tlb_st.new_entry = (if_fsm_state == IF_TLB_MISS); 
+
+always_comb begin : ic_addr_selection
+    if (csr_priv_i == 1) begin
+        ic_addr_o <= cache_tag.miss ? pc : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+    end
+    else begin
+        ic_addr_o <= cache_tag.miss ? {12'h000,tlb_st.physical_addr_o,pc[11:0]} : {{WORD_SIZE-ICACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+    end
+end
 
 always_comb begin : tlb_request
     if(csr_priv_i == 1) begin

@@ -150,13 +150,23 @@ end*/
 
 always_comb begin : mmu_addr_selection
     if(mmu_data_rdy_i) begin
-        mmu_addr_o <= cache_tag.addr; //Possible writeback
+        mmu_addr_o <= cache_tag.addr; //Possible writeback. As cache store PA, we can send it to Memory as it is.
     end
-    else if (cache_tag.miss | memop_wr_i) begin
-        mmu_addr_o <= addr_i; //Requesting a line to cache
+    else if(csr_priv_i == 1) begin
+        if (cache_tag.miss | memop_wr_i) begin
+            mmu_addr_o <= addr_i; //Requesting a line to cache
+        end
+        else begin
+            mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+        end
     end
     else begin
-        mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+        if (cache_tag.miss | memop_wr_i) begin
+            mmu_addr_o <= {12'h000,tlb_st.physical_addr_o,addr_i[11:0]}; //Requesting a line to cache
+        end
+        else begin
+            mmu_addr_o <= {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
+        end
     end
 end
 
