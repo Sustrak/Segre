@@ -28,6 +28,7 @@ module segre_id_stage (
     // History File
     output logic new_hf_entry_o,
     output logic [HF_PTR-1:0] instr_id_o,
+    output logic pc_o,
     // ALU
     output alu_opcode_e alu_opcode_o,
     output logic [WORD_SIZE-1:0] alu_src_a_o,
@@ -274,6 +275,7 @@ always_ff @(posedge clk_i) begin
         instr_id_o      <= {HF_PTR{1'b0}};
         id_opcode       <= OPCODE_AUIPC;
         csr_access_o    <= 0;
+        pc_o            <= 0;
     end
     else if (instr_dependence) begin
         rf_we_o         <= 0;
@@ -302,6 +304,7 @@ always_ff @(posedge clk_i) begin
         csr_access_o     <= csr_access;
         csr_waddr_o      <= csr_addr;
         is_branch_jal_o  <= is_branch_jal;
+        pc_o             <= pc_i;
     end
 end
 

@@ -5,6 +5,9 @@ module segre_mem_pipeline(
     input logic clk_i,
     input logic rsn_i,
     
+    // Kill
+    input logic kill_i,
+    
     input logic [WORD_SIZE-1:0] alu_src_a_i,
     input logic [WORD_SIZE-1:0] alu_src_b_i,
     input logic rf_we_i,
@@ -49,7 +52,11 @@ module segre_mem_pipeline(
      //Privilege mode/Virtual Memory
     input logic [WORD_SIZE-1:0] csr_priv_i,
     input logic [WORD_SIZE-1:0] csr_satp_i,
-    output logic dtlb_exception_o
+
+    // Exception
+    output logic pp_exception_o,
+    output logic [HF_PTR-1:0] pp_exception_id_o,
+    output logic [ADDR_SIZE-1:0] pp_addr_o
 );
 
 mem_stage_t mem_data;
@@ -65,6 +72,7 @@ assign mem_wr_done_id_o = mem_data.instr_id;
 segre_tl_stage tl_stage(
     .clk_i             (clk_i),
     .rsn_i             (rsn_i),
+    .kill_i            (kill_i),
     // TL interface
     // ALU
     .addr_i             (tl_data.addr),
@@ -120,13 +128,18 @@ segre_tl_stage tl_stage(
     .csr_priv_i         (csr_priv_i),
     //Virtual mem
     .csr_satp_i         (csr_satp_i),
-    .dtlb_exception_o   (dtlb_exception_o)
+
+    // Exceptions
+    .pp_exception_o     (pp_exception_o),
+    .pp_exception_id_o  (pp_exception_id_o),
+    .pp_addr_o          (pp_addr_o)
 );
 
 segre_mem_stage mem_stage (
     // Clock and Reset
     .clk_i              (clk_i),
     .rsn_i              (rsn_i),
+    .kill_i             (kill_i),
     // TL MEM interface
     // ALU
     .addr_i             (mem_data.addr),
@@ -201,11 +214,11 @@ always_ff @(posedge clk_i) begin : latch
     end
     else if (!tl_hazard_o) begin
         tl_data.addr           <= add_result;
-        tl_data.rf_we          <= rf_we_i;
+        tl_data.rf_we          <= !kill_i & rf_we_i;
         tl_data.rf_waddr       <= rf_waddr_i;
         tl_data.rf_st_data     <= rf_st_data_i;
-        tl_data.memop_rd       <= memop_rd_i;
-        tl_data.memop_wr       <= memop_wr_i;
+        tl_data.memop_rd       <= !kill_i & memop_rd_i;
+        tl_data.memop_wr       <= !kill_i & memop_wr_i;
         tl_data.memop_sign_ext <= memop_sign_ext_i;
         tl_data.memop_type     <= memop_type_i;
         tl_data.bypass_b       <= bypass_b_i;

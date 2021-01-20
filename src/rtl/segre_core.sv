@@ -40,6 +40,7 @@ segre_if_stage if_stage (
     // Hazard
     .hazard_i           (input_hazards.ifs),
     .hazard_o           (output_hazards.ifs),
+    .hf_recovering_i    (core_hf.recovering),
     // IF ID interface
     .instr_o            (core_id.instr),
     .pc_o               (core_id.pc),
@@ -65,7 +66,8 @@ segre_id_stage id_stage (
     // Hazard
     .hazard_i         (input_hazards.id),
     .hazard_o         (output_hazards.id),
-    // IF ID interface   
+    //.hf_recovering_o  (core_hf.recovering),
+    // IF ID interface
     .instr_i          (core_id.instr),
     .pc_i             (core_id.pc),
     // Register file read operands
@@ -78,8 +80,9 @@ segre_id_stage id_stage (
     // Bypass
     .bypass_data_i    (core_id.bypass_data),
     // ID EX interface
-    .new_hf_entry_o  (core_hf.new_hf_entry),
+    .new_hf_entry_o   (core_hf.new_hf_entry),
     .instr_id_o       (core_pipeline.instr_id),
+    .pc_o             (core_hf.instr_pc),
     // ALU
     .alu_opcode_o     (core_pipeline.alu_opcode),
     .alu_src_a_o      (core_pipeline.alu_src_a),
@@ -113,6 +116,8 @@ segre_pipeline_wrapper pipeline_wrapper (
     .rsn_i                 (rsn_i),
     // Decode information
     .core_pipeline_i       (core_pipeline),
+    // Kill instructions in pipeline
+    .kill_i                (core_hf.recovering),
     // Register File
     .rf_data_o             (rf_wdata),
     // CSR File
@@ -147,21 +152,28 @@ segre_pipeline_wrapper pipeline_wrapper (
     //Privilege mode
     .csr_priv_i            (core_csr.csr_priv),
     //Virtual mem
-    .csr_satp_i            (core_csr.csr_satp)
+    .csr_satp_i            (core_csr.csr_satp),
+    // Exceptions
+    .pp_exception_o        (core_hf.exc),
+    .pp_exception_id_o     (core_hf.exc_id),
+    .pp_addr_o             (core_csr.pp_addr)
 );
 
 segre_register_file segre_rf (
     // Clock and Reset
-    .clk_i       (clk_i),
-    .rsn_i       (rsn_i),
+    .clk_i            (clk_i),
+    .rsn_i            (rsn_i),
 
-    .raddr_a_i   (decode_rf.raddr_a),
-    .data_a_o    (decode_rf.data_a),
-    .raddr_b_i   (decode_rf.raddr_b),
-    .data_b_o    (decode_rf.data_b),
-    .raddr_w_i   (core_pipeline.rf_waddr),
-    .data_w_o    (core_hf.rf_data),
-    .wdata_i     (rf_wdata)
+    .raddr_a_i        (decode_rf.raddr_a),
+    .data_a_o         (decode_rf.data_a),
+    .raddr_b_i        (decode_rf.raddr_b),
+    .data_b_o         (decode_rf.data_b),
+    .raddr_w_i        (core_pipeline.rf_waddr),
+    .data_w_o         (core_hf.rf_data),
+    .wdata_i          (rf_wdata),
+    .recovering_i     (core_hf.recovering),
+    .reg_recovered_i  (core_hf.dest_reg),
+    .data_recovered_i (core_hf.value)
 );
 
 segre_csr_file segre_csr (
@@ -173,14 +185,18 @@ segre_csr_file segre_csr (
     .waddr_i (core_csr.waddr),
     .data_i  (core_csr.data_i),
     .data_o  (core_csr.data_o),
+    
+    .pc_exc_i (core_hf.pc_fault),
+    .addr_exc_i (core_csr.pp_addr),
+    
+    // Exceptions
+    .pp_exc_i     (core_hf.exc),
 
     // CSR outputs
+    .sie_o        (core_csr.sie),
     .csr_satp_o   (core_csr.csr_satp),
     .csr_priv_o   (core_csr.csr_priv),
-    .csr_sie_o    (core_csr.csr_sie),
-    .csr_scause_o (core_csr.csr_scause),
     .csr_sepc_o   (core_csr.csr_sepc),
-    .csr_stval_o  (core_csr.csr_stval),
     .csr_stvec_o  (core_csr.csr_stvec)
 );
 
@@ -223,12 +239,14 @@ segre_history_file history_file (
     .clk_i              (clk_i),
     .rsn_i              (rsn_i),
     // Input data from id
+    .sie_i              (core_csr.sie),
     .req_i              (core_hf.new_hf_entry),
     .store_i            (core_pipeline.memop_wr),
     .dest_reg_i         (core_pipeline.rf_waddr),
     .current_value_i    (core_hf.rf_data),
-    .exc_i              (1'b0),
-    .exc_id_i           (3'b0),
+    .pc_i               (core_hf.instr_pc),
+    .exc_i              (core_hf.exc),
+    .exc_id_i           (core_hf.exc_id),
     .complete_ex_i      (core_hf.ex_complete),
     .complete_ex_id_i   (core_hf.ex_complete_id),
     .complete_mem_i     (core_hf.mem_complete),
@@ -242,7 +260,8 @@ segre_history_file history_file (
     .store_permission_o (core_pipeline.store_permission),
     .recovering_o       (core_hf.recovering),
     .dest_reg_o         (core_hf.dest_reg),
-    .value_o            (core_hf.value)
+    .value_o            (core_hf.value),
+    .pc_o               (core_hf.pc_fault)
 );
 
 endmodule : segre_core

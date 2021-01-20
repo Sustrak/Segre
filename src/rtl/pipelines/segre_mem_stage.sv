@@ -4,6 +4,7 @@ module segre_mem_stage (
     // Clock and Reset
     input logic clk_i,
     input logic rsn_i,
+    input logic kill_i,
 
     // TL MEM interface
     // ALU
@@ -107,7 +108,7 @@ always_ff @(posedge clk_i) begin
     end
     else begin
         cache_data_o <= mem_data;
-        rf_we_o      <= rf_we_i;
+        rf_we_o      <= !kill_i & rf_we_i;
         rf_waddr_o   <= rf_waddr_i;
         instr_id_o   <= instr_id_i;
     end

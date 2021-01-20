@@ -5,6 +5,7 @@ import segre_pkg::*;
 module segre_tl_stage (
     input logic clk_i,
     input logic rsn_i,
+    input logic kill_i,
     // EX TL interface
     // ALU
     input logic [WORD_SIZE-1:0] addr_i,
@@ -60,7 +61,11 @@ module segre_tl_stage (
     //Privilege mode / Virual mem
     input logic [WORD_SIZE-1:0] csr_priv_i,
     input logic [WORD_SIZE-1:0] csr_satp_i,
-    output logic dtlb_exception_o
+
+    // Exceptions
+    output logic pp_exception_o,
+    output logic [HF_PTR-1:0] pp_exception_id_o,
+    output logic [ADDR_SIZE-1:0] pp_addr_o
 );
 
 dcache_tag_t cache_tag;
@@ -80,9 +85,13 @@ logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_reg;
 logic valid_tag_in_flight_reg;
 logic miss_in_fligt_miss;
 
+// Exceptions
+assign pp_exception_o    = tlb_st.pp_exception;
+assign pp_exception_id_o = instr_id_i;
+assign pp_addr_o         = {tlb_st.physical_addr_i, {ADDR_SIZE-PADDR_SIZE{1'b0}}};
+
 //TLB
 //assign tlb_st.access_type = memop_wr_i ? W : R;
-assign dtlb_exception_o = tlb_st.miss;
 assign physical_addr_aux = csr_satp_i + tlb_faulting_address;
 assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
 assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
@@ -223,6 +232,7 @@ segre_dcache_tag dcache_tag (
 segre_store_buffer store_buffer (
     .clk_i             (clk_i),
     .rsn_i             (rsn_i),
+    .empty_i           (kill_i),
     .req_store_i       (sb.req_store),
     .req_load_i        (sb.req_load),
     .flush_chance_i    (sb.flush_chance),
@@ -402,7 +412,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_data_flush_o  <= sb.data_flush_o;
                 sb_hit_o         <= 1'b0;
                 memop_rd_o       <= 1'b0;
-                memop_wr_o       <= sb.data_valid;
+                memop_wr_o       <= !kill_i & sb.data_valid;
                 instr_id_o       <= sb.instr_id;
             end
             else if(sb.hit) begin
@@ -410,20 +420,20 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_data_load_o   <= sb.data_load_o;
                 sb_data_flush_o  <= sb.data_flush_o;
                 sb_hit_o         <= sb.hit;
-                memop_rd_o       <= memop_rd_i; //We have already read
+                memop_rd_o       <= !kill_i & memop_rd_i; //We have already read
                 memop_wr_o       <= 1'b0; //We have already write
-                if(memop_rd_i) 
-                     instr_id_o  <= instr_id_i;
+
+                if(memop_rd_i) instr_id_o  <= instr_id_i;
                 else instr_id_o  <= sb.instr_id;
             end
             else begin
                 // Miss in store buffer or no memory operation and store buffer empty
-                memop_rd_o       <= memop_rd_i;
+                memop_rd_o       <= !kill_i & memop_rd_i;
                 memop_wr_o       <= 1'b0;
                 instr_id_o       <= instr_id_i;
             end
             addr_o             <= addr_i;
-            rf_we_o            <= rf_we_i;
+            rf_we_o            <= !kill_i & rf_we_i;
             rf_waddr_o         <= rf_waddr_i;
             memop_sign_ext_o   <= memop_sign_ext_i;
             addr_index_o       <= cache_tag.addr_index;
@@ -438,7 +448,7 @@ always_ff @(posedge clk_i) begin : stage_latch
                 sb_data_load_o   <= sb.data_load_o;
                 sb_data_flush_o  <= sb.data_flush_o;
                 sb_hit_o         <= 1'b0;
-                memop_wr_o       <= sb.data_valid;
+                memop_wr_o       <= !kill_i & sb.data_valid;
                 sb_flush_o       <= sb.data_valid;
                 addr_index_o     <= cache_tag.addr_index;
                 instr_id_o       <= sb.instr_id;

@@ -82,7 +82,7 @@ always_ff @(posedge clk_i) begin : tlb_write
         tlb[write_position].valid <= 1;
         tlb[write_position].vaddr <= virtual_addr_i;
         tlb[write_position].paddr <= physical_addr_i;
-        tlb[write_position].page_protection <= access_type_i;
+        tlb[write_position].page_protection <= EX;//access_type_i;
         write_position = write_position+1;
     end
     else if (invalidate_i) begin
@@ -102,7 +102,7 @@ always_ff @(posedge clk_i) begin : tlb_reset
         tlb[1].valid <= 0;
         tlb[1].vaddr <= 20'h0000A;
         tlb[1].paddr <= 8'h0A;
-        tlb[1].page_protection <= RW;
+        tlb[1].page_protection <= EX;
         for(int i=2; i<TLB_NUM_ENTRYS; i++) begin
             tlb[i].valid <= 0;
             tlb[i].vaddr <= 0;

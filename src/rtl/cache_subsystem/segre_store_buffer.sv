@@ -3,6 +3,7 @@ import segre_pkg::*;
 module segre_store_buffer (
     input logic clk_i,
     input logic rsn_i,
+    input logic empty_i,  // Empties all the store buffer
     input logic req_store_i,
     input logic req_load_i,
     input logic flush_chance_i, //our chance to flush elements!
@@ -140,7 +141,7 @@ always_comb begin : buffer_load //The proc issued a load and maybe we are holdin
 end
 
 always_ff @(posedge clk_i) begin : buffer_reset //Invalidate all positions and restart the pointers
-    if (!rsn_i) begin
+    if (!rsn_i | empty_i) begin
         for(int i=0; i<NUM_ELEMS; i++) begin
             buffer[i].valid <= 0;
             buffer[i].address <= 0;

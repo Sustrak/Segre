@@ -5,6 +5,9 @@ module segre_ex_stage (
     input logic clk_i,
     input logic rsn_i,
     
+    // Kill
+    input logic kill_i,
+    
     // Hazard
     input logic hazard_i,
 
@@ -78,13 +81,13 @@ always_ff @(posedge clk_i) begin
     end
     else if (!hazard_i) begin
         alu_res_o          <= (alu_opcode_i == ALU_JAL || alu_opcode_i == ALU_JALR) ? br_src_a_i : alu_res;
-        rf_we_o            <= rf_we_i;
+        rf_we_o            <= !kill_i & rf_we_i;
         rf_waddr_o         <= rf_waddr_i;
-        tkbr_o             <= tkbr;
+        tkbr_o             <= !kill_i & tkbr;
         new_pc_o           <= alu_res;
-        branch_completed_o <= branch_completed;
+        branch_completed_o <= !kill_i & branch_completed;
         instr_id_o         <= instr_id_i;
-        csr_access_o       <= csr_access_i;
+        csr_access_o       <= !kill_i & csr_access_i;
         csr_waddr_o        <= csr_waddr_i;
         csr_data_o         <= alu_src_a_i;
     end

@@ -5,11 +5,13 @@ module segre_history_file (
     input logic clk_i,
     input logic rsn_i,
 
+    input logic sie_i,
     // Input data from id
     input logic req_i,
     input logic store_i,
     input logic [REG_SIZE-1:0] dest_reg_i,
     input logic [WORD_SIZE-1:0] current_value_i,
+    input logic [ADDR_SIZE-1:0] pc_i,
 
     input logic exc_i,
     input logic [HF_PTR-1:0] exc_id_i,
@@ -29,7 +31,8 @@ module segre_history_file (
 
     output logic recovering_o,
     output logic [REG_SIZE-1:0] dest_reg_o,
-    output logic [WORD_SIZE-1:0] value_o
+    output logic [WORD_SIZE-1:0] value_o,
+    output logic [ADDR_SIZE-1:0] pc_o
 );
 
 typedef enum logic {
@@ -49,6 +52,7 @@ typedef struct packed {
     logic [REG_SIZE-1:0] dest_reg;
     logic [WORD_SIZE-1:0] current_value;
     entry_status_e status;
+    logic [ADDR_SIZE-1:0] pc;
 } hf_t;
 
 hf_t [HF_SIZE-1:0] hf;
@@ -65,6 +69,7 @@ assign store_permission_o = (hf[head].status == EXECUTING_STORE);
 assign recovering_o = hf_status == RECOVERING ? 1'b1 : 1'b0;
 assign dest_reg_o = hf[tail].dest_reg;
 assign value_o    = hf[tail].current_value;
+assign pc_o       = hf[tail].pc;
 
 always_comb begin : fsm_control
     nxt_hf_status = hf_status;
@@ -128,7 +133,7 @@ always_comb begin : queue_control
             end
         end
         RECOVERING: begin
-            nxt_tail = tail - 1;
+            nxt_tail = empty_o ? tail : tail - 1;
             nxt_status[tail] = EMPTY;
         end
     endcase
@@ -140,12 +145,13 @@ always_ff @(posedge clk_i) begin : latch
             hf[i].dest_reg      <= 0;
             hf[i].current_value <= 0;
             hf[i].status        <= EMPTY;
+            hf[i].pc            <= 0;
         end
         tail <= 0;
         head <= 0;
         hf_status <= NORMAL;
     end
-    else begin
+    else if (sie_i || hf_status == RECOVERING) begin
         hf_status <= nxt_hf_status;
         head <= nxt_head;
         tail <= nxt_tail;
@@ -153,6 +159,7 @@ always_ff @(posedge clk_i) begin : latch
         if (hf_status == NORMAL && req_i) begin
             hf[tail].dest_reg      <= dest_reg_i;
             hf[tail].current_value <= current_value_i;
+            hf[tail].pc            <= pc_i;
         end
 
         for (int i = 0; i < HF_SIZE; i++) begin
