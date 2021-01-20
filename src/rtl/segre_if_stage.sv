@@ -8,7 +8,10 @@ module segre_if_stage (
     // Hazard
     input logic hazard_i,
     output logic hazard_o,
+
+    // Exception
     input logic hf_recovering_i,
+    input logic [WORD_SIZE-1:0] csr_stvec_i,
 
     // IF ID interface
     output logic [WORD_SIZE-1:0] instr_o,
@@ -182,7 +185,7 @@ always_comb begin : pc_logic
         nxt_pc = 0;
     end else begin
         if (if_fsm_state == IF_RECOVERING) begin
-            nxt_pc = csr_satp_i;
+            nxt_pc = csr_stvec_i;
         end else if (tkbr_i) begin
             nxt_pc = new_pc_i;
         end else if (if_fsm_state == IF_TLB_MISS || if_fsm_state == IF_IC_MISS || if_fsm_state == IF_BRANCH) begin

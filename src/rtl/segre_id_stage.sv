@@ -29,7 +29,7 @@ module segre_id_stage (
     // History File
     output logic new_hf_entry_o,
     output logic [HF_PTR-1:0] instr_id_o,
-    output logic pc_o,
+    output logic [ADDR_SIZE-1:0] pc_o,
     // ALU
     output alu_opcode_e alu_opcode_o,
     output logic [WORD_SIZE-1:0] alu_src_a_o,

@@ -72,15 +72,20 @@ assign value_o    = hf[tail].current_value;
 assign pc_o       = hf[tail].pc;
 
 always_comb begin : fsm_control
-    nxt_hf_status = hf_status;
-    unique case (hf_status)
-        NORMAL: begin
-            if (hf[head].status == EXCEPTION) nxt_hf_status = RECOVERING;
-        end
-        RECOVERING: begin
-            if (empty_o) nxt_hf_status = NORMAL;
-        end
-    endcase
+    if (!rsn_i) begin
+        nxt_hf_status = NORMAL;
+    end
+    else begin
+        nxt_hf_status = hf_status;
+        unique case (hf_status)
+            NORMAL: begin
+                if (hf[head].status == EXCEPTION) nxt_hf_status = RECOVERING;
+            end
+            RECOVERING: begin
+                if (empty_o) nxt_hf_status = NORMAL;
+            end
+        endcase
+    end
 end
 
 always_comb begin : queue_control
@@ -149,10 +154,8 @@ always_ff @(posedge clk_i) begin : latch
         end
         tail <= 0;
         head <= 0;
-        hf_status <= NORMAL;
     end
-    else if (sie_i || hf_status == RECOVERING) begin
-        hf_status <= nxt_hf_status;
+    else if (sie_i || (!sie_i && hf_status == RECOVERING)) begin
         head <= nxt_head;
         tail <= nxt_tail;
 
@@ -166,6 +169,7 @@ always_ff @(posedge clk_i) begin : latch
             hf[i].status <= nxt_status[i];
         end
     end
+    hf_status <= nxt_hf_status;
 end
 
 // Verification

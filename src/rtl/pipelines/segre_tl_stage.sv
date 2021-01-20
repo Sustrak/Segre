@@ -84,6 +84,7 @@ logic valid_tag_in_flight_next;
 logic [DCACHE_TAG_SIZE-1:0] tag_in_flight_reg;
 logic valid_tag_in_flight_reg;
 logic miss_in_fligt_miss;
+logic tlb_exception;
 
 // Exceptions
 assign pp_exception_o    = tlb_st.pp_exception;
@@ -96,6 +97,7 @@ assign physical_addr_aux = csr_satp_i + tlb_faulting_address;
 assign tlb_st.physical_addr_i = physical_addr_aux[VADDR_SIZE-1:12];
 assign tlb_st.invalidate = 1'b0; //TODO: Actualitzar quan afegim excepcions
 assign tlb_st.new_entry = (fsm_state == HAZARD_DTLB_MISS);
+assign tlb_exception = tlb_st.pp_exception;
 
 always_comb begin : access_type_selection
     if (fsm_state == HAZARD_DTLB_MISS) begin
@@ -182,9 +184,9 @@ end
 assign cache_tag.invalidate = 0;
 
 // MMU
-assign mmu_cache_access_o = (cache_tag.req | sb.req_store | sb.req_load) & !tlb_st.miss;
+assign mmu_cache_access_o = (cache_tag.req | sb.req_store | sb.req_load) & !(tlb_st.miss | tlb_exception);
 //assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
-assign mmu_miss_o         = (csr_priv_i == 1) ? rsn_i & (cache_tag.miss & sb.miss) : rsn_i & (cache_tag.miss & sb.miss) & !tlb_st.miss; 
+assign mmu_miss_o         = (csr_priv_i == 1) ? rsn_i & (cache_tag.miss & sb.miss) : rsn_i & (cache_tag.miss & sb.miss) & !(tlb_st.miss | tlb_exception);
 //assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == addr_i[`ADDR_TAG])); 
 assign pipeline_hazard_o  = pipeline_hazard;
 // Write through
@@ -193,7 +195,7 @@ assign pipeline_hazard_o  = pipeline_hazard;
 //assign mmu_data_o         = rf_st_data_i;
 
 // STORE BUFFER
-assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i & !tlb_st.miss : 1'b0;
+assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_wr_i & !(tlb_st.miss | tlb_exception) : 1'b0;
 //assign sb.req_store         = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? (memop_wr_i & !pipeline_hazard_o) : 1'b0;
 assign sb.req_load          = (fsm_state == TL_IDLE || fsm_state == MISS_IN_FLIGHT) ? memop_rd_i : 1'b0;
 assign sb.addr_i            = addr_i;
@@ -368,7 +370,7 @@ end
 
 always_comb begin : miss_in_fligt
     tag_in_flight_next <= addr_i[`ADDR_TAG];
-    valid_tag_in_flight_next <= memop_wr_i & (!tlb_st.miss & !sb.trouble & cache_tag.miss);
+    valid_tag_in_flight_next <= memop_wr_i & (!(tlb_st.miss | tlb_exception) & !sb.trouble & cache_tag.miss);
     //miss_in_fligt_miss <= (memop_rd_i | memop_wr_i)
 end
 

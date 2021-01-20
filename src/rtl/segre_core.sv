@@ -39,7 +39,9 @@ segre_if_stage if_stage (
     // Hazard
     .hazard_i           (input_hazards.ifs),
     .hazard_o           (output_hazards.ifs),
+    // Exceptions
     .hf_recovering_i    (core_hf.recovering),
+    .csr_stvec_i        (core_csr.csr_stvec),
     // IF ID interface
     .instr_o            (core_id.instr),
     .pc_o               (core_id.pc),
@@ -203,6 +205,8 @@ segre_csr_file segre_csr (
 segre_mmu mmu (
     .clk_i                (clk_i),
     .rsn_i                (rsn_i),
+    // Exceptions
+    .exc_i                (core_hf.exc),
     // Data chache
     .dc_miss_i            (core_mmu.dc_miss),
     .dc_addr_i            (core_mmu.dc_addr_i),
