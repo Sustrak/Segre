@@ -138,10 +138,9 @@ end
 always_comb begin : ic_lru
     if (!rsn_i) begin
         ic_lru_access  = 0;
-        ic_lru_current = 0;
+        //ic_lru_current = 0;
     end
     else if (ic_access_i && !ic_miss_i) begin
-        ic_lru_current = ic_lru_updated;
         ic_lru_access = binary_to_one_hot(ic_addr_index);
     end
     else begin
@@ -149,6 +148,13 @@ always_comb begin : ic_lru
         ic_lru_index   = one_hot_to_binary(ic_lru_post);
     end
 end
+
+always_ff @(posedge clk_i) begin
+    if (!rsn_i) ic_lru_current <= 0;
+    else if (ic_access_i && !ic_miss_i)
+        ic_lru_current <= ic_lru_updated;
+end
+
 
 always_ff @(posedge clk_i) begin : dc_miss_block
     if (!rsn_i) begin

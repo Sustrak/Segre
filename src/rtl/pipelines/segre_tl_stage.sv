@@ -142,7 +142,7 @@ always_comb begin : cache_tag_selection
     else begin
         //TODO: Revisar aixo
         if (sb.flush_chance & sb.data_valid) cache_tag.tag = {12'h000,tlb_st.physical_addr_o,sb.addr_o[11:DCACHE_BYTE_SIZE]};
-        else if (mmu_data_rdy_i)             cache_tag.tag = {12'h000,tlb_st.physical_addr_o,mmu_addr_i[11:DCACHE_BYTE_SIZE]};
+        else if (mmu_data_rdy_i)             cache_tag.tag = mmu_addr_i[`ADDR_TAG];//{12'h000,tlb_st.physical_addr_o,mmu_addr_i[11:DCACHE_BYTE_SIZE]};
         else                                 cache_tag.tag = {12'h000,tlb_st.physical_addr_o,addr_i[11:DCACHE_BYTE_SIZE]};
     end
 end
@@ -182,7 +182,7 @@ end
 assign cache_tag.invalidate = 0;
 
 // MMU
-assign mmu_cache_access_o = cache_tag.req | sb.req_store | sb.req_load;
+assign mmu_cache_access_o = (cache_tag.req | sb.req_store | sb.req_load) & !tlb_st.miss;
 //assign mmu_addr_o         = (cache_tag.miss | memop_wr_i) ? alu_res_i : {{WORD_SIZE-DCACHE_INDEX_SIZE{1'b0}}, cache_tag.addr_index};
 assign mmu_miss_o         = (csr_priv_i == 1) ? rsn_i & (cache_tag.miss & sb.miss) : rsn_i & (cache_tag.miss & sb.miss) & !tlb_st.miss; 
 //assign mmu_miss_o         = rsn_i & ((cache_tag.miss | sb.miss | !(valid_tag_in_flight_reg & (memop_rd_i | memop_wr_i) & (tag_in_flight_reg == addr_i[`ADDR_TAG])); 
@@ -287,7 +287,7 @@ always_comb begin : pipeline_stop
                 //TODO:Josep, Mira aixo dels static bit
                 //static bit different_tag = valid_tag_in_flight_reg & (tag_in_flight_reg != addr_i[`ADDR_TAG]);
                 //static bit same_tag      = valid_tag_in_flight_reg & (tag_in_flight_reg == addr_i[`ADDR_TAG]);
-                pipeline_hazard = 
+                pipeline_hazard = (tlb_st.miss & (memop_rd_i | memop_wr_i)) |
                     (memop_rd_i & (cache_tag.miss & ( (valid_tag_in_flight_reg & (tag_in_flight_reg != addr_i[`ADDR_TAG])) | sb.miss | sb.trouble))) |
                     (memop_wr_i & (cache_tag.hit | (valid_tag_in_flight_reg & (tag_in_flight_reg != addr_i[`ADDR_TAG])) | ( (valid_tag_in_flight_reg & (tag_in_flight_reg == addr_i[`ADDR_TAG]))& sb.trouble)));
                     //(memop_wr_i & (cache_tag.hit | different_tag | (same_tag & sb.trouble)));
@@ -312,6 +312,7 @@ always_comb begin : tl_fsm
         unique case (fsm_state)
             MISS_IN_FLIGHT: begin
                 if(mmu_data_rdy_i) fsm_nxt_state = TL_IDLE;
+                else if (tlb_st.miss) fsm_nxt_state = HAZARD_DTLB_MISS;
                 else if(memop_wr_i) begin //When a new store arrives and don't have the same tag as the first faulty one we need to stall
                     /*if(cache_tag.hit) //I think this is necessary to protect the write-through strategy
                         fsm_nxt_state = HAZARD_DC_MISS;*/
@@ -347,7 +348,8 @@ always_comb begin : tl_fsm
                 else fsm_nxt_state = HAZARD_SB_TROUBLE;
             end
             HAZARD_DTLB_MISS: begin
-                fsm_nxt_state = TL_IDLE;
+                if(valid_tag_in_flight_reg) fsm_nxt_state = MISS_IN_FLIGHT;
+                else fsm_nxt_state = TL_IDLE;
             end
             TL_IDLE: begin
                 if (tlb_st.miss) fsm_nxt_state = HAZARD_DTLB_MISS;
@@ -366,7 +368,7 @@ end
 
 always_comb begin : miss_in_fligt
     tag_in_flight_next <= addr_i[`ADDR_TAG];
-    valid_tag_in_flight_next <= memop_wr_i && cache_tag.miss;
+    valid_tag_in_flight_next <= memop_wr_i & (!tlb_st.miss & !sb.trouble & cache_tag.miss);
     //miss_in_fligt_miss <= (memop_rd_i | memop_wr_i)
 end
 
@@ -376,7 +378,7 @@ always_ff @(posedge clk_i) begin : miss_in_fligt_latch
         valid_tag_in_flight_reg <= 0;
     end
     else begin
-        if(fsm_state == TL_IDLE) begin
+        if(fsm_state == TL_IDLE) begin// && fsm_nxt_state != HAZARD_DTLB_MISS) begin
             tag_in_flight_reg <= tag_in_flight_next;
             valid_tag_in_flight_reg <= valid_tag_in_flight_next;
         end

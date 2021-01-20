@@ -4,111 +4,111 @@ build_segre/addi.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00008000 <_start>:
-    8000:	00123037          	lui	zero,0x123
-    8004:	45600013          	li	zero,1110
-    8008:	002340b7          	lui	ra,0x234
-    800c:	56708093          	addi	ra,ra,1383 # 234567 <user_stack_end+0x21d74b>
-    8010:	00345137          	lui	sp,0x345
-    8014:	67810113          	addi	sp,sp,1656 # 345678 <user_stack_end+0x32e85c>
-    8018:	004561b7          	lui	gp,0x456
-    801c:	79018193          	addi	gp,gp,1936 # 456790 <user_stack_end+0x43f974>
-    8020:	00568237          	lui	tp,0x568
-    8024:	89a20213          	addi	tp,tp,-1894 # 56789a <user_stack_end+0x550a7e>
-    8028:	006792b7          	lui	t0,0x679
-    802c:	9ab28293          	addi	t0,t0,-1621 # 6789ab <user_stack_end+0x661b8f>
-    8030:	0078a337          	lui	t1,0x78a
-    8034:	abc30313          	addi	t1,t1,-1348 # 789abc <user_stack_end+0x772ca0>
-    8038:	0089b3b7          	lui	t2,0x89b
-    803c:	bcd38393          	addi	t2,t2,-1075 # 89abcd <user_stack_end+0x883db1>
-    8040:	009ac437          	lui	s0,0x9ac
-    8044:	cde40413          	addi	s0,s0,-802 # 9abcde <user_stack_end+0x994ec2>
-    8048:	00abd4b7          	lui	s1,0xabd
-    804c:	def48493          	addi	s1,s1,-529 # abcdef <user_stack_end+0xaa5fd3>
-    8050:	001ac537          	lui	a0,0x1ac
-    8054:	cde50513          	addi	a0,a0,-802 # 1abcde <user_stack_end+0x194ec2>
-    8058:	0012b5b7          	lui	a1,0x12b
-    805c:	bcd58593          	addi	a1,a1,-1075 # 12abcd <user_stack_end+0x113db1>
-    8060:	00124637          	lui	a2,0x124
-    8064:	abc60613          	addi	a2,a2,-1348 # 123abc <user_stack_end+0x10cca0>
-    8068:	001236b7          	lui	a3,0x123
-    806c:	4ab68693          	addi	a3,a3,1195 # 1234ab <user_stack_end+0x10c68f>
-    8070:	00123737          	lui	a4,0x123
-    8074:	45a70713          	addi	a4,a4,1114 # 12345a <user_stack_end+0x10c63e>
-    8078:	001237b7          	lui	a5,0x123
-    807c:	45678793          	addi	a5,a5,1110 # 123456 <user_stack_end+0x10c63a>
-    8080:	00123837          	lui	a6,0x123
-    8084:	45680813          	addi	a6,a6,1110 # 123456 <user_stack_end+0x10c63a>
-    8088:	001238b7          	lui	a7,0x123
-    808c:	45688893          	addi	a7,a7,1110 # 123456 <user_stack_end+0x10c63a>
-    8090:	00234937          	lui	s2,0x234
-    8094:	56790913          	addi	s2,s2,1383 # 234567 <user_stack_end+0x21d74b>
-    8098:	003459b7          	lui	s3,0x345
-    809c:	67898993          	addi	s3,s3,1656 # 345678 <user_stack_end+0x32e85c>
-    80a0:	00456a37          	lui	s4,0x456
-    80a4:	790a0a13          	addi	s4,s4,1936 # 456790 <user_stack_end+0x43f974>
-    80a8:	00568ab7          	lui	s5,0x568
-    80ac:	89aa8a93          	addi	s5,s5,-1894 # 56789a <user_stack_end+0x550a7e>
-    80b0:	00679b37          	lui	s6,0x679
-    80b4:	9abb0b13          	addi	s6,s6,-1621 # 6789ab <user_stack_end+0x661b8f>
-    80b8:	0078abb7          	lui	s7,0x78a
-    80bc:	abcb8b93          	addi	s7,s7,-1348 # 789abc <user_stack_end+0x772ca0>
-    80c0:	0089bc37          	lui	s8,0x89b
-    80c4:	bcdc0c13          	addi	s8,s8,-1075 # 89abcd <user_stack_end+0x883db1>
-    80c8:	009accb7          	lui	s9,0x9ac
-    80cc:	cdec8c93          	addi	s9,s9,-802 # 9abcde <user_stack_end+0x994ec2>
-    80d0:	00abdd37          	lui	s10,0xabd
-    80d4:	defd0d13          	addi	s10,s10,-529 # abcdef <user_stack_end+0xaa5fd3>
-    80d8:	001acdb7          	lui	s11,0x1ac
-    80dc:	cded8d93          	addi	s11,s11,-802 # 1abcde <user_stack_end+0x194ec2>
-    80e0:	0012be37          	lui	t3,0x12b
-    80e4:	bcde0e13          	addi	t3,t3,-1075 # 12abcd <user_stack_end+0x113db1>
-    80e8:	00124eb7          	lui	t4,0x124
-    80ec:	abce8e93          	addi	t4,t4,-1348 # 123abc <user_stack_end+0x10cca0>
-    80f0:	00123f37          	lui	t5,0x123
-    80f4:	4abf0f13          	addi	t5,t5,1195 # 1234ab <user_stack_end+0x10c68f>
-    80f8:	00123fb7          	lui	t6,0x123
-    80fc:	45af8f93          	addi	t6,t6,1114 # 12345a <user_stack_end+0x10c63e>
-    8100:	11108013          	addi	zero,ra,273
-    8104:	22210093          	addi	ra,sp,546
-    8108:	33318113          	addi	sp,gp,819
-    810c:	44420193          	addi	gp,tp,1092 # 444 <_start-0x7bbc>
-    8110:	55528213          	addi	tp,t0,1365
-    8114:	66630293          	addi	t0,t1,1638
-    8118:	77738313          	addi	t1,t2,1911
-    811c:	10a40393          	addi	t2,s0,266
-    8120:	10b48413          	addi	s0,s1,267
-    8124:	10c50493          	addi	s1,a0,268
-    8128:	10d58513          	addi	a0,a1,269
-    812c:	10e60593          	addi	a1,a2,270
-    8130:	10f68613          	addi	a2,a3,271
-    8134:	1aa70693          	addi	a3,a4,426
-    8138:	1bb78713          	addi	a4,a5,443
-    813c:	1cc80793          	addi	a5,a6,460
-    8140:	1dd88813          	addi	a6,a7,477
-    8144:	1ee90893          	addi	a7,s2,494
-    8148:	1ff98913          	addi	s2,s3,511
-    814c:	5aaa0993          	addi	s3,s4,1450
-    8150:	5aba8a13          	addi	s4,s5,1451
-    8154:	5acb0a93          	addi	s5,s6,1452
-    8158:	5adb8b13          	addi	s6,s7,1453
-    815c:	5aec0b93          	addi	s7,s8,1454
-    8160:	5afc8c13          	addi	s8,s9,1455
-    8164:	6aad0c93          	addi	s9,s10,1706
-    8168:	6abd8d13          	addi	s10,s11,1707
-    816c:	6ace0d93          	addi	s11,t3,1708
-    8170:	6ade8e13          	addi	t3,t4,1709
-    8174:	6aef0e93          	addi	t4,t5,1710
-    8178:	6af08f13          	addi	t5,ra,1711
-    817c:	70010f93          	addi	t6,sp,1792
-    8180:	00000013          	nop
-    8184:	00000013          	nop
-    8188:	00000013          	nop
-    818c:	00000013          	nop
-    8190:	00000013          	nop
-    8194:	00000013          	nop
-    8198:	00000013          	nop
-    819c:	00000013          	nop
+00000000 <_start>:
+   0:	00123037          	lui	zero,0x123
+   4:	45600013          	li	zero,1110
+   8:	002340b7          	lui	ra,0x234
+   c:	56708093          	addi	ra,ra,1383 # 234567 <user_stack_end+0x22574b>
+  10:	00345137          	lui	sp,0x345
+  14:	67810113          	addi	sp,sp,1656 # 345678 <user_stack_end+0x33685c>
+  18:	004561b7          	lui	gp,0x456
+  1c:	79018193          	addi	gp,gp,1936 # 456790 <user_stack_end+0x447974>
+  20:	00568237          	lui	tp,0x568
+  24:	89a20213          	addi	tp,tp,-1894 # 56789a <user_stack_end+0x558a7e>
+  28:	006792b7          	lui	t0,0x679
+  2c:	9ab28293          	addi	t0,t0,-1621 # 6789ab <user_stack_end+0x669b8f>
+  30:	0078a337          	lui	t1,0x78a
+  34:	abc30313          	addi	t1,t1,-1348 # 789abc <user_stack_end+0x77aca0>
+  38:	0089b3b7          	lui	t2,0x89b
+  3c:	bcd38393          	addi	t2,t2,-1075 # 89abcd <user_stack_end+0x88bdb1>
+  40:	009ac437          	lui	s0,0x9ac
+  44:	cde40413          	addi	s0,s0,-802 # 9abcde <user_stack_end+0x99cec2>
+  48:	00abd4b7          	lui	s1,0xabd
+  4c:	def48493          	addi	s1,s1,-529 # abcdef <user_stack_end+0xaadfd3>
+  50:	001ac537          	lui	a0,0x1ac
+  54:	cde50513          	addi	a0,a0,-802 # 1abcde <user_stack_end+0x19cec2>
+  58:	0012b5b7          	lui	a1,0x12b
+  5c:	bcd58593          	addi	a1,a1,-1075 # 12abcd <user_stack_end+0x11bdb1>
+  60:	00124637          	lui	a2,0x124
+  64:	abc60613          	addi	a2,a2,-1348 # 123abc <user_stack_end+0x114ca0>
+  68:	001236b7          	lui	a3,0x123
+  6c:	4ab68693          	addi	a3,a3,1195 # 1234ab <user_stack_end+0x11468f>
+  70:	00123737          	lui	a4,0x123
+  74:	45a70713          	addi	a4,a4,1114 # 12345a <user_stack_end+0x11463e>
+  78:	001237b7          	lui	a5,0x123
+  7c:	45678793          	addi	a5,a5,1110 # 123456 <user_stack_end+0x11463a>
+  80:	00123837          	lui	a6,0x123
+  84:	45680813          	addi	a6,a6,1110 # 123456 <user_stack_end+0x11463a>
+  88:	001238b7          	lui	a7,0x123
+  8c:	45688893          	addi	a7,a7,1110 # 123456 <user_stack_end+0x11463a>
+  90:	00234937          	lui	s2,0x234
+  94:	56790913          	addi	s2,s2,1383 # 234567 <user_stack_end+0x22574b>
+  98:	003459b7          	lui	s3,0x345
+  9c:	67898993          	addi	s3,s3,1656 # 345678 <user_stack_end+0x33685c>
+  a0:	00456a37          	lui	s4,0x456
+  a4:	790a0a13          	addi	s4,s4,1936 # 456790 <user_stack_end+0x447974>
+  a8:	00568ab7          	lui	s5,0x568
+  ac:	89aa8a93          	addi	s5,s5,-1894 # 56789a <user_stack_end+0x558a7e>
+  b0:	00679b37          	lui	s6,0x679
+  b4:	9abb0b13          	addi	s6,s6,-1621 # 6789ab <user_stack_end+0x669b8f>
+  b8:	0078abb7          	lui	s7,0x78a
+  bc:	abcb8b93          	addi	s7,s7,-1348 # 789abc <user_stack_end+0x77aca0>
+  c0:	0089bc37          	lui	s8,0x89b
+  c4:	bcdc0c13          	addi	s8,s8,-1075 # 89abcd <user_stack_end+0x88bdb1>
+  c8:	009accb7          	lui	s9,0x9ac
+  cc:	cdec8c93          	addi	s9,s9,-802 # 9abcde <user_stack_end+0x99cec2>
+  d0:	00abdd37          	lui	s10,0xabd
+  d4:	defd0d13          	addi	s10,s10,-529 # abcdef <user_stack_end+0xaadfd3>
+  d8:	001acdb7          	lui	s11,0x1ac
+  dc:	cded8d93          	addi	s11,s11,-802 # 1abcde <user_stack_end+0x19cec2>
+  e0:	0012be37          	lui	t3,0x12b
+  e4:	bcde0e13          	addi	t3,t3,-1075 # 12abcd <user_stack_end+0x11bdb1>
+  e8:	00124eb7          	lui	t4,0x124
+  ec:	abce8e93          	addi	t4,t4,-1348 # 123abc <user_stack_end+0x114ca0>
+  f0:	00123f37          	lui	t5,0x123
+  f4:	4abf0f13          	addi	t5,t5,1195 # 1234ab <user_stack_end+0x11468f>
+  f8:	00123fb7          	lui	t6,0x123
+  fc:	45af8f93          	addi	t6,t6,1114 # 12345a <user_stack_end+0x11463e>
+ 100:	11108013          	addi	zero,ra,273
+ 104:	22210093          	addi	ra,sp,546
+ 108:	33318113          	addi	sp,gp,819
+ 10c:	44420193          	addi	gp,tp,1092 # 444 <test_done+0x2a4>
+ 110:	55528213          	addi	tp,t0,1365
+ 114:	66630293          	addi	t0,t1,1638
+ 118:	77738313          	addi	t1,t2,1911
+ 11c:	10a40393          	addi	t2,s0,266
+ 120:	10b48413          	addi	s0,s1,267
+ 124:	10c50493          	addi	s1,a0,268
+ 128:	10d58513          	addi	a0,a1,269
+ 12c:	10e60593          	addi	a1,a2,270
+ 130:	10f68613          	addi	a2,a3,271
+ 134:	1aa70693          	addi	a3,a4,426
+ 138:	1bb78713          	addi	a4,a5,443
+ 13c:	1cc80793          	addi	a5,a6,460
+ 140:	1dd88813          	addi	a6,a7,477
+ 144:	1ee90893          	addi	a7,s2,494
+ 148:	1ff98913          	addi	s2,s3,511
+ 14c:	5aaa0993          	addi	s3,s4,1450
+ 150:	5aba8a13          	addi	s4,s5,1451
+ 154:	5acb0a93          	addi	s5,s6,1452
+ 158:	5adb8b13          	addi	s6,s7,1453
+ 15c:	5aec0b93          	addi	s7,s8,1454
+ 160:	5afc8c13          	addi	s8,s9,1455
+ 164:	6aad0c93          	addi	s9,s10,1706
+ 168:	6abd8d13          	addi	s10,s11,1707
+ 16c:	6ace0d93          	addi	s11,t3,1708
+ 170:	6ade8e13          	addi	t3,t4,1709
+ 174:	6aef0e93          	addi	t4,t5,1710
+ 178:	6af08f13          	addi	t5,ra,1711
+ 17c:	70010f93          	addi	t6,sp,1792
+ 180:	00000013          	nop
+ 184:	00000013          	nop
+ 188:	00000013          	nop
+ 18c:	00000013          	nop
+ 190:	00000013          	nop
+ 194:	00000013          	nop
+ 198:	00000013          	nop
+ 19c:	00000013          	nop
 
-000081a0 <test_done>:
-    81a0:	fff01073          	csrw	0xfff,zero
+000001a0 <test_done>:
+ 1a0:	fff01073          	csrw	0xfff,zero
