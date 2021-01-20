@@ -8,9 +8,9 @@ int main() {
     
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
-            c[i+(j<<DISP)] = 0;
+            c[(i<<DISP)+j] = 0;
             for (int k = 0; k < SIZE; k++) {
-                c[i+(j<<DISP)] = c[i+(j<<DISP)] + a[i+(k<<DISP)] * b[k+(j<<DISP)];
+                c[(i<<DISP)+j] = c[(i<<DISP)+j] + a[(i<<DISP)+k] * b[(k<<DISP)+j];
             }
         }
     }

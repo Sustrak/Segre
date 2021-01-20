@@ -380,7 +380,7 @@ always_ff @(posedge clk_i) begin : miss_in_fligt_latch
         valid_tag_in_flight_reg <= 0;
     end
     else begin
-        if(fsm_state == TL_IDLE) begin// && fsm_nxt_state != HAZARD_DTLB_MISS) begin
+        if(fsm_state == TL_IDLE) begin
             tag_in_flight_reg <= tag_in_flight_next;
             valid_tag_in_flight_reg <= valid_tag_in_flight_next;
         end

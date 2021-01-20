@@ -67,8 +67,8 @@ always_comb begin
 end
 
 always_comb begin
-    mul_res = $signed(alu_src_b_i) * $signed(alu_src_b_i);
-    mulu_res = $unsigned(alu_src_b_i) * $unsigned(alu_src_b_i);
+    mul_res = $signed(alu_src_a_i) * $signed(alu_src_b_i);
+    mulu_res = $unsigned(alu_src_a_i) * $unsigned(alu_src_b_i);
     mulsu_res = alu_src_a_i[WORD_SIZE-1] ? - $signed(mulu_res) : mulu_res;
     
     // DIV
