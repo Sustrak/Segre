@@ -6,15 +6,15 @@ Disassembly of section .text.startup:
 
 00000000 <main>:
    0:	00010eb7          	lui	t4,0x10
-   4:	000328b7          	lui	a7,0x32
+   4:	0002a8b7          	lui	a7,0x2a
    8:	00000f93          	li	t6,0
-   c:	00012337          	lui	t1,0x12
+   c:	0000a337          	lui	t1,0xa
   10:	00000f13          	li	t5,0
-  14:	000223b7          	lui	t2,0x22
+  14:	0001a3b7          	lui	t2,0x1a
   18:	e00e8e93          	addi	t4,t4,-512 # fe00 <main+0xfe00>
-  1c:	20088893          	addi	a7,a7,512 # 32200 <main+0x32200>
+  1c:	20088893          	addi	a7,a7,512 # 2a200 <main+0x2a200>
   20:	08000293          	li	t0,128
-  24:	20038513          	addi	a0,t2,512 # 22200 <main+0x22200>
+  24:	20038513          	addi	a0,t2,512 # 1a200 <main+0x1a200>
   28:	01df8e33          	add	t3,t6,t4
   2c:	00ae0833          	add	a6,t3,a0
   30:	00082023          	sw	zero,0(a6)
@@ -32,7 +32,7 @@ Disassembly of section .text.startup:
   60:	20050513          	addi	a0,a0,512
   64:	fd1514e3          	bne	a0,a7,2c <main+0x2c>
   68:	001f0f13          	addi	t5,t5,1
-  6c:	00430313          	addi	t1,t1,4 # 12004 <main+0x12004>
+  6c:	00430313          	addi	t1,t1,4 # a004 <main+0xa004>
   70:	004f8f93          	addi	t6,t6,4
   74:	fa5f18e3          	bne	t5,t0,24 <main+0x24>
   78:	00000013          	nop

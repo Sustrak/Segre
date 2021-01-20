@@ -30,6 +30,10 @@ module top_tb;
 
     string test_name;
     int result_file_fd;
+    
+    // Performance
+    longint unsigned num_cycles;
+    longint unsigned num_instructions;
 
     segre_core_if_t segre_core_if();
 
@@ -77,6 +81,8 @@ module top_tb;
         clk <= 0;
         clk_mem <= 0;
         rsn <= 0;
+        num_cycles <= 0;
+        num_instructions <= 0;
     end
 
     always #10 clk = ~clk;
@@ -153,6 +159,7 @@ module top_tb;
                 `uvm_info("top_tb", $sformatf("x%0d      %0h", i, segre_rf[i]), UVM_LOW)
             end
         end
+        `uvm_info("top_tb", $sformatf("Cycles executed %0d  ||  Instructions executed: %0d", num_cycles, num_instructions), UVM_LOW)
     endfunction
 
     task monitor_tb();
@@ -165,6 +172,13 @@ module top_tb;
                 instr_decoded = decode_instruction(int'(dut.if_stage.cache_data.data_o));
 `endif
                 `uvm_info("top_tb", $sformatf("PC: 0x%0h: %s (0x%0h) ", dut.if_stage.pc_o, instr_decoded, dut.if_stage.cache_data.data_o), UVM_LOW)
+            end
+            
+            // Performance
+            if (rsn) begin
+                num_cycles++;
+                if (dut.if_stage.if_fsm_state == IF_IDLE && !dut.if_stage.tlb_st.miss && !dut.if_stage.cache_tag.miss)
+                    num_instructions++;
             end
         end
         `uvm_fatal("top_tb", "Shouldn't have reach this part of the monitor_tb")

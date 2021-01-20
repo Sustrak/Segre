@@ -2,7 +2,7 @@
 #define DISP 7
 
 int main() {
-    int *a = (int *) 0x12000;
+    int *a = (int*) 0xA000;
     int *b = a + SIZE*SIZE;
     int *c = b + SIZE*SIZE;
     
