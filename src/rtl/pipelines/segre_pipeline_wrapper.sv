@@ -305,7 +305,7 @@ always_comb begin : bypass
             else ex_data.alu_src_b = rf_data_o.ex_data;
 
             ex_data.br_src_b    = rf_data_o.ex_data;
-            mem_data.alu_src_b  = rf_data_o.ex_data;
+            //mem_data.alu_src_b  = rf_data_o.ex_data;
             rvm_data.alu_src_b  = rf_data_o.ex_data;
         end
         BY_MEM_PIPE: begin
