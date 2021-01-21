@@ -290,6 +290,7 @@ always_ff @(posedge clk_i) begin
             memop_wr_q      <= 0;
             memop_rd_q      <= 0;
             csr_access_q    <= 0;
+            rf_waddr_o      <= 0;
         end
         else if (!tl_hazard_i || (tl_hazard_i && pipeline_o != MEM_PIPELINE)) begin
             alu_src_a_o      <= alu_src_a;
