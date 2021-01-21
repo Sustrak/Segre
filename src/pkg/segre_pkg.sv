@@ -160,11 +160,12 @@ typedef enum logic [2:0] {
     TL_IDLE
 } tl_fsm_state_e;
 
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
     IF_IDLE,
     IF_IC_MISS,
     IF_BRANCH,
-    IF_TLB_MISS
+    IF_TLB_MISS,
+    IF_RECOVERING
 } if_fsm_state_e;
 
 typedef enum logic [1:0] {
@@ -197,6 +198,17 @@ typedef enum logic[11:0] {
     CSR_STVAL,  // Supervisor PA that caused the TLB fault
     CSR_STVEC   // Supervisor trap vector base address
 } csr_e;
+
+typedef enum logic[WORD_SIZE-1:0] { 
+    INSTR_ADDR_MISS_ALIGN,
+    INSTR_ACCESS_FAULT,
+    ILLEGAL_INSTR,
+    BREAKPOINT,
+    LOAD_ADDR_MISS_ALIGN,
+    LOAD_ACCESS_FAULT,
+    STORE_ADDR_MISS_ALIGN,
+    STORE_ACCESS_FAULT
+} csr_cause_e;
 /********************
 * SEGRE  DATATYPES  *
 ********************/
@@ -467,20 +479,23 @@ typedef struct packed {
     logic recovering;
     logic [REG_SIZE-1:0] dest_reg;
     logic [WORD_SIZE-1:0] value;
+    logic exc;
+    logic [HF_PTR-1:0] exc_id;
+    logic [ADDR_SIZE-1:0] instr_pc;
+    logic [ADDR_SIZE-1:0] pc_fault;
 } core_hf_t;
 
 typedef struct packed {
     logic we;
+    logic sie;
     logic [CSR_SIZE-1:0] raddr;
     logic [CSR_SIZE-1:0] waddr;
+    logic [ADDR_SIZE-1:0] pp_addr;
     logic [WORD_SIZE-1:0] data_i;
     logic [WORD_SIZE-1:0] data_o;
     logic [WORD_SIZE-1:0] csr_satp;
     logic [WORD_SIZE-1:0] csr_priv;
-    logic [WORD_SIZE-1:0] csr_sie;
-    logic [WORD_SIZE-1:0] csr_scause;
     logic [WORD_SIZE-1:0] csr_sepc;
-    logic [WORD_SIZE-1:0] csr_stval;
     logic [WORD_SIZE-1:0] csr_stvec;
 } core_csr_t;
 

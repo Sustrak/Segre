@@ -3,6 +3,8 @@ import segre_pkg::*;
 module segre_mmu (
     input  logic clk_i,
     input  logic rsn_i,
+    // Exceptions
+    input logic exc_i,
     // Data chache
     input  logic dc_miss_i,
     input  logic [ADDR_SIZE-1:0] dc_addr_i,
@@ -138,10 +140,9 @@ end
 always_comb begin : ic_lru
     if (!rsn_i) begin
         ic_lru_access  = 0;
-        ic_lru_current = 0;
+        //ic_lru_current = 0;
     end
     else if (ic_access_i && !ic_miss_i) begin
-        ic_lru_current = ic_lru_updated;
         ic_lru_access = binary_to_one_hot(ic_addr_index);
     end
     else begin
@@ -150,8 +151,15 @@ always_comb begin : ic_lru
     end
 end
 
+always_ff @(posedge clk_i) begin
+    if (!rsn_i) ic_lru_current <= 0;
+    else if (ic_access_i && !ic_miss_i)
+        ic_lru_current <= ic_lru_updated;
+end
+
+
 always_ff @(posedge clk_i) begin : dc_miss_block
-    if (!rsn_i) begin
+    if (!rsn_i | exc_i) begin
         dc_miss <= 0;
         dc_mm_addr <= 0;
         dc_mm_addr_pending <= 0;
@@ -179,7 +187,7 @@ always_ff @(posedge clk_i) begin : ic_miss_block
         ic_miss <= 0;
         ic_mm_addr <= 0;
     end else begin
-        if (ic_miss_i) begin
+        if (ic_miss_i | exc_i) begin
             ic_miss <= ic_miss_i;
             ic_mm_addr <= {ic_addr_i[ADDR_SIZE-1:ICACHE_BYTE_SIZE], {ICACHE_BYTE_SIZE{1'b0}}};
         end
@@ -209,10 +217,12 @@ end
 always_comb begin : mmu_fsm
     unique case (fsm_state)
         DCACHE_REQ : begin
+            if (exc_i) fsm_nxt_state = MMU_IDLE;
             fsm_nxt_state = DCACHE_WAIT;
         end
         DCACHE_WAIT : begin
-            if (mm_data_rdy_i) begin
+            if (exc_i) fsm_nxt_state = MMU_IDLE;
+            else if (mm_data_rdy_i) begin
                 if (ic_miss) begin
                     fsm_nxt_state = ICACHE_REQ;
                 end
@@ -228,21 +238,25 @@ always_comb begin : mmu_fsm
             end
         end
         DCACHE_PENDING: begin
-            if (mm_data_rdy_i) begin
+            if (exc_i) fsm_nxt_state = MMU_IDLE;
+            else if (mm_data_rdy_i) begin
                 fsm_nxt_state = DCACHE_REQ;
             end
         end
         ICACHE_REQ  : begin
+            if (exc_i) fsm_nxt_state = MMU_IDLE;
             fsm_nxt_state = ICACHE_WAIT;
         end
         ICACHE_WAIT : begin
-            if (mm_data_rdy_i) begin
+            if (exc_i) fsm_nxt_state = MMU_IDLE;
+            else if (mm_data_rdy_i) begin
                 if (dc_miss) fsm_nxt_state = DCACHE_REQ;
                 else fsm_nxt_state = MMU_IDLE;
             end
         end
         MMU_IDLE  : begin
-            if (dc_miss) fsm_nxt_state = DCACHE_REQ;
+            if (exc_i) fsm_nxt_state = MMU_IDLE;
+            else if (dc_miss) fsm_nxt_state = DCACHE_REQ;
             else if (ic_miss) fsm_nxt_state = ICACHE_REQ;
             else fsm_nxt_state = MMU_IDLE;
         end

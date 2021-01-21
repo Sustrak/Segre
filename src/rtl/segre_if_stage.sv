@@ -9,6 +9,10 @@ module segre_if_stage (
     input logic hazard_i,
     output logic hazard_o,
 
+    // Exception
+    input logic hf_recovering_i,
+    input logic [WORD_SIZE-1:0] csr_stvec_i,
+
     // IF ID interface
     output logic [WORD_SIZE-1:0] instr_o,
     output logic [ADDR_SIZE-1:0] pc_o,
@@ -146,11 +150,13 @@ always_comb begin : if_fsm
     end else begin
         unique case (if_fsm_state)
             IF_IC_MISS: begin
-                if (mmu_data_i) if_fsm_nxt_state = IF_IDLE;
+                if (hf_recovering_i) if_fsm_nxt_state = IF_RECOVERING;
+                else if (mmu_data_i) if_fsm_nxt_state = IF_IDLE;
                 else if_fsm_nxt_state = IF_IC_MISS;
             end
             IF_IDLE: begin
-                if(tlb_st.miss) if_fsm_nxt_state = IF_TLB_MISS;
+                if (hf_recovering_i) if_fsm_nxt_state = IF_RECOVERING;
+                else if(tlb_st.miss) if_fsm_nxt_state = IF_TLB_MISS;
                 else if (cache_tag.miss) if_fsm_nxt_state = IF_IC_MISS;
                 else if (!hazard_i && (cache_data.data_o[6:0] == OPCODE_BRANCH || cache_data.data_o[6:0] == OPCODE_JAL || cache_data.data_o[6:0] == OPCODE_JALR)) begin
                     if_fsm_nxt_state = IF_BRANCH;
@@ -158,11 +164,16 @@ always_comb begin : if_fsm
                 else if_fsm_nxt_state = IF_IDLE;
             end
             IF_BRANCH: begin
-                if (branch_completed_i) if_fsm_nxt_state = IF_IDLE;
+                if (hf_recovering_i) if_fsm_nxt_state = IF_RECOVERING;
+                else if (branch_completed_i) if_fsm_nxt_state = IF_IDLE;
                 else if_fsm_nxt_state = IF_BRANCH;
             end
             IF_TLB_MISS: begin
-                if_fsm_nxt_state = IF_IDLE;
+                if (hf_recovering_i) if_fsm_nxt_state = IF_RECOVERING;
+                else if_fsm_nxt_state = IF_IDLE;
+            end
+            IF_RECOVERING: begin
+                if (!hf_recovering_i) if_fsm_nxt_state = IF_IDLE;
             end
             default: ;
         endcase
@@ -173,7 +184,9 @@ always_comb begin : pc_logic
     if (!rsn_i) begin
         nxt_pc = 0;
     end else begin
-        if (tkbr_i) begin
+        if (if_fsm_state == IF_RECOVERING) begin
+            nxt_pc = csr_stvec_i;
+        end else if (tkbr_i) begin
             nxt_pc = new_pc_i;
         end else if (if_fsm_state == IF_TLB_MISS || if_fsm_state == IF_IC_MISS || if_fsm_state == IF_BRANCH) begin
             nxt_pc = pc;
@@ -202,6 +215,10 @@ always_ff @(posedge clk_i) begin
     if(!rsn_i) begin
         instr_o <= NOP;
         pc <= 0;
+    end
+    else if (if_fsm_state == IF_RECOVERING) begin
+        pc <= nxt_pc;
+        instr_o <= NOP;
     end
     else if (!hazard_i) begin
         if (pipeline_hazard) begin

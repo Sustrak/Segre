@@ -4,19 +4,23 @@ module segre_csr_file (
     // Clock and Reset
     input  logic clk_i,
     input  logic rsn_i,
-    
+
     input  logic we_i,
     input  logic [CSR_SIZE-1:0] raddr_i,
     input  logic [CSR_SIZE-1:0] waddr_i,
     input  logic [WORD_SIZE-1:0] data_i,
     output logic [WORD_SIZE-1:0] data_o,
+    
+    input logic [ADDR_SIZE-1:0] pc_exc_i,
+    input logic [ADDR_SIZE-1:0] addr_exc_i,
 
+    // Exceptions
+    input logic pp_exc_i,
+
+    output logic sie_o,
     output logic [WORD_SIZE-1:0] csr_satp_o,
     output logic [WORD_SIZE-1:0] csr_priv_o,
-    output logic [WORD_SIZE-1:0] csr_sie_o,
-    output logic [WORD_SIZE-1:0] csr_scause_o,
     output logic [WORD_SIZE-1:0] csr_sepc_o,
-    output logic [WORD_SIZE-1:0] csr_stval_o,
     output logic [WORD_SIZE-1:0] csr_stvec_o
 );
 
@@ -43,6 +47,13 @@ always_ff @(posedge clk_i) begin
         csr_reg_aux[CSR_STVAL]  <= 32'h0;
         csr_reg_aux[CSR_STVEC]  <= 32'h0000_2000;
     end
+    else if (sie_o & pp_exc_i) begin
+        csr_reg_aux[CSR_PRIV]   <= 1;
+        csr_reg_aux[CSR_SIE]    <= 0;
+        csr_reg_aux[CSR_SCAUSE] <= LOAD_ACCESS_FAULT;
+        csr_reg_aux[CSR_SEPC]   <= pc_exc_i;
+        csr_reg_aux[CSR_STVAL]  <= addr_exc_i;
+    end
     else begin
         for (int j = 0; j < NUM_REGS; j++) begin
             if (write_enable[j])
@@ -54,11 +65,9 @@ end
 always_comb begin : csr_outputs
     csr_satp_o   = csr_reg[CSR_SATP];
     csr_priv_o   = csr_reg[CSR_PRIV];
-    csr_sie_o    = csr_reg[CSR_SIE];
-    csr_scause_o = csr_reg[CSR_SCAUSE];
     csr_sepc_o   = csr_reg[CSR_SEPC];
-    csr_stval_o  = csr_reg[CSR_STVAL];
     csr_stvec_o  = csr_reg[CSR_STVEC];
+    sie_o        = csr_reg[CSR_SIE][0];
 end
 
 assign csr_reg = csr_reg_aux;

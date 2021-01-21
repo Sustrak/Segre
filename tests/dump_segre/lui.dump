@@ -4,47 +4,47 @@ build_segre/lui.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00008000 <_start>:
-    8000:	03456037          	lui	zero,0x3456
-    8004:	045670b7          	lui	ra,0x4567
-    8008:	05678137          	lui	sp,0x5678
-    800c:	067901b7          	lui	gp,0x6790
-    8010:	0789a237          	lui	tp,0x789a
-    8014:	089ab2b7          	lui	t0,0x89ab
-    8018:	09abc337          	lui	t1,0x9abc
-    801c:	0abcd3b7          	lui	t2,0xabcd
-    8020:	0bcde437          	lui	s0,0xbcde
-    8024:	0cdef4b7          	lui	s1,0xcdef
-    8028:	0bcde537          	lui	a0,0xbcde
-    802c:	0abcd5b7          	lui	a1,0xabcd
-    8030:	03abc637          	lui	a2,0x3abc
-    8034:	034ab6b7          	lui	a3,0x34ab
-    8038:	0345a737          	lui	a4,0x345a
-    803c:	034567b7          	lui	a5,0x3456
-    8040:	03456837          	lui	a6,0x3456
-    8044:	034568b7          	lui	a7,0x3456
-    8048:	04567937          	lui	s2,0x4567
-    804c:	056789b7          	lui	s3,0x5678
-    8050:	06790a37          	lui	s4,0x6790
-    8054:	0789aab7          	lui	s5,0x789a
-    8058:	089abb37          	lui	s6,0x89ab
-    805c:	09abcbb7          	lui	s7,0x9abc
-    8060:	0abcdc37          	lui	s8,0xabcd
-    8064:	0bcdecb7          	lui	s9,0xbcde
-    8068:	0cdefd37          	lui	s10,0xcdef
-    806c:	0bcdedb7          	lui	s11,0xbcde
-    8070:	0abcde37          	lui	t3,0xabcd
-    8074:	03abceb7          	lui	t4,0x3abc
-    8078:	034abf37          	lui	t5,0x34ab
-    807c:	0345afb7          	lui	t6,0x345a
-    8080:	00000013          	nop
-    8084:	00000013          	nop
-    8088:	00000013          	nop
-    808c:	00000013          	nop
-    8090:	00000013          	nop
-    8094:	00000013          	nop
-    8098:	00000013          	nop
-    809c:	00000013          	nop
+00000000 <_start>:
+   0:	03456037          	lui	zero,0x3456
+   4:	045670b7          	lui	ra,0x4567
+   8:	05678137          	lui	sp,0x5678
+   c:	067901b7          	lui	gp,0x6790
+  10:	0789a237          	lui	tp,0x789a
+  14:	089ab2b7          	lui	t0,0x89ab
+  18:	09abc337          	lui	t1,0x9abc
+  1c:	0abcd3b7          	lui	t2,0xabcd
+  20:	0bcde437          	lui	s0,0xbcde
+  24:	0cdef4b7          	lui	s1,0xcdef
+  28:	0bcde537          	lui	a0,0xbcde
+  2c:	0abcd5b7          	lui	a1,0xabcd
+  30:	03abc637          	lui	a2,0x3abc
+  34:	034ab6b7          	lui	a3,0x34ab
+  38:	0345a737          	lui	a4,0x345a
+  3c:	034567b7          	lui	a5,0x3456
+  40:	03456837          	lui	a6,0x3456
+  44:	034568b7          	lui	a7,0x3456
+  48:	04567937          	lui	s2,0x4567
+  4c:	056789b7          	lui	s3,0x5678
+  50:	06790a37          	lui	s4,0x6790
+  54:	0789aab7          	lui	s5,0x789a
+  58:	089abb37          	lui	s6,0x89ab
+  5c:	09abcbb7          	lui	s7,0x9abc
+  60:	0abcdc37          	lui	s8,0xabcd
+  64:	0bcdecb7          	lui	s9,0xbcde
+  68:	0cdefd37          	lui	s10,0xcdef
+  6c:	0bcdedb7          	lui	s11,0xbcde
+  70:	0abcde37          	lui	t3,0xabcd
+  74:	03abceb7          	lui	t4,0x3abc
+  78:	034abf37          	lui	t5,0x34ab
+  7c:	0345afb7          	lui	t6,0x345a
+  80:	00000013          	nop
+  84:	00000013          	nop
+  88:	00000013          	nop
+  8c:	00000013          	nop
+  90:	00000013          	nop
+  94:	00000013          	nop
+  98:	00000013          	nop
+  9c:	00000013          	nop
 
-000080a0 <test_done>:
-    80a0:	fff01073          	csrw	0xfff,zero
+000000a0 <test_done>:
+  a0:	fff01073          	csrw	0xfff,zero

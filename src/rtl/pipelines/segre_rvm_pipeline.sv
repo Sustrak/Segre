@@ -3,6 +3,7 @@ import segre_pkg::*;
 module segre_rvm_pipeline (
     input logic clk_i,
     input logic rsn_i,
+    input logic kill_i,
     
     // ALU
     input alu_opcode_e alu_opcode_i,
@@ -66,8 +67,8 @@ always_comb begin
 end
 
 always_comb begin
-    mul_res = $signed(alu_src_b_i) * $signed(alu_src_b_i);
-    mulu_res = $unsigned(alu_src_b_i) * $unsigned(alu_src_b_i);
+    mul_res = $signed(alu_src_a_i) * $signed(alu_src_b_i);
+    mulu_res = $unsigned(alu_src_a_i) * $unsigned(alu_src_b_i);
     mulsu_res = alu_src_a_i[WORD_SIZE-1] ? - $signed(mulu_res) : mulu_res;
     
     // DIV
@@ -118,20 +119,20 @@ always_comb begin : output_logic
     end
     else begin
         alu_res_o    = rvm_stage_5.alu_res;
-        rf_we_o      = rvm_stage_5.rf_we;
+        rf_we_o      = !kill_i & rvm_stage_5.rf_we;
         rf_waddr_o   = rvm_stage_5.rf_waddr;
         instr_id_o   = rvm_stage_5.instr_id;
     end
 end
 
 always_comb begin : bypass_data
-    rvm1_we_o    = rvm_stage_1.rf_we;
+    rvm1_we_o    = !kill_i & rvm_stage_1.rf_we;
     rvm1_waddr_o = rvm_stage_1.rf_waddr;
-    rvm2_we_o    = rvm_stage_2.rf_we;
+    rvm2_we_o    = !kill_i & rvm_stage_2.rf_we;
     rvm2_waddr_o = rvm_stage_2.rf_waddr;
-    rvm3_we_o    = rvm_stage_3.rf_we;
+    rvm3_we_o    = !kill_i & rvm_stage_3.rf_we;
     rvm3_waddr_o = rvm_stage_3.rf_waddr;
-    rvm4_we_o    = rvm_stage_4.rf_we;
+    rvm4_we_o    = !kill_i & rvm_stage_4.rf_we;
     rvm4_waddr_o = rvm_stage_4.rf_waddr;
 end
 
@@ -145,7 +146,7 @@ always_ff @(posedge clk_i) begin : latches
     end
     else begin
         rvm_stage_1.alu_res    <= alu_res;
-        rvm_stage_1.rf_we      <= rf_we_i;
+        rvm_stage_1.rf_we      <= !kill_i & rf_we_i;
         rvm_stage_1.rf_waddr   <= rf_waddr_i;
         rvm_stage_1.instr_id   <= instr_id_i;
 

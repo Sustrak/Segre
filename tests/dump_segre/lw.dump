@@ -4,77 +4,77 @@ build_segre/lw.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00008000 <_start>:
-    8000:	fff00093          	li	ra,-1
-    8004:	fff00113          	li	sp,-1
-    8008:	fff00193          	li	gp,-1
-    800c:	fff00213          	li	tp,-1
-    8010:	fff00293          	li	t0,-1
-    8014:	fff00313          	li	t1,-1
-    8018:	fff00393          	li	t2,-1
-    801c:	fff00413          	li	s0,-1
-    8020:	fff00493          	li	s1,-1
-    8024:	fff00513          	li	a0,-1
-    8028:	fff00593          	li	a1,-1
-    802c:	fff00613          	li	a2,-1
-    8030:	fff00693          	li	a3,-1
-    8034:	fff00713          	li	a4,-1
-    8038:	fff00793          	li	a5,-1
-    803c:	fff00813          	li	a6,-1
-    8040:	fff00893          	li	a7,-1
-    8044:	fff00913          	li	s2,-1
-    8048:	fff00993          	li	s3,-1
-    804c:	fff00a13          	li	s4,-1
-    8050:	fff00a93          	li	s5,-1
-    8054:	fff00b13          	li	s6,-1
-    8058:	fff00b93          	li	s7,-1
-    805c:	fff00c13          	li	s8,-1
-    8060:	fff00c93          	li	s9,-1
-    8064:	fff00d13          	li	s10,-1
-    8068:	fff00d93          	li	s11,-1
-    806c:	fff00e13          	li	t3,-1
-    8070:	fff00e93          	li	t4,-1
-    8074:	0000af17          	auipc	t5,0xa
-    8078:	f8cf0f13          	addi	t5,t5,-116 # 12000 <user_stack_start>
-    807c:	004f2083          	lw	ra,4(t5)
-    8080:	008f2103          	lw	sp,8(t5)
-    8084:	00cf2183          	lw	gp,12(t5)
-    8088:	010f2203          	lw	tp,16(t5)
-    808c:	014f2283          	lw	t0,20(t5)
-    8090:	018f2303          	lw	t1,24(t5)
-    8094:	01cf2383          	lw	t2,28(t5)
-    8098:	020f2403          	lw	s0,32(t5)
-    809c:	024f2483          	lw	s1,36(t5)
-    80a0:	028f2503          	lw	a0,40(t5)
-    80a4:	02cf2583          	lw	a1,44(t5)
-    80a8:	030f2603          	lw	a2,48(t5)
-    80ac:	034f2683          	lw	a3,52(t5)
-    80b0:	038f2703          	lw	a4,56(t5)
-    80b4:	03cf2783          	lw	a5,60(t5)
-    80b8:	040f2803          	lw	a6,64(t5)
-    80bc:	044f2883          	lw	a7,68(t5)
-    80c0:	048f2903          	lw	s2,72(t5)
-    80c4:	04cf2983          	lw	s3,76(t5)
-    80c8:	050f2a03          	lw	s4,80(t5)
-    80cc:	054f2a83          	lw	s5,84(t5)
-    80d0:	058f2b03          	lw	s6,88(t5)
-    80d4:	05cf2b83          	lw	s7,92(t5)
-    80d8:	060f2c03          	lw	s8,96(t5)
-    80dc:	064f2c83          	lw	s9,100(t5)
-    80e0:	068f2d03          	lw	s10,104(t5)
-    80e4:	06cf2d83          	lw	s11,108(t5)
-    80e8:	070f2e03          	lw	t3,112(t5)
-    80ec:	074f2e83          	lw	t4,116(t5)
-    80f0:	fff00f13          	li	t5,-1
-    80f4:	fff00f93          	li	t6,-1
-    80f8:	00000013          	nop
-    80fc:	00000013          	nop
-    8100:	00000013          	nop
-    8104:	00000013          	nop
-    8108:	00000013          	nop
-    810c:	00000013          	nop
-    8110:	00000013          	nop
-    8114:	00000013          	nop
+00000000 <_start>:
+   0:	fff00093          	li	ra,-1
+   4:	fff00113          	li	sp,-1
+   8:	fff00193          	li	gp,-1
+   c:	fff00213          	li	tp,-1
+  10:	fff00293          	li	t0,-1
+  14:	fff00313          	li	t1,-1
+  18:	fff00393          	li	t2,-1
+  1c:	fff00413          	li	s0,-1
+  20:	fff00493          	li	s1,-1
+  24:	fff00513          	li	a0,-1
+  28:	fff00593          	li	a1,-1
+  2c:	fff00613          	li	a2,-1
+  30:	fff00693          	li	a3,-1
+  34:	fff00713          	li	a4,-1
+  38:	fff00793          	li	a5,-1
+  3c:	fff00813          	li	a6,-1
+  40:	fff00893          	li	a7,-1
+  44:	fff00913          	li	s2,-1
+  48:	fff00993          	li	s3,-1
+  4c:	fff00a13          	li	s4,-1
+  50:	fff00a93          	li	s5,-1
+  54:	fff00b13          	li	s6,-1
+  58:	fff00b93          	li	s7,-1
+  5c:	fff00c13          	li	s8,-1
+  60:	fff00c93          	li	s9,-1
+  64:	fff00d13          	li	s10,-1
+  68:	fff00d93          	li	s11,-1
+  6c:	fff00e13          	li	t3,-1
+  70:	fff00e93          	li	t4,-1
+  74:	0000af17          	auipc	t5,0xa
+  78:	f8cf0f13          	addi	t5,t5,-116 # a000 <user_stack_start>
+  7c:	004f2083          	lw	ra,4(t5)
+  80:	008f2103          	lw	sp,8(t5)
+  84:	00cf2183          	lw	gp,12(t5)
+  88:	010f2203          	lw	tp,16(t5)
+  8c:	014f2283          	lw	t0,20(t5)
+  90:	018f2303          	lw	t1,24(t5)
+  94:	01cf2383          	lw	t2,28(t5)
+  98:	020f2403          	lw	s0,32(t5)
+  9c:	024f2483          	lw	s1,36(t5)
+  a0:	028f2503          	lw	a0,40(t5)
+  a4:	02cf2583          	lw	a1,44(t5)
+  a8:	030f2603          	lw	a2,48(t5)
+  ac:	034f2683          	lw	a3,52(t5)
+  b0:	038f2703          	lw	a4,56(t5)
+  b4:	03cf2783          	lw	a5,60(t5)
+  b8:	040f2803          	lw	a6,64(t5)
+  bc:	044f2883          	lw	a7,68(t5)
+  c0:	048f2903          	lw	s2,72(t5)
+  c4:	04cf2983          	lw	s3,76(t5)
+  c8:	050f2a03          	lw	s4,80(t5)
+  cc:	054f2a83          	lw	s5,84(t5)
+  d0:	058f2b03          	lw	s6,88(t5)
+  d4:	05cf2b83          	lw	s7,92(t5)
+  d8:	060f2c03          	lw	s8,96(t5)
+  dc:	064f2c83          	lw	s9,100(t5)
+  e0:	068f2d03          	lw	s10,104(t5)
+  e4:	06cf2d83          	lw	s11,108(t5)
+  e8:	070f2e03          	lw	t3,112(t5)
+  ec:	074f2e83          	lw	t4,116(t5)
+  f0:	fff00f13          	li	t5,-1
+  f4:	fff00f93          	li	t6,-1
+  f8:	00000013          	nop
+  fc:	00000013          	nop
+ 100:	00000013          	nop
+ 104:	00000013          	nop
+ 108:	00000013          	nop
+ 10c:	00000013          	nop
+ 110:	00000013          	nop
+ 114:	00000013          	nop
 
-00008118 <test_done>:
-    8118:	fff01073          	csrw	0xfff,zero
+00000118 <test_done>:
+ 118:	fff01073          	csrw	0xfff,zero

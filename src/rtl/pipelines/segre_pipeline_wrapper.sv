@@ -7,6 +7,8 @@ module segre_pipeline_wrapper (
 
     // Decode information
     input core_pipeline_t core_pipeline_i,
+    // Kill
+    input logic kill_i,
 
     // Register File
     output rf_wdata_t rf_data_o,
@@ -46,7 +48,12 @@ module segre_pipeline_wrapper (
     //Privilege mode / Virtual mem
     input logic [WORD_SIZE-1:0] csr_priv_i,
     input logic [WORD_SIZE-1:0] csr_satp_i,
-    output logic dtlb_exception_o
+    output logic dtlb_exception_o,
+    
+    // Exceptions
+    output logic pp_exception_o,
+    output logic [HF_PTR-1:0] pp_exception_id_o,
+    output logic [ADDR_SIZE-1:0] pp_addr_o
 );
 
 mem_pipeline_t mem_data;
@@ -73,6 +80,9 @@ segre_ex_stage ex_stage (
     // Clock and Reset
     .clk_i              (clk_i),
     .rsn_i              (rsn_i),
+    
+    // Kill
+    .kill_i             (kill_i),
 
     // Hazards
     .hazard_i           (ex_data.hazard),
@@ -106,6 +116,7 @@ segre_mem_pipeline mem_pipeline (
     // Clock and Reset
     .clk_i                 (clk_i),
     .rsn_i                 (rsn_i),
+    .kill_i                (kill_i),
 
     // Input
     .alu_src_a_i           (mem_data.alu_src_a),
@@ -151,13 +162,18 @@ segre_mem_pipeline mem_pipeline (
     .tl_rf_waddr_o         (tl_rf_waddr),
     .csr_priv_i            (csr_priv_i),
     .csr_satp_i            (csr_satp_i),
-    .dtlb_exception_o      (dtlb_exception_o)
+
+    // Exceptions
+    .pp_exception_o        (pp_exception_o),
+    .pp_exception_id_o     (pp_exception_id_o),
+    .pp_addr_o             (pp_addr_o)
 );
 
 segre_rvm_pipeline rvm_pipeline (
     // Clock and Reset
-    .clk_i (clk_i),
-    .rsn_i (rsn_i),
+    .clk_i        (clk_i),
+    .rsn_i        (rsn_i),
+    .kill_i       (kill_i),
 
     // Input
     .alu_opcode_i (rvm_data.alu_opcode),
@@ -188,48 +204,51 @@ segre_rvm_pipeline rvm_pipeline (
 always_comb begin : input_decoder
     // EX PIPELINE
     ex_data.alu_opcode        = core_pipeline_i.alu_opcode;
-    ex_data.instr_id          = core_pipeline_i.instr_id;
     ex_data.csr_access        = core_pipeline_i.csr_access;
     ex_data.csr_waddr         = core_pipeline_i.csr_waddr;
     // MEM PIPELINE
     mem_data.memop_sign_ext   = core_pipeline_i.memop_sign_ext;
     mem_data.memop_type       = core_pipeline_i.memop_type;
     mem_data.rf_st_data       = core_pipeline_i.rf_st_data;
-    mem_data.instr_id         = core_pipeline_i.instr_id;
     mem_data.store_permission = core_pipeline_i.store_permission;
     // RVM PIPELINE
     rvm_data.alu_opcode       = core_pipeline_i.alu_opcode;
-    rvm_data.instr_id         = core_pipeline_i.instr_id;
     
-    if (core_pipeline_i.pipeline == EX_PIPELINE) begin
+    if (!kill_i && core_pipeline_i.pipeline == EX_PIPELINE) begin
         ex_data.rf_we    = core_pipeline_i.rf_we;
         ex_data.rf_waddr = core_pipeline_i.rf_waddr;
+        ex_data.instr_id = core_pipeline_i.instr_id;
     end
     else begin
         ex_data.rf_we    = 0;
         ex_data.rf_waddr = 0;
+        ex_data.instr_id = 0;
     end
     
-    if (core_pipeline_i.pipeline == MEM_PIPELINE) begin
+    if (!kill_i && core_pipeline_i.pipeline == MEM_PIPELINE) begin
         mem_data.rf_we       = core_pipeline_i.rf_we;
         mem_data.rf_waddr    = core_pipeline_i.rf_waddr;
         mem_data.memop_rd    = core_pipeline_i.memop_rd;
         mem_data.memop_wr    = core_pipeline_i.memop_wr;
+        mem_data.instr_id    = core_pipeline_i.instr_id;
     end
     else begin
         mem_data.rf_we       = 0;
         mem_data.rf_waddr    = 0;
         mem_data.memop_rd    = 0;
         mem_data.memop_wr    = 0;
+        mem_data.instr_id    = 0;
     end
 
-    if (core_pipeline_i.pipeline == RVM_PIPELINE) begin
+    if (!kill_i && core_pipeline_i.pipeline == RVM_PIPELINE) begin
         rvm_data.rf_we    = core_pipeline_i.rf_we;
         rvm_data.rf_waddr = core_pipeline_i.rf_waddr;
+        rvm_data.instr_id = core_pipeline_i.instr_id;
     end
     else begin
         rvm_data.rf_we    = 0;
         rvm_data.rf_waddr = 0;
+        rvm_data.instr_id = 0;
     end
 
 end
@@ -286,7 +305,7 @@ always_comb begin : bypass
             else ex_data.alu_src_b = rf_data_o.ex_data;
 
             ex_data.br_src_b    = rf_data_o.ex_data;
-            mem_data.alu_src_b  = rf_data_o.ex_data;
+            //mem_data.alu_src_b  = rf_data_o.ex_data;
             rvm_data.alu_src_b  = rf_data_o.ex_data;
         end
         BY_MEM_PIPE: begin
